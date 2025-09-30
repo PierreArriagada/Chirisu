@@ -27,23 +27,23 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-          <CardTitle className="font-headline text-3xl md:text-4xl">{titleInfo.title}</CardTitle>
+          <CardTitle className="font-headline text-2xl md:text-3xl">{titleInfo.title}</CardTitle>
           <Badge variant="outline" className="text-sm capitalize w-min">{titleInfo.type}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-        <div className="md:col-span-1 mx-auto">
+      <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
+        <div className="sm:col-span-1 mx-auto">
           <Image
             src={titleInfo.imageUrl}
             alt={`Cover for ${titleInfo.title}`}
             width={300}
             height={450}
-            className="rounded-lg object-cover shadow-lg aspect-[2/3]"
+            className="rounded-lg object-cover shadow-lg aspect-[2/3] w-[200px] sm:w-full"
             data-ai-hint={titleInfo.imageHint}
             priority
           />
         </div>
-        <div className="md:col-span-2 flex flex-col justify-between gap-6">
+        <div className="sm:col-span-2 flex flex-col justify-between gap-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <Stat icon={<Trophy size={24} />} label="Ranking" value={`#${titleInfo.ranking}`} />
             <Stat icon={<MessageCircle size={24} />} label="Comments" value={titleInfo.commentsCount.toLocaleString()} />
