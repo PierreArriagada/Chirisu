@@ -29,34 +29,36 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-          <CardTitle className="font-headline text-lg sm:text-xl md:text-3xl">
+          <CardTitle className="font-headline text-lg sm:text-xl">
             {titleInfo.title}
           </CardTitle>
           <Badge variant="outline" className="text-sm capitalize w-min flex-shrink-0">{titleInfo.type}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex-shrink-0 p-1">
-          <Image
-            src={titleInfo.imageUrl}
-            alt={`Cover for ${titleInfo.title}`}
-            width={300}
-            height={450}
-            className="rounded-lg object-cover shadow-lg aspect-[2/3] w-full"
-            data-ai-hint={titleInfo.imageHint}
-            priority
-          />
-        </div>
-        <div className="flex flex-col justify-start gap-3">
-          <Stat icon={<Trophy size={20} />} label="Ranking" value={`#${titleInfo.ranking}`} />
-          <Stat icon={<MessageCircle size={20} />} label="Comments" value={titleInfo.commentsCount.toLocaleString()} />
-          <Stat icon={<Bookmark size={20} />} label="In Lists" value={titleInfo.listsCount.toLocaleString()} />
-          <div className="flex items-center gap-4 rounded-lg bg-background p-2 text-left w-full">
-            <div className="flex flex-col items-start">
-              <span className="text-sm font-medium text-muted-foreground">Rating</span>
-              <div className="flex items-center gap-2">
-                <StarRating rating={titleInfo.rating} starSize={16} />
-                <p className="font-bold text-base">{titleInfo.rating.toFixed(1)}/10</p>
+      <CardContent className="grid grid-cols-1" style={{gridTemplateColumns: 'minmax(0, 1fr)'}}>
+        <div className="flex flex-col sm:flex-row gap-4" style={{'@media (min-width: 340px)': {flexDirection: 'row'}}}>
+          <div className="flex-shrink-0 p-1 sm:w-1/3">
+            <Image
+              src={titleInfo.imageUrl}
+              alt={`Cover for ${titleInfo.title}`}
+              width={300}
+              height={450}
+              className="rounded-lg object-cover shadow-lg aspect-[2/3] w-full"
+              data-ai-hint={titleInfo.imageHint}
+              priority
+            />
+          </div>
+          <div className="flex flex-col justify-start gap-1 sm:w-2/3">
+            <Stat icon={<Trophy size={20} />} label="Ranking" value={`#${titleInfo.ranking}`} />
+            <Stat icon={<MessageCircle size={20} />} label="Comments" value={titleInfo.commentsCount.toLocaleString()} />
+            <Stat icon={<Bookmark size={20} />} label="In Lists" value={titleInfo.listsCount.toLocaleString()} />
+            <div className="flex items-center gap-4 rounded-lg bg-background p-2 text-left w-full">
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-medium text-muted-foreground">Rating</span>
+                <div className="flex items-center gap-2">
+                  <StarRating rating={titleInfo.rating} starSize={16} />
+                  <p className="font-bold text-base">{titleInfo.rating.toFixed(1)}/10</p>
+                </div>
               </div>
             </div>
           </div>
