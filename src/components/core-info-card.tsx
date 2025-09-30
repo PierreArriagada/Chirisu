@@ -35,9 +35,9 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
           <Badge variant="outline" className="text-sm capitalize w-min flex-shrink-0">{titleInfo.type}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid grid-cols-1" style={{gridTemplateColumns: 'minmax(0, 1fr)'}}>
-        <div className="flex flex-col sm:flex-row gap-4" style={{'@media (min-width: 340px)': {flexDirection: 'row'}}}>
-          <div className="flex-shrink-0 p-1 sm:w-1/3">
+      <CardContent>
+        <div className="flex flex-col gap-4" style={{'@media (min-width: 340px)': {flexDirection: 'row'}}}>
+          <div className="flex-shrink-0 p-1" style={{'@media (min-width: 340px)': {width: '33.333333%'}}}>
             <Image
               src={titleInfo.imageUrl}
               alt={`Cover for ${titleInfo.title}`}
@@ -48,7 +48,7 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
               priority
             />
           </div>
-          <div className="flex flex-col justify-start gap-1 sm:w-2/3">
+          <div className="flex flex-col justify-start gap-1" style={{'@media (min-width: 340px)': {width: '66.666667%'}}}>
             <Stat icon={<Trophy size={20} />} label="Ranking" value={`#${titleInfo.ranking}`} />
             <Stat icon={<MessageCircle size={20} />} label="Comments" value={titleInfo.commentsCount.toLocaleString()} />
             <Stat icon={<Bookmark size={20} />} label="In Lists" value={titleInfo.listsCount.toLocaleString()} />
