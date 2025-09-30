@@ -14,10 +14,12 @@ type StatProps = {
 
 function Stat({ icon, label, value }: StatProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-background p-2 text-center">
-      <div className="text-primary">{icon}</div>
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <span className="text-base font-bold">{value}</span>
+    <div className="flex items-center gap-4 rounded-lg bg-background p-2 text-left w-full">
+      <div className="text-primary flex-shrink-0">{icon}</div>
+      <div className="flex flex-col items-start">
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+        <span className="text-base font-bold">{value}</span>
+      </div>
     </div>
   );
 }
@@ -27,14 +29,14 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-          <CardTitle className="font-headline text-xl md:text-3xl">
+          <CardTitle className="font-headline text-lg sm:text-xl md:text-3xl">
             {titleInfo.title}
           </CardTitle>
           <Badge variant="outline" className="text-sm capitalize w-min flex-shrink-0">{titleInfo.type}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid grid-cols-3 gap-4">
-        <div className="col-span-1">
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex-shrink-0 p-1">
           <Image
             src={titleInfo.imageUrl}
             alt={`Cover for ${titleInfo.title}`}
@@ -45,16 +47,18 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
             priority
           />
         </div>
-        <div className="col-span-2 flex flex-col justify-between gap-4">
-          <div className="grid grid-cols-2 gap-2">
-            <Stat icon={<Trophy size={20} />} label="Ranking" value={`#${titleInfo.ranking}`} />
-            <Stat icon={<MessageCircle size={20} />} label="Comments" value={titleInfo.commentsCount.toLocaleString()} />
-            <Stat icon={<Bookmark size={20} />} label="In Lists" value={titleInfo.listsCount.toLocaleString()} />
-          </div>
-          <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-background p-2">
-            <span className="text-sm font-medium text-muted-foreground">Rating</span>
-            <StarRating rating={titleInfo.rating} starSize={16} />
-            <p className="font-bold text-base">{titleInfo.rating.toFixed(1)}/10</p>
+        <div className="flex flex-col justify-start gap-3">
+          <Stat icon={<Trophy size={20} />} label="Ranking" value={`#${titleInfo.ranking}`} />
+          <Stat icon={<MessageCircle size={20} />} label="Comments" value={titleInfo.commentsCount.toLocaleString()} />
+          <Stat icon={<Bookmark size={20} />} label="In Lists" value={titleInfo.listsCount.toLocaleString()} />
+          <div className="flex items-center gap-4 rounded-lg bg-background p-2 text-left w-full">
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-medium text-muted-foreground">Rating</span>
+              <div className="flex items-center gap-2">
+                <StarRating rating={titleInfo.rating} starSize={16} />
+                <p className="font-bold text-base">{titleInfo.rating.toFixed(1)}/10</p>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
