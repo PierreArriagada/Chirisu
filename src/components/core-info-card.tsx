@@ -28,15 +28,15 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl">
       <CardHeader>
         <div className="flex flex-col ss:flex-row ss:items-start ss:justify-between gap-2">
-          <CardTitle className="font-headline text-lg ss:text-xl">
+          <CardTitle className="font-headline text-lg">
             {titleInfo.title}
           </CardTitle>
-          <Badge variant="outline" className="text-sm capitalize w-min flex-shrink-0">{titleInfo.type}</Badge>
         </div>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col ss:flex-row gap-4">
-          <div className="flex-shrink-0 p-1 ss:w-2/5">
+          <div className="relative flex-shrink-0 ss:w-2/5">
+            <Badge variant="outline" className="absolute top-2 right-2 text-sm capitalize bg-background/80 backdrop-blur-sm z-10">{titleInfo.type}</Badge>
             <Image
               src={titleInfo.imageUrl}
               alt={`Cover for ${titleInfo.title}`}
@@ -63,10 +63,10 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row gap-4 p-6">
         <Button size="lg" className="w-full sm:w-auto flex-1">
-          <Heart className="mr-2 h-4 w-4" /> Add to Favorites
+          <Heart className="mr-2 h-4 w-4" /> Favoritos
         </Button>
         <Button size="lg" variant="secondary" className="w-full sm:w-auto flex-1">
-          <ListPlus className="mr-2 h-4 w-4" /> Add to List
+          <ListPlus className="mr-2 h-4 w-4" /> Añadir a lista
         </Button>
       </CardFooter>
     </Card>
