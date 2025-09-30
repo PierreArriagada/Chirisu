@@ -38,7 +38,7 @@ export default async function Recommendations({ titleInfo }: { titleInfo: TitleI
     <Card>
       <CardContent className="p-4">
         <div className="flex flex-col gap-4">
-          {recommendations.slice(0, 10).map((rec, index) => (
+          {recommendations.slice(0, 5).map((rec, index) => (
             <RecommendationCard key={rec.title} recommendation={rec} />
           ))}
         </div>
