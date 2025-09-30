@@ -29,15 +29,15 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-          <CardTitle className="font-headline text-lg sm:text-xl">
+          <CardTitle className="font-headline text-lg">
             {titleInfo.title}
           </CardTitle>
           <Badge variant="outline" className="text-sm capitalize w-min flex-shrink-0">{titleInfo.type}</Badge>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-4" style={{'@media (min-width: 340px)': {flexDirection: 'row'}}}>
-          <div className="flex-shrink-0 p-1" style={{'@media (min-width: 340px)': {width: '33.333333%'}}}>
+        <div className="flex flex-col ss:flex-row gap-4">
+          <div className="flex-shrink-0 p-1 ss:w-1/3">
             <Image
               src={titleInfo.imageUrl}
               alt={`Cover for ${titleInfo.title}`}
@@ -48,7 +48,7 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
               priority
             />
           </div>
-          <div className="flex flex-col justify-start gap-1" style={{'@media (min-width: 340px)': {width: '66.666667%'}}}>
+          <div className="flex flex-col justify-start gap-1 ss:w-2/3">
             <Stat icon={<Trophy size={20} />} label="Ranking" value={`#${titleInfo.ranking}`} />
             <Stat icon={<MessageCircle size={20} />} label="Comments" value={titleInfo.commentsCount.toLocaleString()} />
             <Stat icon={<Bookmark size={20} />} label="In Lists" value={titleInfo.listsCount.toLocaleString()} />
