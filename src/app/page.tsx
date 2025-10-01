@@ -7,6 +7,8 @@ import CharactersCard from '@/components/characters-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SocialsCard from '@/components/socials-card';
 import OfficialLinksCard from '@/components/official-links-card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 export default function Home() {
   const titleInfo = mockTitle;
@@ -62,12 +64,30 @@ export default function Home() {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Videos & Imágenes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                 <p className="text-center text-muted-foreground">Contenido de Videos & Imágenes próximamente.</p>
-              </CardContent>
+              <Tabs defaultValue="trailers">
+                <CardHeader>
+                  <TabsList className="p-0 h-auto bg-transparent border-b-0">
+                    <TabsTrigger value="trailers">Trailers</TabsTrigger>
+                    <TabsTrigger value="videos">Videos</TabsTrigger>
+                    <TabsTrigger value="images">Imágenes</TabsTrigger>
+                  </TabsList>
+                </CardHeader>
+                <TabsContent value="trailers">
+                  <CardContent>
+                    <p className="text-center text-muted-foreground">Contenido de Trailers próximamente.</p>
+                  </CardContent>
+                </TabsContent>
+                <TabsContent value="videos">
+                  <CardContent>
+                    <p className="text-center text-muted-foreground">Contenido de Videos próximamente.</p>
+                  </CardContent>
+                </TabsContent>
+                <TabsContent value="images">
+                  <CardContent>
+                    <p className="text-center text-muted-foreground">Contenido de Imágenes próximamente.</p>
+                  </CardContent>
+                </TabsContent>
+              </Tabs>
             </Card>
 
             <Card>
