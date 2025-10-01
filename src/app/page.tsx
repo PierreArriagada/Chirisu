@@ -8,12 +8,12 @@ export default function Home() {
 
   return (
     <div className="bg-background min-h-screen">
-      <main className="p-1 md:p-2">
+      <main className="py-1 md:py-2">
         <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
           <div className="lg:col-span-2 flex flex-col gap-8">
             <CoreInfoCard titleInfo={titleInfo} />
             <SynopsisCard description={titleInfo.description} />
-            <div className="lg:hidden">
+            <div className="lg:hidden p-4">
               <h2 className="text-2xl font-headline mb-4">You might also like</h2>
               <Recommendations titleInfo={titleInfo} />
             </div>
