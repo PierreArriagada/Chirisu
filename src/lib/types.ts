@@ -62,6 +62,17 @@ export type RelatedTitle = {
     type: string;
 };
 
+export type OfficialLink = {
+  name: string;
+  url: string;
+};
+
+export type OfficialLinks = {
+  officialSites: OfficialLink[];
+  streamingPlatforms: OfficialLink[];
+  fanTranslations: OfficialLink[];
+};
+
 export type AnimeDetails = {
   type: string;
   episodes: number;

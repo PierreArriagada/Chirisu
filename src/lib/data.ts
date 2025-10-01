@@ -1,4 +1,4 @@
-import type { AnimeDetails, TitleInfo } from "./types";
+import type { AnimeDetails, TitleInfo, OfficialLinks } from "./types";
 
 export const mockTitle: TitleInfo = {
     id: '1',
@@ -70,5 +70,20 @@ export const mockAnimeDetails: AnimeDetails = {
     related: [
         { id: 'rel1', title: 'Solo Leveling (Manhwa)', type: 'Adaptation' },
         { id: 'rel2', title: 'The Beginning After the End', type: 'Recommendation' },
+    ]
+};
+
+export const mockOfficialLinks: OfficialLinks = {
+    officialSites: [
+        { name: 'Official Website', url: '#' },
+        { name: 'Official X', url: '#' },
+    ],
+    streamingPlatforms: [
+        { name: 'Crunchyroll', url: '#' },
+        { name: 'Netflix', url: '#' },
+    ],
+    fanTranslations: [
+        { name: 'Fan Sub Group A (Social)', url: '#' },
+        { name: 'Fan Sub Group B (Social)', url: '#' },
     ]
 };

@@ -1,15 +1,17 @@
 import CoreInfoCard from '@/components/core-info-card';
 import Recommendations from '@/components/recommendations';
 import SynopsisCard from '@/components/synopsis-card';
-import { mockAnimeDetails, mockTitle } from '@/lib/data';
+import { mockAnimeDetails, mockTitle, mockOfficialLinks } from '@/lib/data';
 import DetailsCard from '@/components/details-card';
 import CharactersCard from '@/components/characters-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SocialsCard from '@/components/socials-card';
+import OfficialLinksCard from '@/components/official-links-card';
 
 export default function Home() {
   const titleInfo = mockTitle;
   const animeDetails = mockAnimeDetails;
+  const officialLinks = mockOfficialLinks;
 
   return (
     <div className="bg-background min-h-screen">
@@ -20,6 +22,7 @@ export default function Home() {
             <SocialsCard />
             <SynopsisCard description={titleInfo.description} />
             <DetailsCard details={animeDetails} />
+            <OfficialLinksCard links={officialLinks} />
             <CharactersCard characters={animeDetails.characters} />
 
             <Card>
