@@ -1,3 +1,4 @@
+// This file is deprecated. All data is now in `db.ts` to simulate a database.
 import type { AnimeDetails, TitleInfo, OfficialLinks } from "./types";
 
 export const mockTitle: TitleInfo = {

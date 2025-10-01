@@ -1,7 +1,7 @@
 import CoreInfoCard from '@/components/core-info-card';
 import Recommendations from '@/components/recommendations';
 import SynopsisCard from '@/components/synopsis-card';
-import { mockAnimeDetails, mockTitle, mockOfficialLinks } from '@/lib/data';
+import { getAnimePageData } from '@/lib/db';
 import DetailsCard from '@/components/details-card';
 import CharactersCard from '@/components/characters-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,9 +23,13 @@ import { MessageSquare, UserCircle } from 'lucide-react';
 import MediaGallery from '@/components/media-gallery';
 
 export default function Home() {
-  const titleInfo = mockTitle;
-  const animeDetails = mockAnimeDetails;
-  const officialLinks = mockOfficialLinks;
+  const animePageData = getAnimePageData('1'); // Get all data for anime with id '1'
+
+  if (!animePageData) {
+    return <div className="text-center p-8">Anime no encontrado.</div>;
+  }
+
+  const { titleInfo, details, officialLinks, characters, episodes, reviews, related, galleryImages } = animePageData;
 
   return (
     <div className="bg-background min-h-screen">
@@ -35,7 +39,7 @@ export default function Home() {
             <CoreInfoCard titleInfo={titleInfo} />
             <SocialsCard />
             <SynopsisCard description={titleInfo.description} />
-            <DetailsCard details={animeDetails} />
+            <DetailsCard details={details} />
             <OfficialLinksCard links={officialLinks} />
 
             <Accordion type="multiple" className="w-full space-y-8" defaultValue={['characters', 'episodes', 'stats', 'reviews', 'media', 'related', 'forum']}>
@@ -45,7 +49,7 @@ export default function Home() {
                       <CardTitle>Personajes & Actores</CardTitle>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <CharactersCard characters={animeDetails.characters} />
+                    <CharactersCard characters={characters} />
                   </AccordionContent>
                 </Card>
               </AccordionItem>
@@ -56,7 +60,7 @@ export default function Home() {
                     <CardTitle>Capítulos</CardTitle>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <EpisodesCard episodes={animeDetails.episodesList} />
+                    <EpisodesCard episodes={episodes} />
                   </AccordionContent>
                 </Card>
               </AccordionItem>
@@ -67,7 +71,7 @@ export default function Home() {
                     <CardTitle>Estadísticas</CardTitle>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <StatsCard stats={animeDetails.stats} />
+                    <StatsCard stats={details.stats} />
                   </AccordionContent>
                 </Card>
               </AccordionItem>
@@ -78,7 +82,7 @@ export default function Home() {
                     <CardTitle>Reseñas</CardTitle>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <ReviewsCard reviews={animeDetails.reviews} />
+                    <ReviewsCard reviews={reviews} />
                   </AccordionContent>
                 </Card>
               </AccordionItem>
@@ -93,7 +97,7 @@ export default function Home() {
                         <TabsTrigger value="images">Imágenes</TabsTrigger>
                       </TabsList>
                     </Tabs>
-                    <AccordionTrigger className="p-0 w-auto hover:no-underline" />
+                    <AccordionTrigger className="p-0 w-auto hover:no-underline ml-4" />
                   </CardHeader>
                   <AccordionContent>
                      <Tabs defaultValue="trailers" className="w-full">
@@ -125,7 +129,7 @@ export default function Home() {
                       </TabsContent>
                       <TabsContent value="images">
                         <CardContent>
-                          <MediaGallery images={animeDetails.galleryImages} />
+                          <MediaGallery images={galleryImages} />
                         </CardContent>
                       </TabsContent>
                     </Tabs>
@@ -167,7 +171,7 @@ export default function Home() {
             </Accordion>
 
 
-            <RelatedCard relatedTitles={animeDetails.related} />
+            <RelatedCard relatedTitles={related} />
             
             <div className="lg:hidden">
               <h2 className="text-2xl font-headline mb-4">Recomendaciones</h2>
