@@ -82,38 +82,6 @@ export default function Home() {
                   </AccordionContent>
                 </Card>
               </AccordionItem>
-
-              <AccordionItem value="forum" className="border-0">
-                <Card>
-                  <AccordionTrigger className="p-6 hover:no-underline">
-                    <CardTitle>Foro</CardTitle>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <CardContent className="space-y-4">
-                      <div className="border p-4 rounded-lg">
-                        <div className="flex items-center gap-3 mb-2">
-                          <UserCircle size={24} className="text-muted-foreground" />
-                          <h4 className="font-semibold">¿Qué tan fiel es la adaptación?</h4>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">Iniciado por @MangaReader</p>
-                        <div className="flex items-center text-xs text-muted-foreground gap-2">
-                          <MessageSquare size={14} /> 45 respuestas
-                        </div>
-                      </div>
-                      <div className="border p-4 rounded-lg">
-                        <div className="flex items-center gap-3 mb-2">
-                           <UserCircle size={24} className="text-muted-foreground" />
-                          <h4 className="font-semibold">Mejor momento del último capítulo</h4>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">Iniciado por @AnimeWatcher</p>
-                         <div className="flex items-center text-xs text-muted-foreground gap-2">
-                          <MessageSquare size={14} /> 102 respuestas
-                        </div>
-                      </div>
-                    </CardContent>
-                  </AccordionContent>
-                </Card>
-              </AccordionItem>
               
               <AccordionItem value="media" className="border-0">
                 <Card>
@@ -164,10 +132,47 @@ export default function Home() {
                   </AccordionContent>
                 </Card>
               </AccordionItem>
+
+              <AccordionItem value="forum" className="border-0">
+                <Card>
+                  <AccordionTrigger className="p-6 hover:no-underline">
+                    <CardTitle>Foro</CardTitle>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <CardContent className="space-y-4">
+                      <div className="border p-4 rounded-lg">
+                        <div className="flex items-center gap-3 mb-2">
+                          <UserCircle size={24} className="text-muted-foreground" />
+                          <h4 className="font-semibold">¿Qué tan fiel es la adaptación?</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">Iniciado por @MangaReader</p>
+                        <div className="flex items-center text-xs text-muted-foreground gap-2">
+                          <MessageSquare size={14} /> 45 respuestas
+                        </div>
+                      </div>
+                      <div className="border p-4 rounded-lg">
+                        <div className="flex items-center gap-3 mb-2">
+                           <UserCircle size={24} className="text-muted-foreground" />
+                          <h4 className="font-semibold">Mejor momento del último capítulo</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">Iniciado por @AnimeWatcher</p>
+                         <div className="flex items-center text-xs text-muted-foreground gap-2">
+                          <MessageSquare size={14} /> 102 respuestas
+                        </div>
+                      </div>
+                    </CardContent>
+                  </AccordionContent>
+                </Card>
+              </AccordionItem>
             </Accordion>
 
 
             <RelatedCard relatedTitles={animeDetails.related} />
+
+            <div className="lg:hidden">
+              <h2 className="text-2xl font-headline mb-4">Recomendaciones</h2>
+              <Recommendations titleInfo={titleInfo} />
+            </div>
 
             <Card>
               <CardHeader>
@@ -178,10 +183,6 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <div className="lg:hidden">
-              <h2 className="text-2xl font-headline mb-4">Recomendaciones</h2>
-              <Recommendations titleInfo={titleInfo} />
-            </div>
           </div>
 
           <div className="hidden lg:flex flex-col gap-4 sticky top-8 h-max">
