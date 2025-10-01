@@ -18,6 +18,9 @@ import StatsCard from '@/components/stats-card';
 import ReviewsCard from '@/components/reviews-card';
 import RelatedCard from '@/components/related-card';
 import EpisodesCard from '@/components/episodes-card';
+import Image from 'next/image';
+import { MessageSquare, UserCircle } from 'lucide-react';
+import MediaGallery from '@/components/media-gallery';
 
 export default function Home() {
   const titleInfo = mockTitle;
@@ -35,7 +38,7 @@ export default function Home() {
             <DetailsCard details={animeDetails} />
             <OfficialLinksCard links={officialLinks} />
 
-            <Accordion type="multiple" className="w-full space-y-8" defaultValue={['characters', 'episodes', 'stats', 'reviews', 'media', 'related']}>
+            <Accordion type="multiple" className="w-full space-y-8" defaultValue={['characters', 'episodes', 'stats', 'reviews', 'media', 'related', 'forum']}>
               <AccordionItem value="characters" className="border-0">
                 <Card>
                   <AccordionTrigger className="p-6 hover:no-underline">
@@ -86,8 +89,27 @@ export default function Home() {
                     <CardTitle>Foro</CardTitle>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <CardContent>
-                      <p className="text-center text-muted-foreground">Contenido de Foro próximamente.</p>
+                    <CardContent className="space-y-4">
+                      <div className="border p-4 rounded-lg">
+                        <div className="flex items-center gap-3 mb-2">
+                          <UserCircle size={24} className="text-muted-foreground" />
+                          <h4 className="font-semibold">¿Qué tan fiel es la adaptación?</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">Iniciado por @MangaReader</p>
+                        <div className="flex items-center text-xs text-muted-foreground gap-2">
+                          <MessageSquare size={14} /> 45 respuestas
+                        </div>
+                      </div>
+                      <div className="border p-4 rounded-lg">
+                        <div className="flex items-center gap-3 mb-2">
+                           <UserCircle size={24} className="text-muted-foreground" />
+                          <h4 className="font-semibold">Mejor momento del último capítulo</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">Iniciado por @AnimeWatcher</p>
+                         <div className="flex items-center text-xs text-muted-foreground gap-2">
+                          <MessageSquare size={14} /> 102 respuestas
+                        </div>
+                      </div>
                     </CardContent>
                   </AccordionContent>
                 </Card>
@@ -106,20 +128,36 @@ export default function Home() {
                     <AccordionTrigger className="p-0 w-auto hover:no-underline" />
                   </CardHeader>
                   <AccordionContent>
-                    <Tabs defaultValue="trailers" className="w-full">
+                     <Tabs defaultValue="trailers" className="w-full">
                       <TabsContent value="trailers">
-                        <CardContent>
-                          <p className="text-center text-muted-foreground">Contenido de Trailers próximamente.</p>
+                        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="relative aspect-video">
+                                <Image src="https://picsum.photos/seed/trailer1/320/180" alt="Trailer 1" fill className="rounded-lg object-cover" data-ai-hint="anime trailer" />
+                            </div>
+                             <div className="relative aspect-video">
+                                <Image src="https://picsum.photos/seed/trailer2/320/180" alt="Trailer 2" fill className="rounded-lg object-cover" data-ai-hint="anime trailer" />
+                            </div>
                         </CardContent>
                       </TabsContent>
                       <TabsContent value="videos">
-                        <CardContent>
-                          <p className="text-center text-muted-foreground">Contenido de Videos próximamente.</p>
+                         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="relative aspect-video">
+                                <Image src="https://picsum.photos/seed/video1/320/180" alt="Video 1" fill className="rounded-lg object-cover" data-ai-hint="promotional video" />
+                                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center rounded-lg">
+                                    <p className="text-white font-semibold">Opening 1</p>
+                                </div>
+                            </div>
+                             <div className="relative aspect-video">
+                                <Image src="https://picsum.photos/seed/video2/320/180" alt="Video 2" fill className="rounded-lg object-cover" data-ai-hint="promotional video" />
+                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center rounded-lg">
+                                    <p className="text-white font-semibold">Ending 1</p>
+                                </div>
+                            </div>
                         </CardContent>
                       </TabsContent>
                       <TabsContent value="images">
                         <CardContent>
-                          <p className="text-center text-muted-foreground">Contenido de Imágenes próximamente.</p>
+                          <MediaGallery images={animeDetails.galleryImages} />
                         </CardContent>
                       </TabsContent>
                     </Tabs>

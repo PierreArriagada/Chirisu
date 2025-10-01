@@ -85,7 +85,12 @@ export const mockAnimeDetails: AnimeDetails = {
         { id: 'rel1', title: 'Solo Leveling (Manhwa)', type: 'Adaptation', imageUrl: 'https://picsum.photos/seed/rel1/200/300', imageHint: 'manhwa cover' },
         { id: 'rel2', title: 'The Beginning After the End', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/rel2/200/300', imageHint: 'manhwa cover' },
         { id: 'rel3', title: 'Tower of God', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/rel3/200/300', imageHint: 'anime cover' },
-    ]
+    ],
+    galleryImages: Array.from({ length: 6 }, (_, i) => ({
+        id: `gallery${i + 1}`,
+        imageUrl: `https://picsum.photos/seed/gallery${i + 1}/600/400`,
+        imageHint: 'anime screenshot'
+    }))
 };
 
 export const mockOfficialLinks: OfficialLinks = {

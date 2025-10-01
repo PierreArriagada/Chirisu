@@ -80,6 +80,12 @@ export type OfficialLinks = {
   fanTranslations: OfficialLink[];
 };
 
+export type GalleryImage = {
+  id: string;
+  imageUrl: string;
+  imageHint: string;
+}
+
 export type AnimeDetails = {
   type: string;
   episodes: number;
@@ -103,4 +109,5 @@ export type AnimeDetails = {
   episodesList: Episode[];
   reviews: Review[];
   related: RelatedTitle[];
+  galleryImages: GalleryImage[];
 };
