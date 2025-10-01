@@ -5,6 +5,7 @@ import { mockAnimeDetails, mockTitle } from '@/lib/data';
 import DetailsCard from '@/components/details-card';
 import CharactersCard from '@/components/characters-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import SocialsCard from '@/components/socials-card';
 
 export default function Home() {
   const titleInfo = mockTitle;
@@ -16,6 +17,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
           <div className="lg:col-span-2 flex flex-col gap-8">
             <CoreInfoCard titleInfo={titleInfo} />
+            <SocialsCard />
             <SynopsisCard description={titleInfo.description} />
             <DetailsCard details={animeDetails} />
             <CharactersCard characters={animeDetails.characters} />
