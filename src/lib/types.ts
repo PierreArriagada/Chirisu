@@ -14,3 +14,75 @@ export type TitleInfo = {
 };
 
 export type RecommendationInfo = RecommendSimilarTitlesOutput[0];
+
+export type AlternativeTitle = {
+  lang: string;
+  flag: string;
+  title: string;
+};
+
+export type VoiceActor = {
+  id: string;
+  name: string;
+  imageUrl: string;
+  imageHint: string;
+};
+
+export type Character = {
+  id: string;
+  name: string;
+  imageUrl: string;
+  imageHint: string;
+  role: string;
+  voiceActors: {
+    japanese: VoiceActor;
+    spanish: VoiceActor;
+  };
+};
+
+export type Episode = {
+  id: string;
+  name: string;
+  imageUrl: string;
+  imageHint: string;
+  duration: string;
+  comments: number;
+};
+
+export type Review = {
+    id: string;
+    user: string;
+    rating: number;
+    review: string;
+};
+
+export type RelatedTitle = {
+    id: string;
+    title: string;
+    type: string;
+};
+
+export type AnimeDetails = {
+  type: string;
+  episodes: number;
+  releaseDate: string;
+  promotion: string;
+  producer: string;
+  licensors: string[];
+  genres: string[];
+  duration: string;
+  rating: string;
+  alternativeTitles: AlternativeTitle[];
+  stats: {
+    score: number;
+    popularity: number;
+    favorites: number;
+    completed: number;
+    watching: number;
+    planToWatch: number;
+  };
+  characters: Character[];
+  episodesList: Episode[];
+  reviews: Review[];
+  related: RelatedTitle[];
+};
