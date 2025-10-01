@@ -14,6 +14,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import StatsCard from '@/components/stats-card';
+import ReviewsCard from '@/components/reviews-card';
+import RelatedCard from '@/components/related-card';
+import EpisodesCard from '@/components/episodes-card';
 
 export default function Home() {
   const titleInfo = mockTitle;
@@ -31,7 +35,7 @@ export default function Home() {
             <DetailsCard details={animeDetails} />
             <OfficialLinksCard links={officialLinks} />
 
-            <Accordion type="multiple" className="w-full space-y-8">
+            <Accordion type="multiple" className="w-full space-y-8" defaultValue={['characters', 'episodes', 'stats', 'reviews', 'media', 'related']}>
               <AccordionItem value="characters" className="border-0">
                 <Card>
                   <AccordionTrigger className="p-6 hover:no-underline">
@@ -43,15 +47,13 @@ export default function Home() {
                 </Card>
               </AccordionItem>
               
-              <AccordionItem value="chapters" className="border-0">
+              <AccordionItem value="episodes" className="border-0">
                 <Card>
                   <AccordionTrigger className="p-6 hover:no-underline">
                     <CardTitle>Capítulos</CardTitle>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <CardContent>
-                      <p className="text-center text-muted-foreground">Contenido de Capítulos próximamente.</p>
-                    </CardContent>
+                    <EpisodesCard episodes={animeDetails.episodesList} />
                   </AccordionContent>
                 </Card>
               </AccordionItem>
@@ -62,9 +64,7 @@ export default function Home() {
                     <CardTitle>Estadísticas</CardTitle>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <CardContent>
-                      <p className="text-center text-muted-foreground">Contenido de Estadísticas próximamente.</p>
-                    </CardContent>
+                    <StatsCard stats={animeDetails.stats} />
                   </AccordionContent>
                 </Card>
               </AccordionItem>
@@ -75,9 +75,7 @@ export default function Home() {
                     <CardTitle>Reseñas</CardTitle>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <CardContent>
-                      <p className="text-center text-muted-foreground">Contenido de Reseñas próximamente.</p>
-                    </CardContent>
+                    <ReviewsCard reviews={animeDetails.reviews} />
                   </AccordionContent>
                 </Card>
               </AccordionItem>
@@ -97,16 +95,18 @@ export default function Home() {
               
               <AccordionItem value="media" className="border-0">
                 <Card>
-                  <Tabs defaultValue="trailers" className="w-full">
-                    <CardHeader className="flex-row items-center justify-between">
+                  <CardHeader className="flex-row items-center justify-between">
+                    <Tabs defaultValue="trailers" className="w-full">
                       <TabsList className="p-0 h-auto bg-transparent border-b-0">
                         <TabsTrigger value="trailers">Trailers</TabsTrigger>
                         <TabsTrigger value="videos">Videos</TabsTrigger>
                         <TabsTrigger value="images">Imágenes</TabsTrigger>
                       </TabsList>
-                      <AccordionTrigger className="p-0 w-auto hover:no-underline" />
-                    </CardHeader>
-                    <AccordionContent>
+                    </Tabs>
+                    <AccordionTrigger className="p-0 w-auto hover:no-underline" />
+                  </CardHeader>
+                  <AccordionContent>
+                    <Tabs defaultValue="trailers" className="w-full">
                       <TabsContent value="trailers">
                         <CardContent>
                           <p className="text-center text-muted-foreground">Contenido de Trailers próximamente.</p>
@@ -122,21 +122,14 @@ export default function Home() {
                           <p className="text-center text-muted-foreground">Contenido de Imágenes próximamente.</p>
                         </CardContent>
                       </TabsContent>
-                    </AccordionContent>
-                  </Tabs>
+                    </Tabs>
+                  </AccordionContent>
                 </Card>
               </AccordionItem>
             </Accordion>
 
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Relacionados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                 <p className="text-center text-muted-foreground">Contenido de Relacionados próximamente.</p>
-              </CardContent>
-            </Card>
+            <RelatedCard relatedTitles={animeDetails.related} />
 
             <Card>
               <CardHeader>

@@ -51,7 +51,12 @@ export type Episode = {
 
 export type Review = {
     id: string;
-    user: string;
+    title: string;
+    user: {
+      name: string;
+      imageUrl: string;
+      imageHint: string;
+    };
     rating: number;
     review: string;
 };
@@ -60,6 +65,8 @@ export type RelatedTitle = {
     id: string;
     title: string;
     type: string;
+    imageUrl: string;
+    imageHint: string;
 };
 
 export type OfficialLink = {

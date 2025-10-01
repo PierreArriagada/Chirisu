@@ -3,7 +3,7 @@ import type { AnimeDetails, TitleInfo, OfficialLinks } from "./types";
 export const mockTitle: TitleInfo = {
     id: '1',
     title: 'Honzuki no Gekokujou: Shisho ni Naru Tame ni wa Shudan o Erande Iraremasen',
-    type: 'manga',
+    type: 'anime',
     description: 'In a world where hunters, humans with supernatural abilities, must battle deadly monsters to protect mankind, a notoriously weak hunter named Sung Jinwoo finds himself in a seemingly endless struggle for survival. One day, after a brutal encounter in a hidden dungeon, he is chosen by a mysterious program called the System, which grants him the unique ability to grow in strength without limit. Follow Jinwoo’s journey as he rises from the weakest hunter to the strongest in existence.',
     imageUrl: 'https://picsum.photos/seed/sololeveling/400/600',
     imageHint: 'anime cover art',
@@ -59,17 +59,32 @@ export const mockAnimeDetails: AnimeDetails = {
             }
         }
     ],
-    episodesList: [
-        { id: 'ep1', name: 'Episode 1', imageUrl: 'https://picsum.photos/seed/ep1/320/180', imageHint: 'anime episode 1', duration: '23 min', comments: 1500 },
-        { id: 'ep2', name: 'Episode 2', imageUrl: 'https://picsum.photos/seed/ep2/320/180', imageHint: 'anime episode 2', duration: '23 min', comments: 1200 },
-    ],
+    episodesList: Array.from({ length: 12 }, (_, i) => ({
+        id: `ep${i + 1}`,
+        name: `Episode ${i + 1}`,
+        imageUrl: `https://picsum.photos/seed/ep${i + 1}/320/180`,
+        imageHint: `anime episode ${i + 1}`,
+        duration: '23 min',
+        comments: Math.floor(Math.random() * 2000),
+    })),
     reviews: [
-        { id: 'rev1', user: 'AnimeFan123', rating: 9, review: 'Amazing adaptation! The animation is top-notch and stays true to the source material.' },
-        { id: 'rev2', user: 'WebtoonReader', rating: 8, review: 'A solid start. Pacing is a bit fast, but the action scenes are incredible.' },
+        { 
+            id: 'rev1',
+            title: 'Amazing adaptation!',
+            user: { name: 'AnimeFan123', imageUrl: 'https://picsum.photos/seed/user1/100/100', imageHint: 'user avatar' },
+            rating: 9, review: 'The animation is top-notch and stays true to the source material. A must-watch for any fan of the manhwa. The action scenes are breathtaking and the character development of Sung Jinwoo is perfectly portrayed.'
+        },
+        { 
+            id: 'rev2',
+            title: 'A solid start, but...',
+            user: { name: 'WebtoonReader', imageUrl: 'https://picsum.photos/seed/user2/100/100', imageHint: 'user avatar' },
+            rating: 8, review: 'Pacing is a bit fast compared to the webtoon, but the action scenes are incredible. Some details are missed, but overall a great adaptation that captures the essence of Solo Leveling.'
+        },
     ],
     related: [
-        { id: 'rel1', title: 'Solo Leveling (Manhwa)', type: 'Adaptation' },
-        { id: 'rel2', title: 'The Beginning After the End', type: 'Recommendation' },
+        { id: 'rel1', title: 'Solo Leveling (Manhwa)', type: 'Adaptation', imageUrl: 'https://picsum.photos/seed/rel1/200/300', imageHint: 'manhwa cover' },
+        { id: 'rel2', title: 'The Beginning After the End', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/rel2/200/300', imageHint: 'manhwa cover' },
+        { id: 'rel3', title: 'Tower of God', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/rel3/200/300', imageHint: 'anime cover' },
     ]
 };
 
