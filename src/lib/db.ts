@@ -1,8 +1,8 @@
-import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review, RelatedTitle, GalleryImage, VoiceActor, MediaType } from "./types";
+import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review, RelatedTitle, GalleryImage, VoiceActor, MediaType, CharacterRole } from "./types";
 
 // --- "DATABASE" TABLES ---
 
-const titles: TitleInfo[] = [
+const titles: Omit<TitleInfo, 'slug'>[] = [
     {
         id: '1',
         title: 'Honzuki no Gekokujou: Shisho ni Naru Tame ni wa Shudan o Erande Iraremasen',
@@ -138,14 +138,14 @@ const mediaDetails: (Omit<AnimeDetails, 'characters' | 'episodesList' | 'reviews
     // Add more details for other media types as needed
 ];
 
-const voiceActors: (VoiceActor & { id: string })[] = [
+const voiceActorsRaw: (Omit<VoiceActor, 'slug'> & { id: string })[] = [
     { id: 'va1', name: 'Taito Ban', imageUrl: 'https://picsum.photos/seed/taitoban/200/300', imageHint: 'Taito Ban voice actor' },
     { id: 'va2', name: 'Masumi Tazawa', imageUrl: 'https://picsum.photos/seed/masumitazawa/200/300', imageHint: 'Masumi Tazawa voice actor' },
     { id: 'va3', name: 'Reina Ueda', imageUrl: 'https://picsum.photos/seed/reinaueda/200/300', imageHint: 'Reina Ueda voice actor' },
     { id: 'va4', name: 'Gema Carballedo', imageUrl: 'https://picsum.photos/seed/gemacarballedo/200/300', imageHint: 'Gema Carballedo voice actor' },
 ];
 
-const characters: (Omit<Character, 'voiceActors'> & { mediaId: string; japaneseVoiceActorId: string; spanishVoiceActorId: string; })[] = [
+const charactersRaw: (Omit<Character, 'voiceActors' | 'slug'> & { mediaId: string; japaneseVoiceActorId: string; spanishVoiceActorId: string; })[] = [
     { id: 'char1', mediaId: '1', name: 'Sung Jinwoo', imageUrl: 'https://picsum.photos/seed/jinwoo/200/300', imageHint: 'Sung Jinwoo character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', },
     { id: 'char2', mediaId: '1', name: 'Cha Hae-In', imageUrl: 'https://picsum.photos/seed/chahein/200/300', imageHint: 'Cha Hae-In character', role: 'Main', japaneseVoiceActorId: 'va3', spanishVoiceActorId: 'va4', },
     { id: 'char3', mediaId: '2', name: 'Guts', imageUrl: 'https://picsum.photos/seed/guts/200/300', imageHint: 'Guts character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }, // Reusing VAs for demo
@@ -163,7 +163,7 @@ const reviews: (Review & { mediaId: string })[] = [
     { id: 'rev3', mediaId: '2', title: 'A masterpiece of dark fantasy.', user: { name: 'MangaMaster', imageUrl: 'https://picsum.photos/seed/user3/100/100', imageHint: 'user avatar' }, rating: 10, review: 'Kentaro Miura\'s artwork is breathtaking. The story is a profound exploration of human nature, struggle, and hope. It\'s not for the faint of heart, but it is an unforgettable experience.' },
 ];
 
-const relatedTitles: (RelatedTitle & { mediaId: string })[] = [
+const relatedTitlesRaw: (Omit<RelatedTitle, 'slug'> & { mediaId: string })[] = [
     { id: 'rel1', mediaId: '1', title: 'Solo Leveling (Manhwa)', type: 'Adaptation', imageUrl: 'https://picsum.photos/seed/rel1/200/300', imageHint: 'manhwa cover' },
     { id: 'rel2', mediaId: '1', title: 'The Beginning After the End', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/rel2/200/300', imageHint: 'manhwa cover' },
     { id: 'rel3', mediaId: '2', title: 'Vagabond', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/vagabond/200/300', imageHint: 'manga cover' },
@@ -190,16 +190,34 @@ const officialLinks: (OfficialLinks & { mediaId: string })[] = [
     }
 ];
 
+
+// --- DATA PROCESSING ---
+const createSlug = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+const processedTitles: TitleInfo[] = titles.map(t => ({ ...t, slug: createSlug(t.title) }));
+const processedVoiceActors: VoiceActor[] = voiceActorsRaw.map(va => ({ ...va, slug: createSlug(va.name) }));
+const processedCharacters: Character[] = charactersRaw.map(c => {
+    const japanese = processedVoiceActors.find(va => va.id === c.japaneseVoiceActorId)!;
+    const spanish = processedVoiceActors.find(va => va.id === c.spanishVoiceActorId)!;
+    return {
+        ...c,
+        slug: createSlug(c.name),
+        voiceActors: { japanese, spanish }
+    };
+});
+const processedRelatedTitles: RelatedTitle[] = relatedTitlesRaw.map(rt => ({...rt, slug: createSlug(rt.title)}));
+
+
 // --- "DATABASE QUERY" FUNCTIONS ---
 
 // This function simulates joining the tables to get all data for a specific media page.
-export function getMediaPageData(mediaId: string, mediaType: MediaType) {
-    const title = titles.find(a => a.id === mediaId && a.type.toLowerCase().replace(' ', '-') === mediaType.toLowerCase());
+export function getMediaPageData(mediaIdOrSlug: string, mediaType: MediaType) {
+    const title = processedTitles.find(a => (a.id === mediaIdOrSlug || a.slug === mediaIdOrSlug) && a.type.toLowerCase().replace(' ', '-') === mediaType.toLowerCase());
     if (!title) return null;
 
     // Find details, fallback to a default object if not found for simplicity
-    const details = mediaDetails.find(d => d.mediaId === mediaId) || {
-        mediaId: mediaId,
+    const details = mediaDetails.find(d => d.mediaId === title.id) || {
+        mediaId: title.id,
         type: title.type,
         episodes: 0,
         releaseDate: 'N/A',
@@ -214,26 +232,13 @@ export function getMediaPageData(mediaId: string, mediaType: MediaType) {
     };
     
     // Find links, fallback to empty
-    const links = officialLinks.find(l => l.mediaId === mediaId) || { mediaId: mediaId, officialSites: [], streamingPlatforms: [], fanTranslations: [] };
+    const links = officialLinks.find(l => l.mediaId === title.id) || { mediaId: title.id, officialSites: [], streamingPlatforms: [], fanTranslations: [] };
 
-    const mediaCharacters = characters
-        .filter(c => c.mediaId === mediaId)
-        .map(c => {
-            const japanese = voiceActors.find(va => va.id === c.japaneseVoiceActorId);
-            const spanish = voiceActors.find(va => va.id === c.spanishVoiceActorId);
-            return {
-                ...c,
-                voiceActors: {
-                    japanese: japanese!,
-                    spanish: spanish!,
-                }
-            }
-        });
-
-    const mediaEpisodes = episodes.filter(e => e.mediaId === mediaId);
-    const mediaReviews = reviews.filter(r => r.mediaId === mediaId);
-    const mediaRelated = relatedTitles.filter(rt => rt.mediaId === mediaId);
-    const mediaGallery = galleryImages.filter(gi => gi.mediaId === mediaId);
+    const mediaCharacters = processedCharacters.filter(c => c.mediaId === title.id);
+    const mediaEpisodes = episodes.filter(e => e.mediaId === title.id);
+    const mediaReviews = reviews.filter(r => r.mediaId === title.id);
+    const mediaRelated = processedRelatedTitles.filter(rt => rt.mediaId === title.id);
+    const mediaGallery = galleryImages.filter(gi => gi.mediaId === title.id);
 
     return {
         titleInfo: title,
@@ -251,7 +256,50 @@ export function getMediaPageData(mediaId: string, mediaType: MediaType) {
 export function getHomePageData() {
     // Return one of each type for the home page
     const mediaTypes: MediaType[] = ['Anime', 'Manga', 'Manhua', 'Manwha', 'Novela', 'Fan Comic', 'Dougua'];
-    return mediaTypes.map(type => titles.find(t => t.type === type)).filter(Boolean) as TitleInfo[];
+    const homePageMedia = mediaTypes.map(type => processedTitles.find(t => t.type === type)).filter(Boolean) as TitleInfo[];
+    
+    const featuredCharacter = processedCharacters.find(c => c.id === 'char1');
+    const featuredVoiceActor = processedVoiceActors.find(va => va.id === 'va1');
+
+    return {
+        media: homePageMedia,
+        featuredCharacter,
+        featuredVoiceActor,
+    }
+}
+
+export function getCharacterPageData(slug: string) {
+    const character = processedCharacters.find(c => c.slug === slug);
+    if (!character) return null;
+
+    const media = processedTitles.find(t => t.id === character.mediaId);
+    return { character, media };
+}
+
+export function getVoiceActorPageData(slug: string) {
+    const voiceActor = processedVoiceActors.find(va => va.slug === slug);
+    if (!voiceActor) return null;
+
+    const roles: CharacterRole[] = [];
+    const characterRoles = processedCharacters.filter(c => c.voiceActors.japanese.id === voiceActor.id || c.voiceActors.spanish.id === voiceActor.id);
+    
+    for (const char of characterRoles) {
+        const media = processedTitles.find(t => t.id === char.mediaId);
+        if(media) {
+            roles.push({
+                role: char.role,
+                characterName: char.name,
+                characterImageUrl: char.imageUrl,
+                characterImageHint: char.imageHint,
+                characterSlug: char.slug,
+                mediaTitle: media.title,
+                mediaType: media.type,
+                mediaSlug: media.slug
+            });
+        }
+    }
+    
+    return { voiceActor, roles };
 }
 
 // Deprecated function name, kept for compatibility if anything still uses it.

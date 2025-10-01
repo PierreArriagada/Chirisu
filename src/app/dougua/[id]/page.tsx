@@ -1,6 +1,8 @@
 import MediaPage from "@/components/media-page";
 import { getMediaPageData } from "@/lib/db";
 import type { Metadata } from 'next';
+import { notFound } from "next/navigation";
+
 
 type Props = {
   params: { id: string }
@@ -29,7 +31,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const mediaData = getMediaPageData(params.id, 'dougua');
 
   if (!mediaData) {
-    return <div className="text-center p-8">Contenido no encontrado.</div>;
+    notFound();
   }
 
   return <MediaPage mediaData={mediaData} />;

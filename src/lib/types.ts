@@ -4,6 +4,7 @@ export type MediaType = 'Anime' | 'Manga' | 'Novela' | 'Manhua' | 'Manwha' | 'Do
 
 export type TitleInfo = {
   id: string;
+  slug: string;
   title: string;
   type: MediaType;
   description: string;
@@ -25,6 +26,7 @@ export type AlternativeTitle = {
 
 export type VoiceActor = {
   id: string;
+  slug: string;
   name: string;
   imageUrl: string;
   imageHint: string;
@@ -32,6 +34,7 @@ export type VoiceActor = {
 
 export type Character = {
   id: string;
+  slug: string;
   name: string;
   imageUrl: string;
   imageHint: string;
@@ -65,6 +68,7 @@ export type Review = {
 
 export type RelatedTitle = {
     id: string;
+    slug: string;
     title: string;
     type: string;
     imageUrl: string;
@@ -112,4 +116,16 @@ export type AnimeDetails = {
   reviews: Review[];
   related: RelatedTitle[];
   galleryImages: GalleryImage[];
+};
+
+// For voice actor page
+export type CharacterRole = {
+  role: string;
+  characterName: string;
+  characterImageUrl: string;
+  characterImageHint: string;
+  characterSlug: string;
+  mediaTitle: string;
+  mediaType: MediaType;
+  mediaSlug: string;
 };
