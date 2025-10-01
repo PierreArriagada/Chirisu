@@ -61,11 +61,11 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col sm:flex-row gap-4 p-6">
-        <Button size="lg" className="w-full sm:w-auto flex-1">
+      <CardFooter className="flex gap-4 p-6">
+        <Button size="lg" className="flex-1">
           <Heart className="mr-2 h-4 w-4" /> Favoritos
         </Button>
-        <Button size="lg" variant="secondary" className="w-full sm:w-auto flex-1">
+        <Button size="lg" variant="secondary" className="flex-1">
           <ListPlus className="mr-2 h-4 w-4" /> Añadir a lista
         </Button>
       </CardFooter>
