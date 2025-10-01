@@ -1,12 +1,12 @@
-import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review, RelatedTitle, GalleryImage, VoiceActor } from "./types";
+import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review, RelatedTitle, GalleryImage, VoiceActor, MediaType } from "./types";
 
 // --- "DATABASE" TABLES ---
 
-const animes: TitleInfo[] = [
+const titles: TitleInfo[] = [
     {
         id: '1',
         title: 'Honzuki no Gekokujou: Shisho ni Naru Tame ni wa Shudan o Erande Iraremasen',
-        type: 'anime',
+        type: 'Anime',
         description: 'In a world where hunters, humans with supernatural abilities, must battle deadly monsters to protect mankind, a notoriously weak hunter named Sung Jinwoo finds himself in a seemingly endless struggle for survival. One day, after a brutal encounter in a hidden dungeon, he is chosen by a mysterious program called the System, which grants him the unique ability to grow in strength without limit. Follow Jinwoo’s journey as he rises from the weakest hunter to the strongest in existence.',
         imageUrl: 'https://picsum.photos/seed/sololeveling/400/600',
         imageHint: 'anime cover art',
@@ -14,12 +14,84 @@ const animes: TitleInfo[] = [
         ranking: 1,
         commentsCount: 12500,
         listsCount: 35000,
-    }
+    },
+    {
+        id: '2',
+        title: 'Berserk',
+        type: 'Manga',
+        description: 'Guts, a former mercenary now known as the "Black Swordsman," is out for revenge. After a tumultuous childhood, he finally finds someone he respects and believes he can trust, only to have everything taken away from him when this person takes advantage of a monstrous sacrifice.',
+        imageUrl: 'https://picsum.photos/seed/berserk/400/600',
+        imageHint: 'manga cover art',
+        rating: 9.8,
+        ranking: 1,
+        commentsCount: 25000,
+        listsCount: 50000,
+    },
+    {
+        id: '3',
+        title: 'Che Daojuan',
+        type: 'Manhua',
+        description: 'A story about a young man who is a talented military strategist and his journey to unite a divided land. He faces many challenges and makes many sacrifices along the way.',
+        imageUrl: 'https://picsum.photos/seed/chedajuan/400/600',
+        imageHint: 'manhua cover art',
+        rating: 8.9,
+        ranking: 15,
+        commentsCount: 8000,
+        listsCount: 12000,
+    },
+    {
+        id: '4',
+        title: 'The Boxer',
+        type: 'Manwha',
+        description: 'A story about a gifted young boxer who is scouted by a legendary trainer. He has a unique style of fighting that makes him a formidable opponent, but he has his own demons to fight outside of the ring.',
+        imageUrl: 'https://picsum.photos/seed/theboxer/400/600',
+        imageHint: 'manwha cover art',
+        rating: 9.5,
+        ranking: 5,
+        commentsCount: 18000,
+        listsCount: 28000,
+    },
+    {
+        id: '5',
+        title: 'The Lord of the Mysteries',
+        type: 'Novela',
+        description: 'With the rising tide of steam and machinery, who can be the true Lord of the Mysteries? A transmigrator from the modern world finds himself in a Victorian-era world of steam, machinery, and supernatural powers.',
+        imageUrl: 'https://picsum.photos/seed/lotm/400/600',
+        imageHint: 'novel cover art',
+        rating: 9.7,
+        ranking: 2,
+        commentsCount: 22000,
+        listsCount: 40000,
+    },
+    {
+        id: '6',
+        title: 'My Hero Academia: Vigilantes',
+        type: 'Fan Comic',
+        description: 'A fan-made comic that explores the world of My Hero Academia from the perspective of vigilantes who operate outside the law to protect the innocent.',
+        imageUrl: 'https://picsum.photos/seed/mhavigilantes/400/600',
+        imageHint: 'fan comic cover art',
+        rating: 8.5,
+        ranking: 100,
+        commentsCount: 5000,
+        listsCount: 9000,
+    },
+     {
+        id: '7',
+        title: 'Mo Dao Zu Shi',
+        type: 'Dougua',
+        description: 'As the grandmaster who founded the Demonic Sect, Wei Wuxian roamed the world in his wanton ways, hated by millions for the chaos he created. In the end, he was backstabbed by his dearest shidi and killed by powerful clans that combined to overpower him. He incarnates into the body of a lunatic who was abandoned by his clan and is later, unwillingly, taken away by a famous cultivator among the clans—Lan Wangji, his archenemy.',
+        imageUrl: 'https://picsum.photos/seed/modaozushi/400/600',
+        imageHint: 'dougua cover art',
+        rating: 9.4,
+        ranking: 8,
+        commentsCount: 15000,
+        listsCount: 25000,
+    },
 ];
 
-const animeDetails: (Omit<AnimeDetails, 'characters' | 'episodesList' | 'reviews' | 'related' | 'galleryImages'> & { animeId: string })[] = [
+const mediaDetails: (Omit<AnimeDetails, 'characters' | 'episodesList' | 'reviews' | 'related' | 'galleryImages'> & { mediaId: string })[] = [
     {
-        animeId: '1',
+        mediaId: '1',
         type: 'TV',
         episodes: 12,
         releaseDate: '2024-01-07',
@@ -33,15 +105,37 @@ const animeDetails: (Omit<AnimeDetails, 'characters' | 'episodesList' | 'reviews
             { lang: 'Japanese', flag: '🇯🇵', title: '俺だけレベルアップな件' },
             { lang: 'English', flag: '🇺🇸', title: 'Solo Leveling' },
         ],
-        stats: {
-            score: 9.2,
-            popularity: 1,
-            favorites: 150000,
-            completed: 250000,
-            watching: 500000,
-            planToWatch: 120000,
-        },
+        stats: { score: 9.2, popularity: 1, favorites: 150000, completed: 250000, watching: 500000, planToWatch: 120000 },
+    },
+    {
+        mediaId: '2',
+        type: 'Manga',
+        episodes: 0, // No episodes for manga
+        releaseDate: '1989-08-25',
+        promotion: 'Hakusensha',
+        producer: 'Studio Gaga',
+        licensors: ['Dark Horse Comics'],
+        genres: ['Action', 'Dark Fantasy', 'Horror'],
+        duration: 'N/A',
+        rating: 'R - 17+',
+        alternativeTitles: [ { lang: 'Japanese', flag: '🇯🇵', title: 'ベルセルク' } ],
+        stats: { score: 9.8, popularity: 2, favorites: 300000, completed: 150000, watching: 80000, planToWatch: 50000 },
+    },
+     {
+        mediaId: '7',
+        type: 'ONA',
+        episodes: 15,
+        releaseDate: '2018-07-09',
+        promotion: 'Tencent Penguin Pictures',
+        producer: 'G.CMay Animation & Film',
+        licensors: ['WeTV'],
+        genres: ['Action', 'Adventure', 'Mystery', 'Supernatural'],
+        duration: '24 min per ep',
+        rating: 'PG-13',
+        alternativeTitles: [ { lang: 'Chinese', flag: '🇨🇳', title: '魔道祖师' } ],
+        stats: { score: 9.4, popularity: 8, favorites: 200000, completed: 180000, watching: 90000, planToWatch: 60000 },
     }
+    // Add more details for other media types as needed
 ];
 
 const voiceActors: (VoiceActor & { id: string })[] = [
@@ -51,102 +145,79 @@ const voiceActors: (VoiceActor & { id: string })[] = [
     { id: 'va4', name: 'Gema Carballedo', imageUrl: 'https://picsum.photos/seed/gemacarballedo/200/300', imageHint: 'Gema Carballedo voice actor' },
 ];
 
-const characters: (Omit<Character, 'voiceActors'> & { animeId: string; japaneseVoiceActorId: string; spanishVoiceActorId: string; })[] = [
-    {
-        id: 'char1',
-        animeId: '1',
-        name: 'Sung Jinwoo',
-        imageUrl: 'https://picsum.photos/seed/jinwoo/200/300',
-        imageHint: 'Sung Jinwoo character',
-        role: 'Main',
-        japaneseVoiceActorId: 'va1',
-        spanishVoiceActorId: 'va2',
-    },
-    {
-        id: 'char2',
-        animeId: '1',
-        name: 'Cha Hae-In',
-        imageUrl: 'https://picsum.photos/seed/chahein/200/300',
-        imageHint: 'Cha Hae-In character',
-        role: 'Main',
-        japaneseVoiceActorId: 'va3',
-        spanishVoiceActorId: 'va4',
-    }
+const characters: (Omit<Character, 'voiceActors'> & { mediaId: string; japaneseVoiceActorId: string; spanishVoiceActorId: string; })[] = [
+    { id: 'char1', mediaId: '1', name: 'Sung Jinwoo', imageUrl: 'https://picsum.photos/seed/jinwoo/200/300', imageHint: 'Sung Jinwoo character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', },
+    { id: 'char2', mediaId: '1', name: 'Cha Hae-In', imageUrl: 'https://picsum.photos/seed/chahein/200/300', imageHint: 'Cha Hae-In character', role: 'Main', japaneseVoiceActorId: 'va3', spanishVoiceActorId: 'va4', },
+    { id: 'char3', mediaId: '2', name: 'Guts', imageUrl: 'https://picsum.photos/seed/guts/200/300', imageHint: 'Guts character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }, // Reusing VAs for demo
+    { id: 'char4', mediaId: '7', name: 'Wei Wuxian', imageUrl: 'https://picsum.photos/seed/weiwuxian/200/300', imageHint: 'Wei Wuxian character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }
 ];
 
-const episodes: (Episode & { animeId: string })[] = Array.from({ length: 12 }, (_, i) => ({
-    id: `ep${i + 1}`,
-    animeId: '1',
-    name: `Episode ${i + 1}`,
-    imageUrl: `https://picsum.photos/seed/ep${i + 1}/320/180`,
-    imageHint: `anime episode ${i + 1}`,
-    duration: '23 min',
-    comments: Math.floor(Math.random() * 2000),
-}));
-
-const reviews: (Review & { animeId: string })[] = [
-    {
-        id: 'rev1',
-        animeId: '1',
-        title: 'Amazing adaptation!',
-        user: { name: 'AnimeFan123', imageUrl: 'https://picsum.photos/seed/user1/100/100', imageHint: 'user avatar' },
-        rating: 9, review: 'The animation is top-notch and stays true to the source material. A must-watch for any fan of the manhwa. The action scenes are breathtaking and the character development of Sung Jinwoo is perfectly portrayed.'
-    },
-    {
-        id: 'rev2',
-        animeId: '1',
-        title: 'A solid start, but...',
-        user: { name: 'WebtoonReader', imageUrl: 'https://picsum.photos/seed/user2/100/100', imageHint: 'user avatar' },
-        rating: 8, review: 'Pacing is a bit fast compared to the webtoon, but the action scenes are incredible. Some details are missed, but overall a great adaptation that captures the essence of Solo Leveling.'
-    },
+const episodes: (Episode & { mediaId: string })[] = [
+    ...Array.from({ length: 12 }, (_, i) => ({ id: `ep${i + 1}`, mediaId: '1', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/ep${i + 1}/320/180`, imageHint: `anime episode ${i + 1}`, duration: '23 min', comments: Math.floor(Math.random() * 2000), })),
+    ...Array.from({ length: 15 }, (_, i) => ({ id: `dep${i + 1}`, mediaId: '7', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/dep${i + 1}/320/180`, imageHint: `dougua episode ${i + 1}`, duration: '24 min', comments: Math.floor(Math.random() * 1500), })),
 ];
 
-const relatedTitles: (RelatedTitle & { animeId: string })[] = [
-    { id: 'rel1', animeId: '1', title: 'Solo Leveling (Manhwa)', type: 'Adaptation', imageUrl: 'https://picsum.photos/seed/rel1/200/300', imageHint: 'manhwa cover' },
-    { id: 'rel2', animeId: '1', title: 'The Beginning After the End', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/rel2/200/300', imageHint: 'manhwa cover' },
-    { id: 'rel3', animeId: '1', title: 'Tower of God', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/rel3/200/300', imageHint: 'anime cover' },
+const reviews: (Review & { mediaId: string })[] = [
+    { id: 'rev1', mediaId: '1', title: 'Amazing adaptation!', user: { name: 'AnimeFan123', imageUrl: 'https://picsum.photos/seed/user1/100/100', imageHint: 'user avatar' }, rating: 9, review: 'The animation is top-notch and stays true to the source material. A must-watch for any fan of the manhwa. The action scenes are breathtaking and the character development of Sung Jinwoo is perfectly portrayed.' },
+    { id: 'rev2', mediaId: '1', title: 'A solid start, but...', user: { name: 'WebtoonReader', imageUrl: 'https://picsum.photos/seed/user2/100/100', imageHint: 'user avatar' }, rating: 8, review: 'Pacing is a bit fast compared to the webtoon, but the action scenes are incredible. Some details are missed, but overall a great adaptation that captures the essence of Solo Leveling.' },
+    { id: 'rev3', mediaId: '2', title: 'A masterpiece of dark fantasy.', user: { name: 'MangaMaster', imageUrl: 'https://picsum.photos/seed/user3/100/100', imageHint: 'user avatar' }, rating: 10, review: 'Kentaro Miura\'s artwork is breathtaking. The story is a profound exploration of human nature, struggle, and hope. It\'s not for the faint of heart, but it is an unforgettable experience.' },
 ];
 
-const galleryImages: (GalleryImage & { animeId: string })[] = Array.from({ length: 6 }, (_, i) => ({
-    id: `gallery${i + 1}`,
-    animeId: '1',
-    imageUrl: `https://picsum.photos/seed/gallery${i + 1}/600/400`,
-    imageHint: 'anime screenshot'
-}));
+const relatedTitles: (RelatedTitle & { mediaId: string })[] = [
+    { id: 'rel1', mediaId: '1', title: 'Solo Leveling (Manhwa)', type: 'Adaptation', imageUrl: 'https://picsum.photos/seed/rel1/200/300', imageHint: 'manhwa cover' },
+    { id: 'rel2', mediaId: '1', title: 'The Beginning After the End', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/rel2/200/300', imageHint: 'manhwa cover' },
+    { id: 'rel3', mediaId: '2', title: 'Vagabond', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/vagabond/200/300', imageHint: 'manga cover' },
+];
 
-const officialLinks: (OfficialLinks & { animeId: string })[] = [
+const galleryImages: (GalleryImage & { mediaId: string })[] = [
+    ...Array.from({ length: 6 }, (_, i) => ({ id: `gallery${i + 1}`, mediaId: '1', imageUrl: `https://picsum.photos/seed/gallery${i + 1}/600/400`, imageHint: 'anime screenshot' })),
+    ...Array.from({ length: 6 }, (_, i) => ({ id: `gallery_b${i + 1}`, mediaId: '2', imageUrl: `https://picsum.photos/seed/gallery_b${i + 1}/600/400`, imageHint: 'manga panel' }))
+];
+
+
+const officialLinks: (OfficialLinks & { mediaId: string })[] = [
     {
-        animeId: '1',
-        officialSites: [
-            { name: 'Official Website', url: '#' },
-            { name: 'Official X', url: '#' },
-        ],
-        streamingPlatforms: [
-            { name: 'Crunchyroll', url: '#' },
-            { name: 'Netflix', url: '#' },
-        ],
-        fanTranslations: [
-            { name: 'Fan Sub Group A (Social)', url: '#' },
-            { name: 'Fan Sub Group B (Social)', url: '#' },
-        ]
+        mediaId: '1',
+        officialSites: [{ name: 'Official Website', url: '#' }, { name: 'Official X', url: '#' }],
+        streamingPlatforms: [{ name: 'Crunchyroll', url: '#' }, { name: 'Netflix', url: '#' }],
+        fanTranslations: [{ name: 'Fan Sub Group A (Social)', url: '#' }],
+    },
+    {
+        mediaId: '2',
+        officialSites: [{ name: 'Dark Horse Comics', url: '#' }],
+        streamingPlatforms: [],
+        fanTranslations: [{ name: 'Fan Translation Site', url: '#' }],
     }
 ];
 
 // --- "DATABASE QUERY" FUNCTIONS ---
 
-// This function simulates joining the tables to get all data for a specific anime page.
-export function getAnimePageData(animeId: string) {
-    const anime = animes.find(a => a.id === animeId);
-    if (!anime) return null;
+// This function simulates joining the tables to get all data for a specific media page.
+export function getMediaPageData(mediaId: string, mediaType: MediaType) {
+    const title = titles.find(a => a.id === mediaId && a.type.toLowerCase().replace(' ', '-') === mediaType.toLowerCase());
+    if (!title) return null;
 
-    const details = animeDetails.find(d => d.animeId === animeId);
-    if (!details) return null;
+    // Find details, fallback to a default object if not found for simplicity
+    const details = mediaDetails.find(d => d.mediaId === mediaId) || {
+        mediaId: mediaId,
+        type: title.type,
+        episodes: 0,
+        releaseDate: 'N/A',
+        promotion: 'N/A',
+        producer: 'N/A',
+        licensors: [],
+        genres: ['N/A'],
+        duration: 'N/A',
+        rating: 'N/A',
+        alternativeTitles: [],
+        stats: { score: title.rating, popularity: title.ranking, favorites: 0, completed: 0, watching: 0, planToWatch: 0 },
+    };
+    
+    // Find links, fallback to empty
+    const links = officialLinks.find(l => l.mediaId === mediaId) || { mediaId: mediaId, officialSites: [], streamingPlatforms: [], fanTranslations: [] };
 
-    const links = officialLinks.find(l => l.animeId === animeId);
-    if (!links) return null;
-
-    const animeCharacters = characters
-        .filter(c => c.animeId === animeId)
+    const mediaCharacters = characters
+        .filter(c => c.mediaId === mediaId)
         .map(c => {
             const japanese = voiceActors.find(va => va.id === c.japaneseVoiceActorId);
             const spanish = voiceActors.find(va => va.id === c.spanishVoiceActorId);
@@ -159,19 +230,29 @@ export function getAnimePageData(animeId: string) {
             }
         });
 
-    const animeEpisodes = episodes.filter(e => e.animeId === animeId);
-    const animeReviews = reviews.filter(r => r.animeId === animeId);
-    const animeRelated = relatedTitles.filter(rt => rt.animeId === animeId);
-    const animeGallery = galleryImages.filter(gi => gi.animeId === animeId);
+    const mediaEpisodes = episodes.filter(e => e.mediaId === mediaId);
+    const mediaReviews = reviews.filter(r => r.mediaId === mediaId);
+    const mediaRelated = relatedTitles.filter(rt => rt.mediaId === mediaId);
+    const mediaGallery = galleryImages.filter(gi => gi.mediaId === mediaId);
 
     return {
-        titleInfo: anime,
+        titleInfo: title,
         details: { ...details, characters: [], episodesList: [], reviews: [], related: [], galleryImages: [] },
         officialLinks: links,
-        characters: animeCharacters,
-        episodes: animeEpisodes,
-        reviews: animeReviews,
-        related: animeRelated,
-        galleryImages: animeGallery,
+        characters: mediaCharacters,
+        episodes: mediaEpisodes,
+        reviews: mediaReviews,
+        related: mediaRelated,
+        galleryImages: mediaGallery,
     };
 }
+
+
+export function getHomePageData() {
+    // Return one of each type for the home page
+    const mediaTypes: MediaType[] = ['Anime', 'Manga', 'Manhua', 'Manwha', 'Novela', 'Fan Comic', 'Dougua'];
+    return mediaTypes.map(type => titles.find(t => t.type === type)).filter(Boolean) as TitleInfo[];
+}
+
+// Deprecated function name, kept for compatibility if anything still uses it.
+export const getAnimePageData = (animeId: string) => getMediaPageData(animeId, 'anime');

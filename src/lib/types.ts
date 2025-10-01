@@ -1,9 +1,11 @@
 import { type RecommendSimilarTitlesOutput } from "@/ai/flows/recommend-similar-titles";
 
+export type MediaType = 'Anime' | 'Manga' | 'Novela' | 'Manhua' | 'Manwha' | 'Dougua' | 'Fan Comic';
+
 export type TitleInfo = {
   id: string;
   title: string;
-  type: 'anime' | 'manga' | 'novel';
+  type: MediaType;
   description: string;
   imageUrl: string;
   imageHint: string;

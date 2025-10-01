@@ -10,7 +10,7 @@ export default async function Recommendations({ titleInfo }: { titleInfo: TitleI
   try {
     recommendations = await recommendSimilarTitles({
       title: titleInfo.title,
-      type: titleInfo.type,
+      type: titleInfo.type === 'Anime' ? 'anime' : titleInfo.type === 'Manga' ? 'manga' : 'novel',
       description: titleInfo.description,
     });
   } catch (error) {
