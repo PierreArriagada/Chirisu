@@ -28,8 +28,10 @@ export default async function Recommendations({ titleInfo }: { titleInfo: TitleI
 
   if (!recommendations || recommendations.length === 0) {
     return (
-      <Card className="p-4">
-        <p className="text-muted-foreground text-center">No recommendations available.</p>
+      <Card>
+        <CardContent className="p-4">
+          <p className="text-muted-foreground text-center">No recommendations available.</p>
+        </CardContent>
       </Card>
     );
   }
