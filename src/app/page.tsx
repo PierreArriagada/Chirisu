@@ -97,20 +97,17 @@ export default function Home() {
               
               <AccordionItem value="media" className="border-0">
                 <Card>
-                  <AccordionTrigger className="w-full p-0">
-                     <Tabs defaultValue="trailers" className="w-full">
-                        <CardHeader>
-                          <TabsList className="p-0 h-auto bg-transparent border-b-0">
-                            <TabsTrigger value="trailers">Trailers</TabsTrigger>
-                            <TabsTrigger value="videos">Videos</TabsTrigger>
-                            <TabsTrigger value="images">Imágenes</TabsTrigger>
-                          </TabsList>
-                        </CardHeader>
-                      </Tabs>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                     <Tabs defaultValue="trailers" className="w-full">
-                       <TabsContent value="trailers">
+                  <Tabs defaultValue="trailers" className="w-full">
+                    <CardHeader className="flex-row items-center justify-between">
+                      <TabsList className="p-0 h-auto bg-transparent border-b-0">
+                        <TabsTrigger value="trailers">Trailers</TabsTrigger>
+                        <TabsTrigger value="videos">Videos</TabsTrigger>
+                        <TabsTrigger value="images">Imágenes</TabsTrigger>
+                      </TabsList>
+                      <AccordionTrigger className="p-0 w-auto hover:no-underline" />
+                    </CardHeader>
+                    <AccordionContent>
+                      <TabsContent value="trailers">
                         <CardContent>
                           <p className="text-center text-muted-foreground">Contenido de Trailers próximamente.</p>
                         </CardContent>
@@ -125,8 +122,8 @@ export default function Home() {
                           <p className="text-center text-muted-foreground">Contenido de Imágenes próximamente.</p>
                         </CardContent>
                       </TabsContent>
-                    </Tabs>
-                  </AccordionContent>
+                    </AccordionContent>
+                  </Tabs>
                 </Card>
               </AccordionItem>
             </Accordion>
