@@ -49,12 +49,12 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
           </div>
           <div className="flex flex-col justify-start gap-2 ss:w-3/5">
             <Stat icon={<Trophy size={16} />} label="Ranking" value={`#${titleInfo.ranking}`} />
-            <Stat icon={<MessageCircle size={16} />} label="Comments" value={titleInfo.commentsCount.toLocaleString()} />
-            <Stat icon={<Bookmark size={16} />} label="In Lists" value={titleInfo.listsCount.toLocaleString()} />
+            <Stat icon={<MessageCircle size={16} />} label="Comentarios" value={titleInfo.commentsCount.toLocaleString()} />
+            <Stat icon={<Bookmark size={16} />} label="En Listas" value={titleInfo.listsCount.toLocaleString()} />
             <div className="flex items-center gap-2 rounded-lg bg-background p-2 text-left w-full">
                <div className="text-primary flex-shrink-0"><TrendingUp size={16} /></div>
               <div className="flex flex-col items-start">
-                <span className="text-xs font-medium text-muted-foreground">Rating</span>
+                <span className="text-xs font-medium text-muted-foreground">Puntuación</span>
                 <p className="font-bold text-sm">{titleInfo.rating.toFixed(1)}/10</p>
               </div>
             </div>
