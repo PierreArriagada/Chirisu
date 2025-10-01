@@ -8,7 +8,7 @@ export default function Home() {
 
   return (
     <div className="bg-background min-h-screen">
-      <main className="container mx-auto p-2 md:p-4">
+      <main className="p-1 md:p-2">
         <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
           <div className="lg:col-span-2 flex flex-col gap-8">
             <CoreInfoCard titleInfo={titleInfo} />
