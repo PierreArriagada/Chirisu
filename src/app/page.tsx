@@ -8,7 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SocialsCard from '@/components/socials-card';
 import OfficialLinksCard from '@/components/official-links-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function Home() {
   const titleInfo = mockTitle;
@@ -25,70 +30,107 @@ export default function Home() {
             <SynopsisCard description={titleInfo.description} />
             <DetailsCard details={animeDetails} />
             <OfficialLinksCard links={officialLinks} />
-            <CharactersCard characters={animeDetails.characters} />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Capítulos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center text-muted-foreground">Contenido de Capítulos próximamente.</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Estadísticas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                 <p className="text-center text-muted-foreground">Contenido de Estadísticas próximamente.</p>
-              </CardContent>
-            </Card>
+            <Accordion type="multiple" className="w-full space-y-8">
+              <AccordionItem value="characters" className="border-0">
+                <Card>
+                  <AccordionTrigger className="p-6 hover:no-underline">
+                      <CardTitle>Personajes & Actores</CardTitle>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <CharactersCard characters={animeDetails.characters} />
+                  </AccordionContent>
+                </Card>
+              </AccordionItem>
+              
+              <AccordionItem value="chapters" className="border-0">
+                <Card>
+                  <AccordionTrigger className="p-6 hover:no-underline">
+                    <CardTitle>Capítulos</CardTitle>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <CardContent>
+                      <p className="text-center text-muted-foreground">Contenido de Capítulos próximamente.</p>
+                    </CardContent>
+                  </AccordionContent>
+                </Card>
+              </AccordionItem>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Reseñas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                 <p className="text-center text-muted-foreground">Contenido de Reseñas próximamente.</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Foro</CardTitle>
-              </CardHeader>
-              <CardContent>
-                 <p className="text-center text-muted-foreground">Contenido de Foro próximamente.</p>
-              </CardContent>
-            </Card>
+              <AccordionItem value="stats" className="border-0">
+                <Card>
+                  <AccordionTrigger className="p-6 hover:no-underline">
+                    <CardTitle>Estadísticas</CardTitle>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <CardContent>
+                      <p className="text-center text-muted-foreground">Contenido de Estadísticas próximamente.</p>
+                    </CardContent>
+                  </AccordionContent>
+                </Card>
+              </AccordionItem>
 
-            <Card>
-              <Tabs defaultValue="trailers">
-                <CardHeader>
-                  <TabsList className="p-0 h-auto bg-transparent border-b-0">
-                    <TabsTrigger value="trailers">Trailers</TabsTrigger>
-                    <TabsTrigger value="videos">Videos</TabsTrigger>
-                    <TabsTrigger value="images">Imágenes</TabsTrigger>
-                  </TabsList>
-                </CardHeader>
-                <TabsContent value="trailers">
-                  <CardContent>
-                    <p className="text-center text-muted-foreground">Contenido de Trailers próximamente.</p>
-                  </CardContent>
-                </TabsContent>
-                <TabsContent value="videos">
-                  <CardContent>
-                    <p className="text-center text-muted-foreground">Contenido de Videos próximamente.</p>
-                  </CardContent>
-                </TabsContent>
-                <TabsContent value="images">
-                  <CardContent>
-                    <p className="text-center text-muted-foreground">Contenido de Imágenes próximamente.</p>
-                  </CardContent>
-                </TabsContent>
-              </Tabs>
-            </Card>
+              <AccordionItem value="reviews" className="border-0">
+                <Card>
+                   <AccordionTrigger className="p-6 hover:no-underline">
+                    <CardTitle>Reseñas</CardTitle>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <CardContent>
+                      <p className="text-center text-muted-foreground">Contenido de Reseñas próximamente.</p>
+                    </CardContent>
+                  </AccordionContent>
+                </Card>
+              </AccordionItem>
+
+              <AccordionItem value="forum" className="border-0">
+                <Card>
+                  <AccordionTrigger className="p-6 hover:no-underline">
+                    <CardTitle>Foro</CardTitle>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <CardContent>
+                      <p className="text-center text-muted-foreground">Contenido de Foro próximamente.</p>
+                    </CardContent>
+                  </AccordionContent>
+                </Card>
+              </AccordionItem>
+              
+              <AccordionItem value="media" className="border-0">
+                <Card>
+                  <AccordionTrigger className="w-full p-0">
+                     <Tabs defaultValue="trailers" className="w-full">
+                        <CardHeader>
+                          <TabsList className="p-0 h-auto bg-transparent border-b-0">
+                            <TabsTrigger value="trailers">Trailers</TabsTrigger>
+                            <TabsTrigger value="videos">Videos</TabsTrigger>
+                            <TabsTrigger value="images">Imágenes</TabsTrigger>
+                          </TabsList>
+                        </CardHeader>
+                      </Tabs>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                     <Tabs defaultValue="trailers" className="w-full">
+                       <TabsContent value="trailers">
+                        <CardContent>
+                          <p className="text-center text-muted-foreground">Contenido de Trailers próximamente.</p>
+                        </CardContent>
+                      </TabsContent>
+                      <TabsContent value="videos">
+                        <CardContent>
+                          <p className="text-center text-muted-foreground">Contenido de Videos próximamente.</p>
+                        </CardContent>
+                      </TabsContent>
+                      <TabsContent value="images">
+                        <CardContent>
+                          <p className="text-center text-muted-foreground">Contenido de Imágenes próximamente.</p>
+                        </CardContent>
+                      </TabsContent>
+                    </Tabs>
+                  </AccordionContent>
+                </Card>
+              </AccordionItem>
+            </Accordion>
+
 
             <Card>
               <CardHeader>
