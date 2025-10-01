@@ -16,9 +16,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
+  const alternativeTitles = mediaData.details.alternativeTitles.map(alt => alt.title);
+
   return {
     title: `${mediaData.titleInfo.title} | AniHub Info`,
     description: mediaData.titleInfo.description,
+    keywords: [mediaData.titleInfo.title, ...alternativeTitles],
   }
 }
 
