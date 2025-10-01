@@ -85,9 +85,9 @@ export default function Home() {
               
               <AccordionItem value="media" className="border-0">
                 <Card>
-                  <CardHeader className="flex-row items-center justify-between">
+                   <CardHeader className="flex flex-row items-center justify-between">
                     <Tabs defaultValue="trailers" className="w-full">
-                      <TabsList className="p-0 h-auto bg-transparent border-b-0">
+                      <TabsList className="p-0 h-auto bg-transparent border-b-0 justify-start">
                         <TabsTrigger value="trailers">Trailers</TabsTrigger>
                         <TabsTrigger value="videos">Videos</TabsTrigger>
                         <TabsTrigger value="images">Imágenes</TabsTrigger>
@@ -168,7 +168,7 @@ export default function Home() {
 
 
             <RelatedCard relatedTitles={animeDetails.related} />
-
+            
             <div className="lg:hidden">
               <h2 className="text-2xl font-headline mb-4">Recomendaciones</h2>
               <Recommendations titleInfo={titleInfo} />
