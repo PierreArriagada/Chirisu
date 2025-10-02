@@ -28,6 +28,16 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
   
   const url = (item: TitleInfo) => `/${item.type.toLowerCase().replace(' ', '-')}/${item.slug}`;
 
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    }
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    }
+    return num.toString();
+  };
+
   return (
     <section>
       <div className="flex items-center justify-between mb-4 container px-4 sm:px-6 lg:px-8">
@@ -74,11 +84,11 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
                           <div className="flex justify-between text-white text-xs">
                               <div className="flex items-center gap-1">
                                   <MessageCircle className="w-3 h-3" />
-                                  <span>{item.commentsCount.toLocaleString()}</span>
+                                  <span>{formatNumber(item.commentsCount)}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                   <Bookmark className="w-3 h-3" />
-                                  <span>{item.listsCount.toLocaleString()}</span>
+                                  <span>{formatNumber(item.listsCount)}</span>
                               </div>
                           </div>
                       </div>
@@ -86,7 +96,6 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
                   </Card>
                    <div className="px-1">
                       <h3 className="font-semibold text-sm truncate group-hover:text-primary transition-colors">{item.title}</h3>
-                      <p className="text-xs text-muted-foreground">{item.type}</p>
                    </div>
                  </div>
               </Link>
