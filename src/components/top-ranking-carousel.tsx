@@ -1,11 +1,3 @@
-/**
- * @fileoverview TopRankingCarousel - Un carrusel horizontal para mostrar rankings.
- * 
- * Este componente renderiza una lista de títulos en un carrusel con auto-desplazamiento
- * horizontal. Cada item muestra su posición en el ranking, imagen, calificación,
- * y estadísticas de interacción. Es utilizado en la página principal para destacar
- * los títulos más populares de cada categoría.
- */
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -114,7 +106,7 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     data-ai-hint={item.imageHint}
                   />
-                  <div className="absolute bottom-0 left-1 font-headline font-bold text-5xl text-white/80 mix-blend-difference drop-shadow-lg" style={{ WebkitTextStroke: '1px rgba(0,0,0,0.2)' }}>
+                  <div className="absolute top-0 left-1 font-headline font-bold text-5xl text-white/80 mix-blend-difference drop-shadow-lg" style={{ WebkitTextStroke: '1px rgba(0,0,0,0.2)' }}>
                     {index + 1}
                   </div>
                 </div>
