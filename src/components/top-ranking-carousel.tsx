@@ -8,7 +8,7 @@
  */
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronRight, Star, Bookmark, MessageCircle } from 'lucide-react';
 import type { TitleInfo } from '@/lib/types';
 import Image from 'next/image';
@@ -22,44 +22,65 @@ interface TopRankingCarouselProps {
 
 const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-scroll functionality
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
 
-    let scrollInterval: NodeJS.Timeout;
     let isHovering = false;
 
     const startScrolling = () => {
-        if (isHovering) return;
-        scrollInterval = setInterval(() => {
-            if (scrollContainer) {
-                if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth -1) {
-                    scrollContainer.scrollLeft = 0;
-                } else {
-                    scrollContainer.scrollLeft += 1;
-                }
-            }
-        }, 30);
+      // Clear any existing interval
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      
+      intervalRef.current = setInterval(() => {
+        if (isHovering || !scrollContainer) return;
+        
+        // Calculate the width of approximately two items
+        const firstItem = scrollContainer.children[0] as HTMLElement;
+        if (!firstItem) return;
+        const itemWidth = firstItem.offsetWidth;
+        const gap = parseInt(window.getComputedStyle(scrollContainer).gap || '16px');
+        const scrollAmount = (itemWidth + gap) * 2;
+
+        const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+
+        // If near the end, loop back to the start
+        if (scrollContainer.scrollLeft >= maxScroll - 5) { // 5px tolerance
+          scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          scrollContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+      }, 4000); // Scroll every 4 seconds
     };
 
     const stopScrolling = () => {
-        clearInterval(scrollInterval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
+    
+    // Start with a 2-second delay
+    const initialTimeout = setTimeout(startScrolling, 2000);
 
-    scrollContainer.addEventListener('mouseenter', () => {
-        isHovering = true;
-        stopScrolling();
-    });
-    scrollContainer.addEventListener('mouseleave', () => {
-        isHovering = false;
-        startScrolling();
-    });
+    const handleMouseEnter = () => { isHovering = true; stopScrolling(); };
+    const handleMouseLeave = () => { isHovering = false; startScrolling(); };
+    const handleTouchStart = () => { isHovering = true; stopScrolling(); };
 
-    startScrolling();
+    scrollContainer.addEventListener('mouseenter', handleMouseEnter);
+    scrollContainer.addEventListener('mouseleave', handleMouseLeave);
+    scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
 
-    return () => clearInterval(scrollInterval);
+    return () => {
+      clearTimeout(initialTimeout);
+      stopScrolling();
+      scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
+      scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
+      scrollContainer.removeEventListener('touchstart', handleTouchStart);
+    };
   }, []);
 
   const formatNumber = (num: number) => {
