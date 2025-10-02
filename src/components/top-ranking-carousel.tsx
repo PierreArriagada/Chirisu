@@ -15,22 +15,22 @@ interface TopRankingCarouselProps {
 const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
   // Auto-scroll functionality
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
 
-    let isHovering = false;
+    let isInteracting = false;
 
     const startScrolling = () => {
-      // Clear any existing interval
       if (intervalRef.current) clearInterval(intervalRef.current);
       
       intervalRef.current = setInterval(() => {
-        if (isHovering || !scrollContainer) return;
+        if (isInteracting || !scrollContainer) return;
         
-        // Calculate the width of approximately two items
         const firstItem = scrollContainer.children[0] as HTMLElement;
         if (!firstItem) return;
         const itemWidth = firstItem.offsetWidth;
@@ -39,13 +39,12 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
 
         const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
 
-        // If near the end, loop back to the start
-        if (scrollContainer.scrollLeft >= maxScroll - 5) { // 5px tolerance
+        if (scrollContainer.scrollLeft >= maxScroll - 5) {
           scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
         } else {
           scrollContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         }
-      }, 4000); // Scroll every 4 seconds
+      }, 4000);
     };
 
     const stopScrolling = () => {
@@ -55,23 +54,37 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
       }
     };
     
-    // Start with a 2-second delay
     const initialTimeout = setTimeout(startScrolling, 2000);
 
-    const handleMouseEnter = () => { isHovering = true; stopScrolling(); };
-    const handleMouseLeave = () => { isHovering = false; startScrolling(); };
-    const handleTouchStart = () => { isHovering = true; stopScrolling(); };
+    const handleInteractionStart = () => { isInteracting = true; stopScrolling(); };
+    const handleInteractionEnd = () => { isInteracting = false; startScrolling(); };
 
-    scrollContainer.addEventListener('mouseenter', handleMouseEnter);
-    scrollContainer.addEventListener('mouseleave', handleMouseLeave);
-    scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+    const handleScroll = () => {
+        stopScrolling();
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(() => {
+            if (!isInteracting) {
+                startScrolling();
+            }
+        }, 3000); // 3-second delay after manual scroll
+    };
+
+
+    scrollContainer.addEventListener('mouseenter', handleInteractionStart);
+    scrollContainer.addEventListener('mouseleave', handleInteractionEnd);
+    scrollContainer.addEventListener('touchstart', handleInteractionStart, { passive: true });
+    scrollContainer.addEventListener('touchend', handleInteractionEnd);
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       clearTimeout(initialTimeout);
       stopScrolling();
-      scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
-      scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
-      scrollContainer.removeEventListener('touchstart', handleTouchStart);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollContainer.removeEventListener('mouseenter', handleInteractionStart);
+      scrollContainer.removeEventListener('mouseleave', handleInteractionEnd);
+      scrollContainer.removeEventListener('touchstart', handleInteractionStart);
+      scrollContainer.removeEventListener('touchend', handleInteractionEnd);
+      scrollContainer.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
