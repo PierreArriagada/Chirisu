@@ -18,70 +18,67 @@ export default function Breadcrumbs() {
     return null;
   }
 
-  const breadcrumbs: { href: string; label: React.ReactNode; isLast: boolean }[] = [];
-
-  // Home crumb
-  breadcrumbs.push({ href: "/", label: <HomeIcon size={16} />, isLast: false });
+  const breadcrumbs: { href: string; label: React.ReactNode }[] = [];
+  breadcrumbs.push({ href: "/", label: <HomeIcon size={16} /> });
 
   let currentPath = "";
 
   segments.forEach((segment, index) => {
     currentPath += `/${segment}`;
-    const isLast = index === segments.length - 1;
     const segmentType = segments[0];
 
     // Handle static index pages like /anime, /manga
     if (index === 0 && segments.length === 1) {
-      breadcrumbs.push({ href: currentPath, label: capitalize(segment.replace(/-/g, " ")), isLast: true });
+      breadcrumbs.push({ href: currentPath, label: capitalize(segment.replace(/-/g, " ")) });
       return;
     }
 
     // Handle dynamic pages
     if (index === 1) {
-        // Add the category link first
-        breadcrumbs.push({ href: `/${segmentType}`, label: capitalize(segmentType.replace(/-/g, " ")), isLast: false });
-        
-        let finalLabel: React.ReactNode = capitalize(segment.replace(/-/g, " "));
+      // Add the category link first
+      breadcrumbs.push({ href: `/${segmentType}`, label: capitalize(segmentType.replace(/-/g, " ")) });
+      
+      let finalLabel: React.ReactNode = capitalize(segment.replace(/-/g, " "));
 
-        if (['anime', 'manga', 'manhua', 'manwha', 'novela', 'dougua', 'fan-comic'].includes(segmentType)) {
-             const media = getMediaBySlug(segment);
-             if (media) finalLabel = media.title;
-        } else if (segmentType === 'episode') {
-            const episode = getEpisodeById(segment);
-            if (episode) {
-                const media = getMediaPageData(episode.mediaId, 'anime');
-                if (media) {
-                     // We need to overwrite the previous breadcrumb to insert the media page
-                    breadcrumbs.pop();
-                    breadcrumbs.push({ href: `/${media.titleInfo.type.toLowerCase()}`, label: media.titleInfo.type, isLast: false });
-                    breadcrumbs.push({ href: `/${media.titleInfo.type.toLowerCase()}/${media.titleInfo.slug}`, label: media.titleInfo.title, isLast: false });
-                }
-                finalLabel = episode.name;
-            }
-        } else if (segmentType === 'character') {
-            const character = getCharacterBySlug(segment);
-            if (character) finalLabel = character.name;
-        } else if (segmentType === 'voice-actor') {
-            const voiceActor = getVoiceActorBySlug(segment);
-            if (voiceActor) finalLabel = voiceActor.name;
-        }
-        
-        if (['episode', 'character', 'voice-actor'].includes(segmentType) && segments.length > 1) {
-            // Remove the generic segment (e.g., 'Episode', 'Character')
-            breadcrumbs.shift(); // Remove Home
-            breadcrumbs.shift(); // Remove the generic segment if it was added
-            breadcrumbs.unshift({ href: "/", label: <HomeIcon size={16} />, isLast: false });
-        }
+      if (['anime', 'manga', 'manhua', 'manwha', 'novela', 'dougua', 'fan-comic'].includes(segmentType)) {
+           const media = getMediaBySlug(segment);
+           if (media) finalLabel = media.title;
+      } else if (segmentType === 'episode') {
+          const episode = getEpisodeById(segment);
+          if (episode) {
+              const media = getMediaPageData(episode.mediaId, 'anime');
+              if (media) {
+                   // We need to overwrite the previous breadcrumb to insert the media page
+                  breadcrumbs.pop();
+                  breadcrumbs.push({ href: `/${media.titleInfo.type.toLowerCase()}`, label: media.titleInfo.type });
+                  breadcrumbs.push({ href: `/${media.titleInfo.type.toLowerCase()}/${media.titleInfo.slug}`, label: media.titleInfo.title });
+              }
+              finalLabel = episode.name;
+          }
+      } else if (segmentType === 'character') {
+          const character = getCharacterBySlug(segment);
+          if (character) finalLabel = character.name;
+      } else if (segmentType === 'voice-actor') {
+          const voiceActor = getVoiceActorBySlug(segment);
+          if (voiceActor) finalLabel = voiceActor.name;
+      }
+      
+      if (['episode', 'character', 'voice-actor'].includes(segmentType) && segments.length > 1) {
+          // Remove the generic segment (e.g., 'Episode', 'Character')
+          breadcrumbs.shift(); // Remove Home
+          breadcrumbs.shift(); // Remove the generic segment if it was added
+          breadcrumbs.unshift({ href: "/", label: <HomeIcon size={16} /> });
+      }
 
-
-        breadcrumbs.push({ href: currentPath, label: finalLabel, isLast: true });
+      breadcrumbs.push({ href: currentPath, label: finalLabel });
     }
   });
   
   // Filter out any breadcrumbs that were part of the intermediate dynamic routing logic but shouldn't be displayed
   const finalCrumbs = breadcrumbs.filter((crumb, index, self) => {
     // Hide the generic segment link (e.g. /episode, /character) when there's a dynamic page after it
-    if (['episode', 'character', 'voice-actor'].includes(String(crumb.label).toLowerCase()) && !crumb.isLast) {
+    const crumbLabelStr = typeof crumb.label === 'string' ? crumb.label.toLowerCase() : '';
+    if (['episode', 'character', 'voice-actor'].includes(crumbLabelStr) && index < self.length - 1) {
       return false;
     }
     // Remove duplicate labels
@@ -97,7 +94,7 @@ export default function Breadcrumbs() {
         {finalCrumbs.map((crumb, index) => (
           <li key={crumb.href + index} className="flex items-center space-x-2">
             {index > 0 && <ChevronRight size={16} />}
-            {crumb.isLast ? (
+            {index === finalCrumbs.length - 1 ? (
               <span className="font-semibold text-foreground truncate max-w-48 sm:max-w-96">{crumb.label}</span>
             ) : (
               <Link href={crumb.href} className="hover:text-primary transition-colors">
@@ -110,3 +107,4 @@ export default function Breadcrumbs() {
     </nav>
   );
 }
+
