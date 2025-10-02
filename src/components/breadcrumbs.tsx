@@ -57,8 +57,8 @@ export default function Breadcrumbs() {
     
     breadcrumbObject.label = label;
 
-    if (currentSegmentType === 'episode' && index === 0) {
-        // For /episode/ep-1, we don't want to show "Episode" segment, we will construct it fully
+    // Hide the generic segment link (e.g. /episode, /character)
+    if (['episode', 'character', 'voice-actor'].includes(currentSegmentType) && index === 0) {
         return [];
     }
 
@@ -76,7 +76,7 @@ export default function Breadcrumbs() {
     <nav aria-label="Breadcrumb" className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
       <ol className="flex items-center space-x-2 text-sm text-muted-foreground">
         {breadcrumbs.map((crumb, index) => (
-          <li key={crumb.href} className="flex items-center space-x-2">
+          <li key={crumb.href + index} className="flex items-center space-x-2">
             {index > 0 && <ChevronRight size={16} />}
             {crumb.isLast ? (
               <span className="font-semibold text-foreground truncate max-w-48 sm:max-w-96">{crumb.label}</span>
