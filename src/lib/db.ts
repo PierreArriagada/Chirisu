@@ -2,42 +2,6 @@ import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review
 
 // --- "DATABASE" TABLES ---
 
-export const simulatedUsers: (User & { password: string })[] = [
-  {
-    id: '1-admin',
-    name: 'Admin Demo',
-    email: 'admin@example.com',
-    password: 'adminpassword',
-    image: 'https://picsum.photos/seed/admin-avatar/100/100',
-    role: 'admin',
-  },
-  {
-    id: '2-mod',
-    name: 'Moderador Demo',
-    email: 'moderator@example.com',
-    password: 'modpassword',
-    image: 'https://picsum.photos/seed/mod-avatar/100/100',
-    role: 'moderator',
-  },
-  {
-    id: '3-user',
-    name: 'Usuario Demo',
-    email: 'user@example.com',
-    password: 'userpassword',
-    image: 'https://picsum.photos/seed/user-avatar/100/100',
-    role: 'user',
-  },
-    {
-    id: '4-user',
-    name: 'MariaDB',
-    email: 'maria@example.com',
-    password: 'userpassword',
-    image: 'https://picsum.photos/seed/user-avatar2/100/100',
-    role: 'user',
-  },
-];
-
-
 const titles: Omit<TitleInfo, 'slug'>[] = [
     {
         id: '1',
@@ -162,6 +126,60 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
     },
 ];
 
+const createSlug = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const processedTitles: TitleInfo[] = titles.map(t => ({ ...t, slug: createSlug(t.title) }));
+
+const generateUserLists = () => ({
+    pending: [processedTitles[2], processedTitles[4]],
+    following: [processedTitles[0]],
+    watched: [processedTitles[1], processedTitles[3], processedTitles[6], processedTitles[7]],
+    favorites: [processedTitles[1], processedTitles[0]],
+});
+
+export const simulatedUsers: (User & { password: string })[] = [
+  {
+    id: '1-admin',
+    name: 'Admin Demo',
+    email: 'admin@example.com',
+    password: 'adminpassword',
+    image: 'https://picsum.photos/seed/admin-avatar/100/100',
+    role: 'admin',
+    lists: generateUserLists(),
+    listSettings: { pending: 'public', following: 'public', watched: 'private', favorites: 'public' },
+  },
+  {
+    id: '2-mod',
+    name: 'Moderador Demo',
+    email: 'moderator@example.com',
+    password: 'modpassword',
+    image: 'https://picsum.photos/seed/mod-avatar/100/100',
+    role: 'moderator',
+    lists: generateUserLists(),
+    listSettings: { pending: 'public', following: 'public', watched: 'public', favorites: 'private' },
+  },
+  {
+    id: '3-user',
+    name: 'Usuario Demo',
+    email: 'user@example.com',
+    password: 'userpassword',
+    image: 'https://picsum.photos/seed/user-avatar/100/100',
+    role: 'user',
+    lists: generateUserLists(),
+    listSettings: { pending: 'private', following: 'public', watched: 'public', favorites: 'public' },
+  },
+  {
+    id: '4-user',
+    name: 'MariaDB',
+    email: 'maria@example.com',
+    password: 'userpassword',
+    image: 'https://picsum.photos/seed/user-avatar2/100/100',
+    role: 'user',
+    lists: generateUserLists(),
+    listSettings: { pending: 'public', following: 'private', watched: 'private', favorites: 'private' },
+  },
+];
+
+
 const mediaDetails: (Omit<AnimeDetails, 'characters' | 'episodesList' | 'reviews' | 'related' | 'galleryImages'> & { mediaId: string })[] = [
     {
         mediaId: '1',
@@ -265,9 +283,6 @@ const officialLinks: (OfficialLinks & { mediaId: string })[] = [
 
 
 // --- DATA PROCESSING ---
-const createSlug = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
-const processedTitles: TitleInfo[] = titles.map(t => ({ ...t, slug: createSlug(t.title) }));
 const processedVoiceActors: VoiceActor[] = voiceActorsRaw.map(va => ({ ...va, slug: createSlug(va.name) }));
 const processedCharacters: Character[] = charactersRaw.map(c => {
     const japanese = processedVoiceActors.find(va => va.id === c.japaneseVoiceActorId)!;

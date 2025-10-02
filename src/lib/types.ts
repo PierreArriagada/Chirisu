@@ -4,12 +4,23 @@ export type MediaType = 'Anime' | 'Manga' | 'Novela' | 'Manhua' | 'Manwha' | 'Do
 
 export type UserRole = 'admin' | 'moderator' | 'user';
 
+export type UserList = 'pending' | 'following' | 'watched' | 'favorites';
+
 export type User = {
   id: string;
   name: string;
   email: string;
   image: string;
   role: UserRole;
+  lists: {
+    pending: TitleInfo[];
+    following: TitleInfo[];
+    watched: TitleInfo[];
+    favorites: TitleInfo[];
+  };
+  listSettings: {
+    [K in UserList]: 'public' | 'private';
+  };
 };
 
 export type TitleInfo = {
