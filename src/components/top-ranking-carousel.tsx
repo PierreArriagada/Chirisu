@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
@@ -18,7 +18,7 @@ import Link from 'next/link';
 interface TopRankingCarouselProps {
   title: string;
   items: TitleInfo[];
-  viewMoreLink: string;
+  viewMoreLink?: string;
 }
 
 export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRankingCarouselProps) {
@@ -32,11 +32,13 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
     <section>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold font-headline">{title}</h2>
-        <Button variant="outline" asChild>
-          <Link href={viewMoreLink}>
-            Ver más <ArrowRight className="ml-2" />
-          </Link>
-        </Button>
+        {viewMoreLink && (
+          <Button variant="outline" asChild>
+            <Link href={viewMoreLink}>
+              Ver más <ArrowRight className="ml-2" />
+            </Link>
+          </Button>
+        )}
       </div>
       <Carousel
         opts={{
