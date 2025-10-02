@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import { Toaster } from "@/components/ui/toaster";
 import './globals.css';
 import Link from 'next/link';
-import { BookOpen, Clapperboard, HomeIcon } from 'lucide-react';
+import { BookOpen, Clapperboard, Film, HomeIcon, Newspaper, Pencil } from 'lucide-react';
 import Breadcrumbs from '@/components/breadcrumbs';
 
 export const metadata: Metadata = {
@@ -11,6 +11,14 @@ export const metadata: Metadata = {
 };
 
 function NavBar() {
+  const navItems = [
+    { href: "/anime", label: "Anime", icon: <Clapperboard /> },
+    { href: "/manga", label: "Manga", icon: <BookOpen /> },
+    { href: "/dougua", label: "Dougua", icon: <Film /> },
+    { href: "/novela", label: "Novelas", icon: <Pencil /> },
+    { href: "/fan-comic", label: "Fan Comics", icon: <Newspaper /> },
+  ];
+
   return (
     <header className="bg-card shadow-sm sticky top-0 z-40">
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,8 +29,16 @@ function NavBar() {
               <span>AniHub Info</span>
             </Link>
           </div>
+          <div className="hidden md:flex items-center gap-6">
+            {navItems.map(item => (
+              <Link key={item.href} href={item.href} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
           <div className="flex items-center gap-4">
-             <Link href="/" className="text-muted-foreground hover:text-primary transition-colors">
+             <Link href="/" className="text-muted-foreground hover:text-primary transition-colors md:hidden">
               <HomeIcon />
               <span className="sr-only">Home</span>
             </Link>

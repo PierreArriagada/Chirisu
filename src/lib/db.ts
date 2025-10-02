@@ -16,7 +16,7 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         listsCount: 35000,
     },
     {
-        id: '2',
+        id: 'berserk-manga',
         title: 'Berserk',
         type: 'Manga',
         description: 'Guts, a former mercenary now known as the "Black Swordsman," is out for revenge. After a tumultuous childhood, he finally finds someone he respects and believes he can trust, only to have everything taken away from him when this person takes advantage of a monstrous sacrifice.',
@@ -28,7 +28,7 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         listsCount: 50000,
     },
     {
-        id: '3',
+        id: 'che-daojuan-manhua',
         title: 'Che Daojuan',
         type: 'Manhua',
         description: 'A story about a young man who is a talented military strategist and his journey to unite a divided land. He faces many challenges and makes many sacrifices along the way.',
@@ -40,7 +40,7 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         listsCount: 12000,
     },
     {
-        id: '4',
+        id: 'the-boxer-manwha',
         title: 'The Boxer',
         type: 'Manwha',
         description: 'A story about a gifted young boxer who is scouted by a legendary trainer. He has a unique style of fighting that makes him a formidable opponent, but he has his own demons to fight outside of the ring.',
@@ -52,7 +52,7 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         listsCount: 28000,
     },
     {
-        id: '5',
+        id: 'lotm-novela',
         title: 'The Lord of the Mysteries',
         type: 'Novela',
         description: 'With the rising tide of steam and machinery, who can be the true Lord of the Mysteries? A transmigrator from the modern world finds himself in a Victorian-era world of steam, machinery, and supernatural powers.',
@@ -64,7 +64,7 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         listsCount: 40000,
     },
     {
-        id: '6',
+        id: 'mha-vigilantes-fan-comic',
         title: 'My Hero Academia: Vigilantes',
         type: 'Fan Comic',
         description: 'A fan-made comic that explores the world of My Hero Academia from the perspective of vigilantes who operate outside the law to protect the innocent.',
@@ -76,7 +76,7 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         listsCount: 9000,
     },
      {
-        id: '7',
+        id: 'modaozushi-dougua',
         title: 'Mo Dao Zu Shi',
         type: 'Dougua',
         description: 'As the grandmaster who founded the Demonic Sect, Wei Wuxian roamed the world in his wanton ways, hated by millions for the chaos he created. In the end, he was backstabbed by his dearest shidi and killed by powerful clans that combined to overpower him. He incarnates into the body of a lunatic who was abandoned by his clan and is later, unwillingly, taken away by a famous cultivator among the clans—Lan Wangji, his archenemy.',
@@ -86,6 +86,43 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         ranking: 8,
         commentsCount: 15000,
         listsCount: 25000,
+    },
+    // More animes for ranking page
+    {
+        id: 'attack-on-titan-anime',
+        title: 'Attack on Titan',
+        type: 'Anime',
+        description: 'Centuries ago, mankind was slaughtered to near extinction by monstrous humanoid creatures called titans, forcing humans to hide in fear behind enormous concentric walls.',
+        imageUrl: 'https://picsum.photos/seed/aot/400/600',
+        imageHint: 'anime cover art',
+        rating: 9.1,
+        ranking: 2,
+        commentsCount: 50000,
+        listsCount: 100000,
+    },
+    {
+        id: 'death-note-anime',
+        title: 'Death Note',
+        type: 'Anime',
+        description: 'A high school student discovers a supernatural notebook that allows him to kill anyone by writing their name in it.',
+        imageUrl: 'https://picsum.photos/seed/deathnote/400/600',
+        imageHint: 'anime cover art',
+        rating: 8.9,
+        ranking: 3,
+        commentsCount: 45000,
+        listsCount: 90000,
+    },
+    {
+        id: 'one-piece-manga',
+        title: 'One Piece',
+        type: 'Manga',
+        description: 'Follows the adventures of Monkey D. Luffy and his pirate crew in order to find the greatest treasure ever left by the legendary Pirate, Gold Roger.',
+        imageUrl: 'https://picsum.photos/seed/onepiece/400/600',
+        imageHint: 'manga cover art',
+        rating: 9.9,
+        ranking: 2,
+        commentsCount: 60000,
+        listsCount: 120000,
     },
 ];
 
@@ -108,7 +145,7 @@ const mediaDetails: (Omit<AnimeDetails, 'characters' | 'episodesList' | 'reviews
         stats: { score: 9.2, popularity: 1, favorites: 150000, completed: 250000, watching: 500000, planToWatch: 120000 },
     },
     {
-        mediaId: '2',
+        mediaId: 'berserk-manga',
         type: 'Manga',
         episodes: 0, // No episodes for manga
         releaseDate: '1989-08-25',
@@ -122,7 +159,7 @@ const mediaDetails: (Omit<AnimeDetails, 'characters' | 'episodesList' | 'reviews
         stats: { score: 9.8, popularity: 2, favorites: 300000, completed: 150000, watching: 80000, planToWatch: 50000 },
     },
      {
-        mediaId: '7',
+        mediaId: 'modaozushi-dougua',
         type: 'ONA',
         episodes: 15,
         releaseDate: '2018-07-09',
@@ -148,30 +185,30 @@ const voiceActorsRaw: (Omit<VoiceActor, 'slug'> & { id: string })[] = [
 const charactersRaw: (Omit<Character, 'voiceActors' | 'slug'> & { mediaId: string; japaneseVoiceActorId: string; spanishVoiceActorId: string; })[] = [
     { id: 'char1', mediaId: '1', name: 'Sung Jinwoo', imageUrl: 'https://picsum.photos/seed/jinwoo/200/300', imageHint: 'Sung Jinwoo character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', },
     { id: 'char2', mediaId: '1', name: 'Cha Hae-In', imageUrl: 'https://picsum.photos/seed/chahein/200/300', imageHint: 'Cha Hae-In character', role: 'Main', japaneseVoiceActorId: 'va3', spanishVoiceActorId: 'va4', },
-    { id: 'char3', mediaId: '2', name: 'Guts', imageUrl: 'https://picsum.photos/seed/guts/200/300', imageHint: 'Guts character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }, // Reusing VAs for demo
-    { id: 'char4', mediaId: '7', name: 'Wei Wuxian', imageUrl: 'https://picsum.photos/seed/weiwuxian/200/300', imageHint: 'Wei Wuxian character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }
+    { id: 'char3', mediaId: 'berserk-manga', name: 'Guts', imageUrl: 'https://picsum.photos/seed/guts/200/300', imageHint: 'Guts character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }, // Reusing VAs for demo
+    { id: 'char4', mediaId: 'modaozushi-dougua', name: 'Wei Wuxian', imageUrl: 'https://picsum.photos/seed/weiwuxian/200/300', imageHint: 'Wei Wuxian character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }
 ];
 
 const episodes: (Episode & { mediaId: string })[] = [
     ...Array.from({ length: 12 }, (_, i) => ({ id: `ep1-${i + 1}`, mediaId: '1', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/ep${i + 1}/320/180`, imageHint: `anime episode ${i + 1}`, duration: '23 min', releaseDate: new Date(2024, 0, 7 + i * 7).toISOString(), comments: Math.floor(Math.random() * 2000), watchLinks: { official: '#', crunchyroll: '#' } })),
-    ...Array.from({ length: 15 }, (_, i) => ({ id: `ep7-${i + 1}`, mediaId: '7', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/dep${i + 1}/320/180`, imageHint: `dougua episode ${i + 1}`, duration: '24 min', releaseDate: new Date(2018, 6, 9 + i*7).toISOString(), comments: Math.floor(Math.random() * 1500), watchLinks: { official: '#', wetv: '#' } })),
+    ...Array.from({ length: 15 }, (_, i) => ({ id: `ep7-${i + 1}`, mediaId: 'modaozushi-dougua', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/dep${i + 1}/320/180`, imageHint: `dougua episode ${i + 1}`, duration: '24 min', releaseDate: new Date(2018, 6, 9 + i*7).toISOString(), comments: Math.floor(Math.random() * 1500), watchLinks: { official: '#', wetv: '#' } })),
 ];
 
 const reviews: (Review & { mediaId: string })[] = [
     { id: 'rev1', mediaId: '1', title: 'Amazing adaptation!', user: { name: 'AnimeFan123', imageUrl: 'https://picsum.photos/seed/user1/100/100', imageHint: 'user avatar' }, rating: 9, review: 'The animation is top-notch and stays true to the source material. A must-watch for any fan of the manhwa. The action scenes are breathtaking and the character development of Sung Jinwoo is perfectly portrayed.' },
     { id: 'rev2', mediaId: '1', title: 'A solid start, but...', user: { name: 'WebtoonReader', imageUrl: 'https://picsum.photos/seed/user2/100/100', imageHint: 'user avatar' }, rating: 8, review: 'Pacing is a bit fast compared to the webtoon, but the action scenes are incredible. Some details are missed, but overall a great adaptation that captures the essence of Solo Leveling.' },
-    { id: 'rev3', mediaId: '2', title: 'A masterpiece of dark fantasy.', user: { name: 'MangaMaster', imageUrl: 'https://picsum.photos/seed/user3/100/100', imageHint: 'user avatar' }, rating: 10, review: 'Kentaro Miura\'s artwork is breathtaking. The story is a profound exploration of human nature, struggle, and hope. It\'s not for the faint of heart, but it is an unforgettable experience.' },
+    { id: 'rev3', mediaId: 'berserk-manga', title: 'A masterpiece of dark fantasy.', user: { name: 'MangaMaster', imageUrl: 'https://picsum.photos/seed/user3/100/100', imageHint: 'user avatar' }, rating: 10, review: 'Kentaro Miura\'s artwork is breathtaking. The story is a profound exploration of human nature, struggle, and hope. It\'s not for the faint of heart, but it is an unforgettable experience.' },
 ];
 
 const relatedTitlesRaw: (Omit<RelatedTitle, 'slug'> & { mediaId: string })[] = [
     { id: 'rel1', mediaId: '1', title: 'Solo Leveling (Manhwa)', type: 'Adaptation', imageUrl: 'https://picsum.photos/seed/rel1/200/300', imageHint: 'manhwa cover' },
     { id: 'rel2', mediaId: '1', title: 'The Beginning After the End', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/rel2/200/300', imageHint: 'manhwa cover' },
-    { id: 'rel3', mediaId: '2', title: 'Vagabond', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/vagabond/200/300', imageHint: 'manga cover' },
+    { id: 'rel3', mediaId: 'berserk-manga', title: 'Vagabond', type: 'Recommendation', imageUrl: 'https://picsum.photos/seed/vagabond/200/300', imageHint: 'manga cover' },
 ];
 
 const galleryImages: (GalleryImage & { mediaId: string })[] = [
     ...Array.from({ length: 6 }, (_, i) => ({ id: `gallery${i + 1}`, mediaId: '1', imageUrl: `https://picsum.photos/seed/gallery${i + 1}/600/400`, imageHint: 'anime screenshot' })),
-    ...Array.from({ length: 6 }, (_, i) => ({ id: `gallery_b${i + 1}`, mediaId: '2', imageUrl: `https://picsum.photos/seed/gallery_b${i + 1}/600/400`, imageHint: 'manga panel' }))
+    ...Array.from({ length: 6 }, (_, i) => ({ id: `gallery_b${i + 1}`, mediaId: 'berserk-manga', imageUrl: `https://picsum.photos/seed/gallery_b${i + 1}/600/400`, imageHint: 'manga panel' }))
 ];
 
 
@@ -183,7 +220,7 @@ const officialLinks: (OfficialLinks & { mediaId: string })[] = [
         fanTranslations: [{ name: 'Fan Sub Group A (Social)', url: '#' }],
     },
     {
-        mediaId: '2',
+        mediaId: 'berserk-manga',
         officialSites: [{ name: 'Dark Horse Comics', url: '#' }],
         streamingPlatforms: [],
         fanTranslations: [{ name: 'Fan Translation Site', url: '#' }],
@@ -294,7 +331,7 @@ export function getCharacterPageData(slug: string) {
 }
 
 export function getVoiceActorPageData(slug: string) {
-    const voiceActor = processedVoiceActors.find(va => va.slug === slug);
+    const voiceActor = processedVoiceActors.find(va => va.slug === voiceActor.slug);
     if (!voiceActor) return null;
 
     const roles: CharacterRole[] = [];
@@ -318,6 +355,20 @@ export function getVoiceActorPageData(slug: string) {
     
     return { voiceActor, roles };
 }
+
+export function getMediaListPage(mediaType: MediaType) {
+    const titlesOfType = processedTitles.filter(t => t.type === mediaType);
+    
+    const topAllTime = [...titlesOfType].sort((a, b) => a.ranking - b.ranking).slice(0, 5);
+    // Simulate weekly top by shuffling and taking 5
+    const topWeekly = [...titlesOfType].sort(() => 0.5 - Math.random()).slice(0, 5);
+
+    return {
+        topAllTime,
+        topWeekly,
+    };
+}
+
 
 // Deprecated function name, kept for compatibility if anything still uses it.
 export const getAnimePageData = (animeId: string) => getMediaPageData(animeId, 'anime');

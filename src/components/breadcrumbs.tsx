@@ -28,14 +28,29 @@ export default function Breadcrumbs() {
     const currentSegmentType = segments[0];
     const isDynamicSegment = index === 1;
 
+    // Handle index pages like /anime, /manga
+    if (index === 0 && segments.length === 1) {
+        if (['anime', 'manga', 'manhua', 'manwha', 'novela', 'dougua', 'fan-comic'].includes(currentSegmentType)) {
+             breadcrumbObject.label = capitalize(currentSegmentType.replace('-', ' '));
+        }
+    }
+
+
     if (isDynamicSegment) {
         if (['anime', 'manga', 'manhua', 'manwha', 'novela', 'dougua', 'fan-comic'].includes(currentSegmentType)) {
             const media = getMediaBySlug(segment);
-            if(media) label = media.title;
+            if(media) {
+                additionalCrumbs.push({
+                    href: `/${media.type.toLowerCase().replace(' ', '-')}`,
+                    label: media.type,
+                    isLast: false,
+                });
+                label = media.title;
+            }
         } else if (currentSegmentType === 'episode') {
             const episode = getEpisodeById(segment);
             if(episode) {
-                const media = getMediaPageData(episode.mediaId, 'anime');
+                const media = getMediaPageData(episode.mediaId, 'anime'); // Assuming episodes are only for anime for now
                 if (media) {
                     // We need to inject the anime page into the breadcrumbs
                     additionalCrumbs.push({
@@ -58,7 +73,7 @@ export default function Breadcrumbs() {
     breadcrumbObject.label = label;
 
     // Hide the generic segment link (e.g. /episode, /character)
-    if (['episode', 'character', 'voice-actor'].includes(currentSegmentType) && index === 0) {
+    if (['episode', 'character', 'voice-actor'].includes(currentSegmentType) && index === 0 && segments.length > 1) {
         return [];
     }
 
