@@ -38,6 +38,7 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
           <div className="relative flex-shrink-0 ss:w-2/5">
             <Badge variant="outline" className="absolute top-2 right-2 text-sm capitalize bg-background/80 backdrop-blur-sm z-10">{titleInfo.type}</Badge>
             <Image
+              id="media-cover-image"
               src={titleInfo.imageUrl}
               alt={`Cover for ${titleInfo.title}`}
               width={300}

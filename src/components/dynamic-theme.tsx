@@ -34,9 +34,10 @@ const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => 
 
 const DynamicTheme = ({ imageUrl }: DynamicThemeProps) => {
   useEffect(() => {
-    const img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.src = imageUrl;
+    // Find the main image already rendered on the page by its ID
+    const img = document.getElementById('media-cover-image') as HTMLImageElement | null;
+    
+    if (!img) return;
 
     const originalValues = {
         background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
@@ -73,15 +74,28 @@ const DynamicTheme = ({ imageUrl }: DynamicThemeProps) => {
 
     const handleLoad = () => {
       try {
-        const colorThief = new ColorThief();
-        const dominantColor = colorThief.getColor(img);
-        applyTheme(dominantColor);
+        // Since the image is from a different origin, we still need to fetch it in a way
+        // that allows canvas access. The browser might have it cached.
+        const proxyImg = new Image();
+        proxyImg.crossOrigin = 'Anonymous';
+        proxyImg.src = img.src;
+        proxyImg.onload = () => {
+            const colorThief = new ColorThief();
+            const dominantColor = colorThief.getColor(proxyImg);
+            applyTheme(dominantColor);
+        };
       } catch (e) {
         console.error('Error getting color from image:', e);
       }
     };
+    
+    // If the image is already loaded, run the logic. Otherwise, wait for it to load.
+    if (img.complete) {
+        handleLoad();
+    } else {
+        img.addEventListener('load', handleLoad);
+    }
 
-    img.addEventListener('load', handleLoad);
 
     return () => {
       img.removeEventListener('load', handleLoad);
