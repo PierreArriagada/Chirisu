@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/context/auth-context';
 
 export const metadata: Metadata = {
-  title: 'AniHub Info',
+  title: 'Chirisu',
   description: 'Detailed information about your favorite anime, manga, and novels.',
 };
 

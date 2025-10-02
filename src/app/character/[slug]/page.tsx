@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${data.character.name} | AniHub Info`,
+    title: `${data.character.name} | Chirisu`,
     description: `Information about the character ${data.character.name}.`,
   }
 }

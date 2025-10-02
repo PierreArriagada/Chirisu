@@ -51,7 +51,7 @@ function MainNav() {
                 <div className="flex items-center gap-6">
                     <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
                     <BookOpen />
-                    <span>AniHub Info</span>
+                    <span>Chirisu</span>
                     </Link>
                 </div>
                 <div className="hidden md:flex flex-1 max-w-md items-center gap-2">

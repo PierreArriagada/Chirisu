@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${data.voiceActor.name} | AniHub Info`,
+    title: `${data.voiceActor.name} | Chirisu`,
     description: `Roles and information about voice actor ${data.voiceActor.name}.`,
   }
 }

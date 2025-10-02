@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const media = getMediaPageData(episode.mediaId, 'anime');
 
     return {
-        title: `${episode.name} - ${media?.titleInfo.title} | AniHub Info`,
+        title: `${episode.name} - ${media?.titleInfo.title} | Chirisu`,
         description: `Information and comments for ${episode.name}.`
     }
 }

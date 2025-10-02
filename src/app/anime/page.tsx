@@ -4,7 +4,7 @@ import { MediaType } from "@/lib/types";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: 'Anime | AniHub Info',
+    title: 'Anime | Chirisu',
     description: 'Top ranking anime.',
 }
 
