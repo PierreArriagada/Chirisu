@@ -108,41 +108,45 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
           ref={scrollRef}
           className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide"
         >
-          {items.map((item, index) => (
+          {items.map((item) => (
             <Link href={url(item)} key={item.id} className="block flex-shrink-0 w-24 ss:w-28 sm:w-36 md:w-40 lg:w-44 group cursor-pointer">
-              <div className="relative">
-                <div className="relative w-full h-36 ss:h-40 sm:h-48 md:h-52 lg:h-56 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300 bg-card">
-                  <Image
-                    src={item.imageUrl}
-                    alt={item.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    data-ai-hint={item.imageHint}
-                  />
-                  <div className="absolute top-0 left-1 font-headline font-bold text-5xl text-white/80 mix-blend-difference drop-shadow-lg" style={{ WebkitTextStroke: '1px rgba(0,0,0,0.2)' }}>
-                    {index + 1}
+              <div className="relative w-full h-36 ss:h-40 sm:h-48 md:h-52 lg:h-56 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300 bg-card">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.title}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  data-ai-hint={item.imageHint}
+                />
+                
+                {/* Ranking Number */}
+                <div className="absolute top-0 left-1 font-headline font-bold text-5xl text-white/80 mix-blend-difference drop-shadow-lg" style={{ WebkitTextStroke: '1px rgba(0,0,0,0.2)' }}>
+                  {item.ranking}
+                </div>
+
+                {/* Rating (Top Right) */}
+                <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 text-xs text-white">
+                  <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                  <span className="font-bold">{item.rating.toFixed(1)}</span>
+                </div>
+                
+                {/* Bottom Stats Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent p-2 flex items-end justify-end">
+                  <div className="flex items-center gap-3 text-white text-xs">
+                    <div className="flex items-center gap-1">
+                      <Bookmark className="w-3 h-3" />
+                      <span>{formatNumber(item.listsCount)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="w-3 h-3" />
+                      <span>{formatNumber(item.commentsCount)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="pt-2">
                  <h3 className="font-semibold text-foreground text-sm mb-1 line-clamp-2 group-hover:text-primary transition-colors">{item.title}</h3>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                    <span className="text-muted-foreground text-xs font-medium">{item.rating.toFixed(1)}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center space-x-1">
-                      <Bookmark className="w-3 h-3 text-blue-400" />
-                      <span className="text-muted-foreground text-xs">{formatNumber(item.listsCount)}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <MessageCircle className="w-3 h-3 text-green-400" />
-                      <span className="text-muted-foreground text-xs">{formatNumber(item.commentsCount)}</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </Link>
           ))}
