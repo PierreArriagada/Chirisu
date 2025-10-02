@@ -1,3 +1,4 @@
+
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -17,80 +18,83 @@ export default function Breadcrumbs() {
     return null;
   }
 
-  const breadcrumbs = segments.flatMap((segment, index) => {
-    const href = "/" + segments.slice(0, index + 1).join("/");
-    let label: string | React.ReactNode = capitalize(segment.replace(/-/g, " "));
+  const breadcrumbs: { href: string; label: React.ReactNode; isLast: boolean }[] = [];
+
+  // Home crumb
+  breadcrumbs.push({ href: "/", label: <HomeIcon size={16} />, isLast: false });
+
+  let currentPath = "";
+
+  segments.forEach((segment, index) => {
+    currentPath += `/${segment}`;
     const isLast = index === segments.length - 1;
-    let breadcrumbObject = { href, label, isLast };
-    let additionalCrumbs: { href: string, label: string, isLast: boolean }[] = [];
+    const segmentType = segments[0];
 
-    // This is where we can get dynamic labels
-    const currentSegmentType = segments[0];
-    const isDynamicSegment = index === 1;
-
-    // Handle index pages like /anime, /manga
+    // Handle static index pages like /anime, /manga
     if (index === 0 && segments.length === 1) {
-        if (['anime', 'manga', 'manhua', 'manwha', 'novela', 'dougua', 'fan-comic'].includes(currentSegmentType)) {
-             breadcrumbObject.label = capitalize(currentSegmentType.replace('-', ' '));
-        }
+      breadcrumbs.push({ href: currentPath, label: capitalize(segment.replace(/-/g, " ")), isLast: true });
+      return;
     }
 
+    // Handle dynamic pages
+    if (index === 1) {
+        // Add the category link first
+        breadcrumbs.push({ href: `/${segmentType}`, label: capitalize(segmentType.replace(/-/g, " ")), isLast: false });
+        
+        let finalLabel: React.ReactNode = capitalize(segment.replace(/-/g, " "));
 
-    if (isDynamicSegment) {
-        if (['anime', 'manga', 'manhua', 'manwha', 'novela', 'dougua', 'fan-comic'].includes(currentSegmentType)) {
-            const media = getMediaBySlug(segment);
-            if(media) {
-                additionalCrumbs.push({
-                    href: `/${media.type.toLowerCase().replace(' ', '-')}`,
-                    label: media.type,
-                    isLast: false,
-                });
-                label = media.title;
-            }
-        } else if (currentSegmentType === 'episode') {
+        if (['anime', 'manga', 'manhua', 'manwha', 'novela', 'dougua', 'fan-comic'].includes(segmentType)) {
+             const media = getMediaBySlug(segment);
+             if (media) finalLabel = media.title;
+        } else if (segmentType === 'episode') {
             const episode = getEpisodeById(segment);
-            if(episode) {
-                const media = getMediaPageData(episode.mediaId, 'anime'); // Assuming episodes are only for anime for now
+            if (episode) {
+                const media = getMediaPageData(episode.mediaId, 'anime');
                 if (media) {
-                    // We need to inject the anime page into the breadcrumbs
-                    additionalCrumbs.push({
-                        href: `/${media.titleInfo.type.toLowerCase()}/${media.titleInfo.slug}`,
-                        label: media.titleInfo.title,
-                        isLast: false,
-                    });
+                     // We need to overwrite the previous breadcrumb to insert the media page
+                    breadcrumbs.pop();
+                    breadcrumbs.push({ href: `/${media.titleInfo.type.toLowerCase()}`, label: media.titleInfo.type, isLast: false });
+                    breadcrumbs.push({ href: `/${media.titleInfo.type.toLowerCase()}/${media.titleInfo.slug}`, label: media.titleInfo.title, isLast: false });
                 }
-                label = episode.name;
+                finalLabel = episode.name;
             }
-        } else if (currentSegmentType === 'character') {
+        } else if (segmentType === 'character') {
             const character = getCharacterBySlug(segment);
-            if(character) label = character.name;
-        } else if (currentSegmentType === 'voice-actor') {
+            if (character) finalLabel = character.name;
+        } else if (segmentType === 'voice-actor') {
             const voiceActor = getVoiceActorBySlug(segment);
-            if(voiceActor) label = voiceActor.name;
+            if (voiceActor) finalLabel = voiceActor.name;
         }
-    }
-    
-    breadcrumbObject.label = label;
+        
+        if (['episode', 'character', 'voice-actor'].includes(segmentType) && segments.length > 1) {
+            // Remove the generic segment (e.g., 'Episode', 'Character')
+            breadcrumbs.shift(); // Remove Home
+            breadcrumbs.shift(); // Remove the generic segment if it was added
+            breadcrumbs.unshift({ href: "/", label: <HomeIcon size={16} />, isLast: false });
+        }
 
-    // Hide the generic segment link (e.g. /episode, /character)
-    if (['episode', 'character', 'voice-actor'].includes(currentSegmentType) && index === 0 && segments.length > 1) {
-        return [];
-    }
 
-    if(additionalCrumbs.length > 0) {
-        return [...additionalCrumbs, breadcrumbObject];
+        breadcrumbs.push({ href: currentPath, label: finalLabel, isLast: true });
     }
-
-    return [breadcrumbObject];
   });
-
-  // Prepend Home
-  breadcrumbs.unshift({ href: "/", label: <HomeIcon size={16} />, isLast: false });
+  
+  // Filter out any breadcrumbs that were part of the intermediate dynamic routing logic but shouldn't be displayed
+  const finalCrumbs = breadcrumbs.filter((crumb, index, self) => {
+    // Hide the generic segment link (e.g. /episode, /character) when there's a dynamic page after it
+    if (['episode', 'character', 'voice-actor'].includes(String(crumb.label).toLowerCase()) && !crumb.isLast) {
+      return false;
+    }
+    // Remove duplicate labels
+    if (index > 0 && crumb.label === self[index-1].label) {
+        return false;
+    }
+    return true;
+  });
 
   return (
     <nav aria-label="Breadcrumb" className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
       <ol className="flex items-center space-x-2 text-sm text-muted-foreground">
-        {breadcrumbs.map((crumb, index) => (
+        {finalCrumbs.map((crumb, index) => (
           <li key={crumb.href + index} className="flex items-center space-x-2">
             {index > 0 && <ChevronRight size={16} />}
             {crumb.isLast ? (
