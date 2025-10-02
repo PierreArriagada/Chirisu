@@ -1,12 +1,11 @@
-
 'use client';
 import TopMediaList from "@/components/top-media-list";
 import TopRankingCarousel from "@/components/top-ranking-carousel";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { getMediaListPage } from "@/lib/db";
 import { MediaType, TitleInfo } from "@/lib/types";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura"];
 
@@ -14,15 +13,17 @@ export default function AnimePage() {
     const mediaType: MediaType = "Anime";
     const { topAllTime } = getMediaListPage(mediaType);
     
-    // For "Top Semanal", which now has interactive "show more"
     const [weeklyVisibleCount, setWeeklyVisibleCount] = useState(6);
-    const topWeekly = useMemo(() => topAllTime.slice().sort(() => 0.5 - Math.random()), [topAllTime]);
+    const [topWeekly, setTopWeekly] = useState<TitleInfo[]>([]);
+    const [recommendations, setRecommendations] = useState<TitleInfo[]>([]);
+    const [topDaily, setTopDaily] = useState<TitleInfo[]>([]);
 
-    // For "Recomendado para ti"
-    const recommendations = useMemo(() => topAllTime.slice().sort(() => 0.5 - Math.random()).slice(0, 4), [topAllTime]);
-    
-    // For "Top Diario"
-    const topDaily = useMemo(() => topAllTime.slice().sort(() => 0.5 - Math.random()), [topAllTime]);
+    useEffect(() => {
+        // Run randomization only on the client-side after hydration
+        setTopWeekly(topAllTime.slice().sort(() => 0.5 - Math.random()));
+        setRecommendations(topAllTime.slice().sort(() => 0.5 - Math.random()).slice(0, 4));
+        setTopDaily(topAllTime.slice().sort(() => 0.5 - Math.random()));
+    }, [topAllTime]);
 
     const handleShowMoreWeekly = () => {
         setWeeklyVisibleCount(prev => prev + 6);
@@ -49,7 +50,7 @@ export default function AnimePage() {
                         </Button>
                     </div>
                 )}
-                {weeklyVisibleCount >= 12 && (
+                {weeklyVisibleCount >= 12 && topWeekly.length > 0 && (
                     <div className="flex justify-center mt-4">
                         <Button>Ver el ranking completo</Button>
                     </div>
