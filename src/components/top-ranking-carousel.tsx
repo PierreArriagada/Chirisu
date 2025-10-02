@@ -41,7 +41,7 @@ const TopRankingSlideshow = ({ items }: TopRankingSlideshowProps) => {
         {items.map((item, index) => (
           <div key={item.id} className="relative flex-[0_0_100%] group p-1">
             <Card className="overflow-hidden">
-                <div className="flex flex-row">
+                <div className="flex flex-row bg-card">
                     {/* Left side - Image */}
                     <div className="w-1/2 relative aspect-[3/4] flex-shrink-0">
                         <Image
@@ -55,36 +55,40 @@ const TopRankingSlideshow = ({ items }: TopRankingSlideshowProps) => {
                     </div>
 
                     {/* Right side - Info */}
-                    <div className="w-1/2 p-6 flex flex-col justify-center relative">
-                        <div className="absolute top-2 left-2 font-headline font-bold text-6xl text-primary/10 select-none z-0">
-                            {index + 1}
-                        </div>
-                        <h3 className="font-bold text-2xl font-headline line-clamp-2 mb-2 z-10">
-                            {item.title}
-                        </h3>
+                    <div className="w-1/2 p-6 flex flex-col justify-between relative">
+                        <div className="relative z-10">
+                            <div className="absolute top-0 right-0 font-headline font-bold text-6xl text-primary/10 select-none z-0">
+                                {index + 1}
+                            </div>
+                            <h3 className="font-bold text-2xl font-headline line-clamp-2 mb-2 z-10">
+                                {item.title}
+                            </h3>
 
-                        <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mb-4 z-10">
-                            <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                <span className="font-bold text-sm">{item.rating.toFixed(1)}</span>
+                            <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mb-4 z-10">
+                                <div className="flex items-center gap-1">
+                                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                    <span className="font-bold text-sm">{item.rating.toFixed(1)}</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <Bookmark className="w-3.5 h-3.5" />
+                                    <span>{formatNumber(item.listsCount)}</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    <span>{formatNumber(item.commentsCount)}</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                <Bookmark className="w-3.5 h-3.5" />
-                                <span>{formatNumber(item.listsCount)}</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                <MessageCircle className="w-3.5 h-3.5" />
-                                <span>{formatNumber(item.commentsCount)}</span>
-                            </div>
+                            
+                            <p className="text-sm text-muted-foreground line-clamp-3 z-10">
+                                {item.description}
+                            </p>
                         </div>
-                        
-                        <p className="text-sm text-muted-foreground line-clamp-3 mb-4 z-10">
-                            {item.description}
-                        </p>
 
-                        <Link href={url(item)} className="z-10 self-start">
-                           <Button>Leer más</Button>
-                        </Link>
+                        <div className="flex justify-end mt-4 z-10">
+                            <Link href={url(item)}>
+                               <Button>Leer más</Button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </Card>
