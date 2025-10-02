@@ -4,6 +4,7 @@ import './globals.css';
 import Breadcrumbs from '@/components/breadcrumbs';
 import MainNav from '@/components/main-nav';
 import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/context/auth-context';
 
 export const metadata: Metadata = {
   title: 'AniHub Info',
@@ -23,17 +24,19 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <MainNav />
-          <Breadcrumbs />
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <MainNav />
+            <Breadcrumbs />
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );
