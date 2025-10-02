@@ -20,10 +20,7 @@ export type User = {
   image: string;
   role: UserRole;
   lists: {
-    pending: TitleInfo[];
-    following: TitleInfo[];
-    watched: TitleInfo[];
-    favorites: TitleInfo[];
+    [K in UserList]: TitleInfo[];
   };
   listSettings: {
     [K in UserList]: 'public' | 'private';

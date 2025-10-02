@@ -8,6 +8,7 @@
  * - Botones de acción principales para añadir a favoritos o a una lista.
  * Se presenta de forma destacada en la parte superior de la página.
  */
+'use client';
 
 import Image from "next/image";
 import { Bookmark, Heart, ListPlus, MessageCircle, TrendingUp, Trophy } from "lucide-react";
@@ -15,6 +16,9 @@ import type { TitleInfo } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "./ui/badge";
+import { useAuth } from "@/context/auth-context";
+import { cn } from "@/lib/utils";
+
 
 type StatProps = {
   icon: React.ReactNode;
@@ -35,6 +39,14 @@ function Stat({ icon, label, value }: StatProps) {
 }
 
 export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
+  const { user, toggleFavorite } = useAuth();
+  
+  const isFavorite = user?.lists.favorites.some(item => item.id === titleInfo.id) ?? false;
+
+  const handleFavoriteClick = () => {
+    toggleFavorite(titleInfo);
+  }
+
   return (
     <Card className="overflow-hidden">
       <CardHeader>
@@ -74,8 +86,8 @@ export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
         </div>
       </CardContent>
       <CardFooter className="flex gap-2 p-4">
-        <Button size="lg" className="flex-1 text-xs px-2">
-          <Heart className="mr-2 h-4 w-4 shrink-0" /> Favoritos
+        <Button size="lg" className="flex-1 text-xs px-2" variant={isFavorite ? "default" : "outline"} onClick={handleFavoriteClick}>
+          <Heart className={cn("mr-2 h-4 w-4 shrink-0", { "fill-current": isFavorite })} /> Favoritos
         </Button>
         <Button size="lg" variant="secondary" className="flex-1 text-xs px-2">
           <ListPlus className="mr-2 h-4 w-4 shrink-0" /> Añadir a lista

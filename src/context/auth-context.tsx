@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { simulatedUsers, type User } from '@/lib/db';
+import { simulatedUsers, type User, type TitleInfo } from '@/lib/db';
 import { useToast } from '@/hooks/use-toast';
 
 // 1. Define la estructura del contexto de autenticación
@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
+  toggleFavorite: (title: TitleInfo) => void;
 }
 
 // 2. Crea el contexto con un valor inicial nulo
@@ -64,6 +65,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // O `UPDATE user_lists SET ... WHERE user_id = $1`
     setUser(updatedUser);
   };
+  
+  const toggleFavorite = (title: TitleInfo) => {
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Necesitas iniciar sesión",
+            description: "Para añadir a favoritos, primero debes iniciar sesión.",
+        });
+        router.push('/login');
+        return;
+    }
+
+    const isAlreadyFavorite = user.lists.favorites.some(fav => fav.id === title.id);
+    let updatedFavorites: TitleInfo[];
+
+    if (isAlreadyFavorite) {
+        // PSQL: `DELETE FROM user_favorites WHERE user_id = $1 AND media_id = $2;`
+        updatedFavorites = user.lists.favorites.filter(fav => fav.id !== title.id);
+         toast({
+            title: "Eliminado de favoritos",
+            description: `${title.title} ha sido eliminado de tu lista de favoritos.`,
+        });
+    } else {
+        // PSQL: `INSERT INTO user_favorites (user_id, media_id) VALUES ($1, $2);`
+        updatedFavorites = [...user.lists.favorites, title];
+        toast({
+            title: "¡Añadido a favoritos!",
+            description: `${title.title} ha sido añadido a tu lista de favoritos.`,
+        });
+    }
+
+    const updatedUser = {
+        ...user,
+        lists: {
+            ...user.lists,
+            favorites: updatedFavorites,
+        },
+    };
+
+    updateUser(updatedUser);
+  };
+
 
   // Función para simular el cierre de sesión
   const logout = () => {
@@ -82,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     updateUser,
+    toggleFavorite,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
