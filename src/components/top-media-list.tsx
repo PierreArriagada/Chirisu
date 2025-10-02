@@ -41,17 +41,18 @@ function RankingItem({ item, index }: { item: TitleInfo; index: number }) {
   );
 }
 
-export default function TopMediaList({ title, items }: { title: string; items: TitleInfo[] }) {
+export default function TopMediaList({ items }: { items: TitleInfo[] }) {
+  // Now this component just renders a list of items, without its own Card wrapper or title.
+  // This makes it more reusable.
+  if (!items || items.length === 0) {
+    return <p className="text-muted-foreground text-center py-4">No hay elementos para mostrar.</p>;
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map((item, index) => (
           <RankingItem key={item.id} item={item} index={index} />
         ))}
-      </CardContent>
-    </Card>
+    </div>
   );
 }
