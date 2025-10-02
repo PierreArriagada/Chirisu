@@ -94,7 +94,7 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
 
   return (
     <div className="w-full px-4 py-6 min-w-[340px]">
-      <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6 text-center sm:text-left font-headline">
+      <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6 font-headline">
         {title}
       </h2>
       
@@ -118,14 +118,15 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
                   data-ai-hint={item.imageHint}
                 />
                 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent">
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                    <h3 className="font-semibold text-sm mb-2 line-clamp-2">{item.title}</h3>
+                     {/* Title is now always visible */}
                   </div>
                 </div>
                 
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-2">
-                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-semibold text-white text-sm mb-1 line-clamp-2">{item.title}</h3>
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1">
                       <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                       <span className="text-white text-xs font-medium">{item.rating.toFixed(1)}</span>
