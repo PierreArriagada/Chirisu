@@ -106,9 +106,6 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
           {items.map((item, index) => (
             <Link href={url(item)} key={item.id} className="block flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 group cursor-pointer">
               <div className="relative">
-                 <div className="absolute -top-2 -left-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold text-sm w-8 h-8 rounded-full flex items-center justify-center z-10 shadow-lg">
-                    {index + 1}
-                </div>
                 <div className="relative w-full h-44 sm:h-48 md:h-52 lg:h-56 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300 bg-card">
                   <Image
                     src={item.imageUrl}
@@ -117,6 +114,9 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     data-ai-hint={item.imageHint}
                   />
+                  <div className="absolute bottom-0 left-1 font-headline font-bold text-5xl text-white/80 mix-blend-difference drop-shadow-lg" style={{ WebkitTextStroke: '1px rgba(0,0,0,0.2)' }}>
+                    {index + 1}
+                  </div>
                 </div>
               </div>
 
