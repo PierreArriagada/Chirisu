@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
@@ -64,7 +64,7 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
       >
         <CarouselContent className="-ml-2 pl-4 sm:pl-6 lg:pl-8">
            {items.map((item, index) => (
-            <CarouselItem key={index} className="basis-[27%] ss:basis-[28%] sm:basis-[22%] md:basis-[18%] lg:basis-[15%] pl-2">
+            <CarouselItem key={index} className="basis-[27%] ss:basis-[31%] sm:basis-[25%] md:basis-[20%] lg:basis-[18%] pl-2">
                <Link href={url(item)} className="block group cursor-pointer h-full">
                 <Card className="overflow-hidden h-auto flex flex-col border-none shadow-lg bg-transparent">
                   <CardContent className="p-0 relative flex-grow">
