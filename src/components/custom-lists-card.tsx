@@ -14,9 +14,10 @@ interface CustomListsCardProps {
     onEdit: (id: string, newName: string) => void;
     onDelete: (id: string) => void;
     onRemoveItem: (listId: string, itemId: string) => void;
+    onPrivacyChange: (listId: string, isPublic: boolean) => void;
 }
 
-export default function CustomListsCard({ lists, onCreate, onEdit, onDelete, onRemoveItem }: CustomListsCardProps) {
+export default function CustomListsCard({ lists, onCreate, onEdit, onDelete, onRemoveItem, onPrivacyChange }: CustomListsCardProps) {
     const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
 
     return (
@@ -36,6 +37,7 @@ export default function CustomListsCard({ lists, onCreate, onEdit, onDelete, onR
                             onEdit={onEdit} 
                             onDelete={onDelete}
                             onRemoveItem={onRemoveItem} 
+                            onPrivacyChange={onPrivacyChange}
                         />
                     ) : (
                         <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-10">

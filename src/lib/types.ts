@@ -10,6 +10,7 @@ export type CustomList = {
   id: string;
   name: string;
   items: TitleInfo[];
+  isPublic: boolean;
 };
 
 export type User = {

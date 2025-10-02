@@ -141,11 +141,13 @@ const generateCustomLists = (): CustomList[] => ([
         id: 'cl1',
         name: 'Obras maestras del Seinen',
         items: [processedTitles.find(t => t.id === 'berserk-manga')!],
+        isPublic: true,
     },
     {
         id: 'cl2',
         name: 'Para leer en un día',
         items: [processedTitles.find(t => t.id === 'the-boxer-manwha')!, processedTitles.find(t => t.id === 'che-daojuan-manhua')!],
+        isPublic: false,
     }
 ]);
 

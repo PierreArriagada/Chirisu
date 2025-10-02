@@ -8,15 +8,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { CustomList as CustomListType } from '@/lib/types';
 import ListFormDialog from './list-form-dialog';
 import UserMediaList from './user-media-list';
+import ListPrivacyToggle from './list-privacy-toggle';
 
 interface CustomListAccordionProps {
     lists: CustomListType[];
     onEdit: (id: string, newName: string) => void;
     onDelete: (id: string) => void;
     onRemoveItem: (listId: string, itemId: string) => void;
+    onPrivacyChange: (listId: string, isPublic: boolean) => void;
 }
 
-export default function CustomListAccordion({ lists, onEdit, onDelete, onRemoveItem }: CustomListAccordionProps) {
+export default function CustomListAccordion({ lists, onEdit, onDelete, onRemoveItem, onPrivacyChange }: CustomListAccordionProps) {
     const [editingList, setEditingList] = useState<CustomListType | null>(null);
 
     const handleEditClick = (e: React.MouseEvent, list: CustomListType) => {
@@ -60,7 +62,11 @@ export default function CustomListAccordion({ lists, onEdit, onDelete, onRemoveI
                                 </DropdownMenu>
                             </div>
                         </div>
-                        <AccordionContent className="p-4 pt-4">
+                        <AccordionContent className="p-4 pt-4 space-y-4">
+                             <ListPrivacyToggle
+                                isPublic={list.isPublic}
+                                onCheckedChange={(isPublic) => onPrivacyChange(list.id, isPublic)}
+                             />
                             <UserMediaList 
                                 items={list.items}
                                 onRemoveItem={(itemId) => onRemoveItem(list.id, itemId)}

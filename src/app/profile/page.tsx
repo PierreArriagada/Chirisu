@@ -49,12 +49,13 @@ export default function ProfilePage() {
   };
 
   const handleCreateList = (name: string) => {
-    // PSQL: `INSERT INTO custom_lists (user_id, name) VALUES ($1, $2) RETURNING *;`
+    // PSQL: `INSERT INTO custom_lists (user_id, name, is_public) VALUES ($1, $2, false) RETURNING *;`
     if (user) {
         const newList: CustomListType = {
             id: `custom-${Date.now()}`,
             name,
             items: [],
+            isPublic: false,
         };
         const updatedLists = [...customLists, newList];
         setCustomLists(updatedLists);
@@ -110,6 +111,21 @@ export default function ProfilePage() {
             title: "Elemento eliminado",
             description: "El elemento ha sido eliminado de la lista.",
         });
+    }
+  };
+  
+  const handleCustomListPrivacyChange = (listId: string, isPublic: boolean) => {
+    // PSQL: `UPDATE custom_lists SET is_public = $1 WHERE id = $2 AND user_id = $3;`
+    if (user) {
+      const updatedLists = customLists.map(list =>
+        list.id === listId ? { ...list, isPublic } : list
+      );
+      setCustomLists(updatedLists);
+      updateUser({ ...user, customLists: updatedLists });
+      toast({
+        title: 'Privacidad actualizada',
+        description: `Tu lista ahora es ${isPublic ? 'pública' : 'privada'}.`,
+      });
     }
   };
 
@@ -177,6 +193,7 @@ export default function ProfilePage() {
         onEdit={handleEditList}
         onDelete={handleDeleteList}
         onRemoveItem={handleRemoveItemFromList}
+        onPrivacyChange={handleCustomListPrivacyChange}
       />
 
       <Card className="max-w-4xl mx-auto">
