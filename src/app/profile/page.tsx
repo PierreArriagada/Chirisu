@@ -47,7 +47,6 @@ export default function ProfilePage() {
       { name: "Pendiente", value: 'pending', label: "Pendiente" },
       { name: "Siguiendo", value: 'following', label: "Siguiendo" },
       { name: "Visto/Leído", value: 'watched', label: "Visto/Leído" },
-      { name: "Favoritos", value: 'favorites', label: "Favoritos" },
   ];
 
   return (
@@ -76,7 +75,7 @@ export default function ProfilePage() {
       <Card className="max-w-4xl mx-auto">
         <Tabs defaultValue="pending" className="w-full">
             <CardHeader>
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+              <TabsList className="grid w-full grid-cols-3 h-auto">
                   {listTabs.map(tab => (
                     <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
                   ))}
@@ -97,6 +96,18 @@ export default function ProfilePage() {
         </Tabs>
       </Card>
 
+      <Card className="max-w-4xl mx-auto">
+          <CardHeader>
+            <CardTitle>Favoritos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             <ListPrivacyToggle
+                isPublic={listSettings.favorites === 'public'}
+                onCheckedChange={(isPublic) => handlePrivacyChange('favorites', isPublic)}
+                />
+            <UserMediaList items={user.lists.favorites} />
+          </CardContent>
+      </Card>
     </main>
   );
 }
