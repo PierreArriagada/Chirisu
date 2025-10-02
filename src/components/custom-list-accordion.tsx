@@ -35,32 +35,32 @@ export default function CustomListAccordion({ lists, onEdit, onDelete, onRemoveI
         <>
             <Accordion type="multiple" className="w-full space-y-4">
                 {lists.map(list => (
-                    <AccordionItem key={list.id} value={list.id} className="border rounded-lg">
-                        <AccordionTrigger className="p-4 hover:no-underline">
-                            <div className="flex items-center justify-between w-full">
+                    <AccordionItem key={list.id} value={list.id} className="border rounded-lg overflow-hidden">
+                        <div className="flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/50 transition-colors">
+                             <AccordionTrigger className="p-0 hover:no-underline flex-1 text-left">
                                 <span className="font-semibold text-lg">{list.name}</span>
-                                <div onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={(e) => handleEditClick(e, list)}>
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                <span>Editar nombre</span>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={(e) => handleDeleteClick(e, list.id)} className="text-destructive">
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                <span>Eliminar lista</span>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
+                            </AccordionTrigger>
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={(e) => handleEditClick(e, list)}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            <span>Editar nombre</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={(e) => handleDeleteClick(e, list.id)} className="text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            <span>Eliminar lista</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="p-4 pt-0">
+                        </div>
+                        <AccordionContent className="p-4 pt-4">
                             <UserMediaList 
                                 items={list.items}
                                 onRemoveItem={(itemId) => onRemoveItem(list.id, itemId)}
