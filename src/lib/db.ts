@@ -53,7 +53,7 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
     },
     {
         id: 'lotm-novela',
-        title: 'The Lord of the Mysteries',
+        title: 'Lord of the Mysteries',
         type: 'Novela',
         description: 'With the rising tide of steam and machinery, who can be the true Lord of the Mysteries? A transmigrator from the modern world finds himself in a Victorian-era world of steam, machinery, and supernatural powers.',
         imageUrl: 'https://picsum.photos/seed/lotm/400/600',
@@ -87,7 +87,8 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         commentsCount: 15000,
         listsCount: 25000,
     },
-    // More animes for ranking page
+    // --- POPULATING MORE TITLES ---
+    // More animes
     {
         id: 'attack-on-titan-anime',
         title: 'Attack on Titan',
@@ -112,6 +113,11 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         commentsCount: 45000,
         listsCount: 90000,
     },
+    { id: 'jujutsu-kaisen-anime', title: 'Jujutsu Kaisen', type: 'Anime', description: '', imageUrl: 'https://picsum.photos/seed/jjk/400/600', imageHint: 'anime cover', rating: 8.8, ranking: 4, commentsCount: 0, listsCount: 0 },
+    { id: 'demon-slayer-anime', title: 'Demon Slayer', type: 'Anime', description: '', imageUrl: 'https://picsum.photos/seed/demonslayer/400/600', imageHint: 'anime cover', rating: 8.7, ranking: 5, commentsCount: 0, listsCount: 0 },
+    { id: 'steins-gate-anime', title: 'Steins;Gate', type: 'Anime', description: '', imageUrl: 'https://picsum.photos/seed/sgate/400/600', imageHint: 'anime cover', rating: 9.0, ranking: 6, commentsCount: 0, listsCount: 0 },
+
+    // More mangas
     {
         id: 'one-piece-manga',
         title: 'One Piece',
@@ -124,7 +130,35 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
         commentsCount: 60000,
         listsCount: 120000,
     },
+    { id: 'vagabond-manga', title: 'Vagabond', type: 'Manga', description: '', imageUrl: 'https://picsum.photos/seed/vagabondmanga/400/600', imageHint: 'manga cover', rating: 9.7, ranking: 3, commentsCount: 0, listsCount: 0 },
+    { id: 'vinland-saga-manga', title: 'Vinland Saga', type: 'Manga', description: '', imageUrl: 'https://picsum.photos/seed/vinland/400/600', imageHint: 'manga cover', rating: 9.6, ranking: 4, commentsCount: 0, listsCount: 0 },
+    { id: 'kingdom-manga', title: 'Kingdom', type: 'Manga', description: '', imageUrl: 'https://picsum.photos/seed/kingdom/400/600', imageHint: 'manga cover', rating: 9.5, ranking: 5, commentsCount: 0, listsCount: 0 },
+
+    // More Manhuas
+    { id: 'tales-of-demons-and-gods-manhua', title: 'Tales of Demons and Gods', type: 'Manhua', description: '', imageUrl: 'https://picsum.photos/seed/todg/400/600', imageHint: 'manhua cover', rating: 8.5, ranking: 20, commentsCount: 0, listsCount: 0 },
+    { id: 'versatile-mage-manhua', title: 'Versatile Mage', type: 'Manhua', description: '', imageUrl: 'https://picsum.photos/seed/vmage/400/600', imageHint: 'manhua cover', rating: 8.3, ranking: 22, commentsCount: 0, listsCount: 0 },
+    { id: 'soul-land-manhua', title: 'Soul Land', type: 'Manhua', description: '', imageUrl: 'https://picsum.photos/seed/soulland/400/600', imageHint: 'manhua cover', rating: 8.7, ranking: 18, commentsCount: 0, listsCount: 0 },
+
+    // More Manwhas
+    { id: 'tower-of-god-manwha', title: 'Tower of God', type: 'Manwha', description: '', imageUrl: 'https://picsum.photos/seed/tog/400/600', imageHint: 'manwha cover', rating: 9.4, ranking: 6, commentsCount: 0, listsCount: 0 },
+    { id: 'the-beginning-after-the-end-manwha', title: 'The Beginning After the End', type: 'Manwha', description: '', imageUrl: 'https://picsum.photos/seed/tbate/400/600', imageHint: 'manwha cover', rating: 9.6, ranking: 4, commentsCount: 0, listsCount: 0 },
+    { id: 'omniscient-readers-viewpoint-manwha', title: 'Omniscient Reader\'s Viewpoint', type: 'Manwha', description: '', imageUrl: 'https://picsum.photos/seed/orv/400/600', imageHint: 'manwha cover', rating: 9.7, ranking: 3, commentsCount: 0, listsCount: 0 },
+
+    // More Novelas
+    { id: 'reverend-insanity-novela', title: 'Reverend Insanity', type: 'Novela', description: '', imageUrl: 'https://picsum.photos/seed/ri/400/600', imageHint: 'novel cover', rating: 9.8, ranking: 1, commentsCount: 0, listsCount: 0 },
+    { id: 'shadow-slave-novela', title: 'Shadow Slave', type: 'Novela', description: '', imageUrl: 'https://picsum.photos/seed/sslave/400/600', imageHint: 'novel cover', rating: 9.3, ranking: 7, commentsCount: 0, listsCount: 0 },
+    { id: 'mushoku-tensei-novela', title: 'Mushoku Tensei: Jobless Reincarnation', type: 'Novela', description: '', imageUrl: 'https://picsum.photos/seed/mushoku/400/600', imageHint: 'novel cover', rating: 9.0, ranking: 10, commentsCount: 0, listsCount: 0 },
+
+    // More Fan Comics
+    { id: 'atla-imbalance-fan-comic', title: 'Avatar: The Last Airbender - Imbalance', type: 'Fan Comic', description: '', imageUrl: 'https://picsum.photos/seed/atlaim/400/600', imageHint: 'fan comic cover', rating: 8.8, ranking: 90, commentsCount: 0, listsCount: 0 },
+    { id: 'dragon-ball-multiverse-fan-comic', title: 'Dragon Ball Multiverse', type: 'Fan Comic', description: '', imageUrl: 'https://picsum.photos/seed/dbm/400/600', imageHint: 'fan comic cover', rating: 8.2, ranking: 110, commentsCount: 0, listsCount: 0 },
+
+    // More Douguas
+    { id: 'the-kings-avatar-dougua', title: 'The King\'s Avatar', type: 'Dougua', description: '', imageUrl: 'https://picsum.photos/seed/tka/400/600', imageHint: 'dougua cover', rating: 9.0, ranking: 12, commentsCount: 0, listsCount: 0 },
+    { id: 'fog-hill-of-five-elements-dougua', title: 'Fog Hill of Five Elements', type: 'Dougua', description: '', imageUrl: 'https://picsum.photos/seed/fhofe/400/600', imageHint: 'dougua cover', rating: 9.1, ranking: 11, commentsCount: 0, listsCount: 0 },
+    { id: 'heaven-officials-blessing-dougua', title: 'Heaven Official\'s Blessing', type: 'Dougua', description: '', imageUrl: 'https://picsum.photos/seed/hob/400/600', imageHint: 'dougua cover', rating: 9.3, ranking: 9, commentsCount: 0, listsCount: 0 },
 ];
+
 
 const createSlug = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const processedTitles: TitleInfo[] = titles.map(t => ({ ...t, slug: createSlug(t.title) }));
@@ -430,7 +464,7 @@ export function getVoiceActorPageData(slug: string) {
 export function getMediaListPage(mediaType: MediaType) {
     const titlesOfType = processedTitles.filter(t => t.type === mediaType);
     
-    const topAllTime = [...titlesOfType].sort((a, b) => a.ranking - b.ranking).slice(0, 5);
+    const topAllTime = [...titlesOfType].sort((a, b) => a.ranking - b.ranking).slice(0, 10);
     // Simulate weekly top by shuffling and taking 5
     const topWeekly = [...titlesOfType].sort(() => 0.5 - Math.random()).slice(0, 5);
 
