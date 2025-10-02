@@ -42,9 +42,22 @@ const TopRankingSlideshow = ({ items }: TopRankingSlideshowProps) => {
           <div key={item.id} className="relative flex-[0_0_100%] group p-1">
             <Card className="overflow-hidden">
                 <div className="flex flex-col md:flex-row">
-                    {/* Left side - Info */}
+                    {/* Left side - Image */}
+                    <div className="md:w-1/2 aspect-[4/3] md:aspect-auto relative">
+                        <Image
+                            src={item.imageUrl}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                            data-ai-hint={item.imageHint}
+                            priority={index < 2}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent md:bg-gradient-to-l md:from-card md:via-transparent md:to-transparent"></div>
+                    </div>
+
+                    {/* Right side - Info */}
                     <div className="relative p-6 md:w-1/2 flex flex-col justify-center">
-                        <div className="absolute top-2 left-2 font-headline font-bold text-6xl text-primary/10 select-none">
+                        <div className="absolute top-2 left-2 font-headline font-bold text-6xl text-primary/10 select-none z-0">
                             {index + 1}
                         </div>
                         <h3 className="font-bold text-2xl font-headline line-clamp-2 mb-2 z-10">
@@ -73,19 +86,6 @@ const TopRankingSlideshow = ({ items }: TopRankingSlideshowProps) => {
                         <Link href={url(item)} className="z-10 self-start">
                            <Button>Leer más</Button>
                         </Link>
-                    </div>
-
-                    {/* Right side - Image */}
-                    <div className="md:w-1/2 aspect-[4/3] md:aspect-auto relative">
-                        <Image
-                            src={item.imageUrl}
-                            alt={item.title}
-                            fill
-                            className="object-cover"
-                            data-ai-hint={item.imageHint}
-                            priority={index < 2}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent md:bg-gradient-to-r md:from-card md:via-transparent md:to-transparent"></div>
                     </div>
                 </div>
             </Card>
