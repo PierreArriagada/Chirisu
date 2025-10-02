@@ -1,6 +1,42 @@
-import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review, RelatedTitle, GalleryImage, VoiceActor, MediaType, CharacterRole } from "./types";
+import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review, RelatedTitle, GalleryImage, VoiceActor, MediaType, CharacterRole, User } from "./types";
 
 // --- "DATABASE" TABLES ---
+
+export const simulatedUsers: (User & { password: string })[] = [
+  {
+    id: '1-admin',
+    name: 'Admin Demo',
+    email: 'admin@example.com',
+    password: 'adminpassword',
+    image: 'https://picsum.photos/seed/admin-avatar/100/100',
+    role: 'admin',
+  },
+  {
+    id: '2-mod',
+    name: 'Moderador Demo',
+    email: 'moderator@example.com',
+    password: 'modpassword',
+    image: 'https://picsum.photos/seed/mod-avatar/100/100',
+    role: 'moderator',
+  },
+  {
+    id: '3-user',
+    name: 'Usuario Demo',
+    email: 'user@example.com',
+    password: 'userpassword',
+    image: 'https://picsum.photos/seed/user-avatar/100/100',
+    role: 'user',
+  },
+    {
+    id: '4-user',
+    name: 'MariaDB',
+    email: 'maria@example.com',
+    password: 'userpassword',
+    image: 'https://picsum.photos/seed/user-avatar2/100/100',
+    role: 'user',
+  },
+];
+
 
 const titles: Omit<TitleInfo, 'slug'>[] = [
     {

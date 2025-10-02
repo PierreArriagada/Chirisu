@@ -2,62 +2,20 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { simulatedUsers, type User } from '@/lib/db';
+import { useToast } from '@/hooks/use-toast';
 
-// 1. Define la estructura de un usuario
-// PSQL: En una implementación real, esta estructura coincidiría con las columnas
-// de tu tabla 'users' en PostgreSQL (ej: id, name, email, image_url, role, created_at, password_hash).
-type UserRole = 'admin' | 'moderator' | 'user';
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  image: string;
-  role: UserRole;
-};
-
-// --- BASE DE DATOS SIMULADA ---
-// PSQL: Esto sería una tabla `users` en tu base de datos PostgreSQL.
-// La contraseña se guardaría como un hash (ej. usando bcrypt), no como texto plano.
-const simulatedUsers: (User & { password: string })[] = [
-  {
-    id: '1-admin',
-    name: 'Admin Demo',
-    email: 'admin@example.com',
-    password: 'adminpassword',
-    image: 'https://picsum.photos/seed/admin-avatar/100/100',
-    role: 'admin',
-  },
-  {
-    id: '2-mod',
-    name: 'Moderador Demo',
-    email: 'moderator@example.com',
-    password: 'modpassword',
-    image: 'https://picsum.photos/seed/mod-avatar/100/100',
-    role: 'moderator',
-  },
-  {
-    id: '3-user',
-    name: 'Usuario Demo',
-    email: 'user@example.com',
-    password: 'userpassword',
-    image: 'https://picsum.photos/seed/user-avatar/100/100',
-    role: 'user',
-  },
-];
-// --- FIN DE LA BASE DE DATOS SIMULADA ---
-
-
-// 2. Define la estructura del contexto de autenticación
+// 1. Define la estructura del contexto de autenticación
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
-// 3. Crea el contexto con un valor inicial nulo
+// 2. Crea el contexto con un valor inicial nulo
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// 4. Crea un "Hook" personalizado para usar el contexto fácilmente
+// 3. Crea un "Hook" personalizado para usar el contexto fácilmente
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
@@ -66,10 +24,11 @@ export function useAuth() {
   return context;
 }
 
-// 5. Crea el componente "Proveedor" que envolverá la aplicación
+// 4. Crea el componente "Proveedor" que envolverá la aplicación
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   // Función para simular el inicio de sesión con email y contraseña
   const login = (email: string, password: string): Promise<void> => {
@@ -103,6 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // PSQL: Esto simplemente eliminaría el token de sesión del cliente.
     // No requiere una llamada a la base de datos, solo actualiza el estado del frontend.
     setUser(null);
+    toast({
+        title: 'Sesión cerrada',
+        description: 'Has cerrado sesión correctamente.',
+      });
     router.push('/'); // Redirige a la página de inicio
   };
 

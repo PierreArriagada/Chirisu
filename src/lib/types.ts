@@ -2,6 +2,16 @@ import { type RecommendSimilarTitlesOutput } from "@/ai/flows/recommend-similar-
 
 export type MediaType = 'Anime' | 'Manga' | 'Novela' | 'Manhua' | 'Manwha' | 'Dougua' | 'Fan Comic';
 
+export type UserRole = 'admin' | 'moderator' | 'user';
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  image: string;
+  role: UserRole;
+};
+
 export type TitleInfo = {
   id: string;
   slug: string;
