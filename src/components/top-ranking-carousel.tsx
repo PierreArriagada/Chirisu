@@ -153,12 +153,14 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
         </div>
       </div>
       
-      <Link href={viewMoreLink} className="flex items-center justify-center mt-6 group w-fit mx-auto">
-        <span className="text-blue-600 font-medium text-sm sm:text-base border-b-2 border-blue-600 group-hover:border-blue-800 transition-colors duration-300">
-          Ver más
-        </span>
-        <ChevronRight className="w-4 h-4 ml-2 text-blue-600 group-hover:text-blue-800 group-hover:translate-x-1 transition-all duration-300" />
-      </Link>
+      <div className="flex justify-end mt-2">
+        <Link href={viewMoreLink} className="flex items-center group w-fit">
+          <span className="text-blue-600 font-medium text-sm sm:text-base border-b-2 border-blue-600 group-hover:border-blue-800 transition-colors duration-300">
+            Ver más
+          </span>
+          <ChevronRight className="w-4 h-4 ml-2 text-blue-600 group-hover:text-blue-800 group-hover:translate-x-1 transition-all duration-300" />
+        </Link>
+      </div>
       
       <style jsx>{`
         .scrollbar-hide {
