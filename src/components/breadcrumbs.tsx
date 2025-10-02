@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { HomeIcon, ChevronRight } from "lucide-react";
-import { getMediaBySlug, getEpisodeById, getCharacterBySlug, getVoiceActorBySlug } from "@/lib/db";
+import { getMediaBySlug, getEpisodeById, getCharacterBySlug, getVoiceActorBySlug, getMediaPageData } from "@/lib/db";
 
 // Helper to capitalize first letter
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -17,30 +17,56 @@ export default function Breadcrumbs() {
     return null;
   }
 
-  const breadcrumbs = segments.map((segment, index) => {
+  const breadcrumbs = segments.flatMap((segment, index) => {
     const href = "/" + segments.slice(0, index + 1).join("/");
-    let label = capitalize(segment.replace(/-/g, " "));
+    let label: string | React.ReactNode = capitalize(segment.replace(/-/g, " "));
+    const isLast = index === segments.length - 1;
+    let breadcrumbObject = { href, label, isLast };
+    let additionalCrumbs: { href: string, label: string, isLast: boolean }[] = [];
 
     // This is where we can get dynamic labels
-    if (segments[0] === 'anime' || segments[0] === 'manga' || segments[0] === 'manhua' || segments[0] === 'manwha' || segments[0] === 'novela' || segments[0] === 'dougua' || segments[0] === 'fan-comic') {
-        if(index === 1) {
+    const currentSegmentType = segments[0];
+    const isDynamicSegment = index === 1;
+
+    if (isDynamicSegment) {
+        if (['anime', 'manga', 'manhua', 'manwha', 'novela', 'dougua', 'fan-comic'].includes(currentSegmentType)) {
             const media = getMediaBySlug(segment);
             if(media) label = media.title;
+        } else if (currentSegmentType === 'episode') {
+            const episode = getEpisodeById(segment);
+            if(episode) {
+                const media = getMediaPageData(episode.mediaId, 'anime');
+                if (media) {
+                    // We need to inject the anime page into the breadcrumbs
+                    additionalCrumbs.push({
+                        href: `/${media.titleInfo.type.toLowerCase()}/${media.titleInfo.slug}`,
+                        label: media.titleInfo.title,
+                        isLast: false,
+                    });
+                }
+                label = episode.name;
+            }
+        } else if (currentSegmentType === 'character') {
+            const character = getCharacterBySlug(segment);
+            if(character) label = character.name;
+        } else if (currentSegmentType === 'voice-actor') {
+            const voiceActor = getVoiceActorBySlug(segment);
+            if(voiceActor) label = voiceActor.name;
         }
-    } else if(segments[0] === 'episode' && index === 1) {
-        const episode = getEpisodeById(segment);
-        if(episode) label = episode.name;
-    } else if(segments[0] === 'character' && index === 1) {
-        const character = getCharacterBySlug(segment);
-        if(character) label = character.name;
-    } else if(segments[0] === 'voice-actor' && index === 1) {
-        const voiceActor = getVoiceActorBySlug(segment);
-        if(voiceActor) label = voiceActor.name;
+    }
+    
+    breadcrumbObject.label = label;
+
+    if (currentSegmentType === 'episode' && index === 0) {
+        // For /episode/ep-1, we don't want to show "Episode" segment, we will construct it fully
+        return [];
     }
 
-    const isLast = index === segments.length - 1;
+    if(additionalCrumbs.length > 0) {
+        return [...additionalCrumbs, breadcrumbObject];
+    }
 
-    return { href, label, isLast };
+    return [breadcrumbObject];
   });
 
   // Prepend Home
