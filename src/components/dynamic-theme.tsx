@@ -1,8 +1,8 @@
-
 'use client';
 
 import { useEffect } from 'react';
 import ColorThief from 'colorthief';
+import { useTheme } from 'next-themes';
 
 interface DynamicThemeProps {
   imageUrl: string;
@@ -33,12 +33,22 @@ const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => 
 
 
 const DynamicTheme = ({ imageUrl }: DynamicThemeProps) => {
+  const { theme, systemTheme } = useTheme();
+  const isDynamic = theme === 'dynamic' || (theme === 'system' && systemTheme === 'dynamic');
+
   useEffect(() => {
-    // Find the main image already rendered on the page by its ID
+    if (!isDynamic) {
+        // If not in dynamic theme, ensure default styles are applied
+        document.documentElement.style.removeProperty('--background');
+        document.documentElement.style.removeProperty('--card');
+        document.documentElement.style.removeProperty('--primary');
+        return;
+    };
+
     const img = document.getElementById('media-cover-image') as HTMLImageElement | null;
-    
     if (!img) return;
 
+    // Store original values to revert back to
     const originalValues = {
         background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
         card: getComputedStyle(document.documentElement).getPropertyValue('--card'),
@@ -49,33 +59,30 @@ const DynamicTheme = ({ imageUrl }: DynamicThemeProps) => {
       const [r, g, b] = color;
       const [h, s, l] = rgbToHsl(r, g, b);
 
-      // Determine if the color is light or dark to adjust luminance
       const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
-      let bgLuminance = l < 10 ? 10 : l > 90 ? 90 : l;
-      let cardLuminance = l < 10 ? 15 : l > 90 ? 95 : l + 5;
+      let bgLuminance, cardLuminance;
+      const isDark = document.documentElement.classList.contains('dark');
       
-      if (luminance > 0.5) { // Light color
-          bgLuminance = Math.max(85, l);
-          cardLuminance = Math.max(90, l + 5);
-      } else { // Dark color
-          bgLuminance = Math.min(15, l);
-          cardLuminance = Math.min(20, l + 5);
+      if (isDark) {
+        bgLuminance = Math.min(15, l * 0.8);
+        cardLuminance = Math.min(20, l * 0.8 + 5);
+      } else {
+        bgLuminance = Math.max(90, l + (100 - l) * 0.8);
+        cardLuminance = Math.max(95, l + (100 - l) * 0.9);
       }
+
 
       document.documentElement.style.setProperty('--background', `${h} ${s}% ${bgLuminance}%`);
       document.documentElement.style.setProperty('--card', `${h} ${s}% ${cardLuminance}%`);
       
-      // Make primary a more saturated version
       const primarySaturation = Math.min(100, s + 20);
-      const primaryLuminance = luminance > 0.5 ? Math.max(40, l - 15) : Math.min(60, l + 15);
+      const primaryLuminance = isDark ? Math.min(60, l + 25) : Math.max(40, l - 25);
       document.documentElement.style.setProperty('--primary', `${h} ${primarySaturation}% ${primaryLuminance}%`);
     };
 
     const handleLoad = () => {
       try {
-        // Since the image is from a different origin, we still need to fetch it in a way
-        // that allows canvas access. The browser might have it cached.
         const proxyImg = new Image();
         proxyImg.crossOrigin = 'Anonymous';
         proxyImg.src = img.src;
@@ -89,22 +96,20 @@ const DynamicTheme = ({ imageUrl }: DynamicThemeProps) => {
       }
     };
     
-    // If the image is already loaded, run the logic. Otherwise, wait for it to load.
     if (img.complete) {
         handleLoad();
     } else {
         img.addEventListener('load', handleLoad);
     }
 
-
     return () => {
       img.removeEventListener('load', handleLoad);
-      // Revert to original CSS variables when component unmounts
+      // Revert to original CSS variables when component unmounts or theme changes
       document.documentElement.style.setProperty('--background', originalValues.background);
       document.documentElement.style.setProperty('--card', originalValues.card);
       document.documentElement.style.setProperty('--primary', originalValues.primary);
     };
-  }, [imageUrl]);
+  }, [imageUrl, isDynamic]);
 
   return null;
 };

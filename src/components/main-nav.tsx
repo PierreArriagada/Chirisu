@@ -3,6 +3,7 @@ import { BookOpen, Clapperboard, Film, Menu, Newspaper, Pencil, Search } from "l
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
+import { ThemeToggle } from "./theme-toggle";
 
 function MainNav() {
     const navItems = [
@@ -31,27 +32,31 @@ function MainNav() {
                         <Search />
                     </Button>
                 </div>
-                <div className="md:hidden">
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <Menu />
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="right">
-                            <SheetHeader>
-                                <SheetTitle className="sr-only">Navegación</SheetTitle>
-                            </SheetHeader>
-                            <div className="flex flex-col gap-4 p-4">
-                                {navItems.map(item => (
-                                <Link key={item.href} href={item.href} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                                    {item.icon}
-                                    <span>{item.label}</span>
-                                </Link>
-                                ))}
-                            </div>
-                        </SheetContent>
-                    </Sheet>
+
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <div className="md:hidden">
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Menu />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="right">
+                                <SheetHeader>
+                                    <SheetTitle className="sr-only">Navegación</SheetTitle>
+                                </SheetHeader>
+                                <div className="flex flex-col gap-4 p-4">
+                                    {navItems.map(item => (
+                                    <Link key={item.href} href={item.href} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                                        {item.icon}
+                                        <span>{item.label}</span>
+                                    </Link>
+                                    ))}
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
                 </div>
             </nav>
         </header>
