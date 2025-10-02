@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (user: User) => void;
 }
 
 // 2. Crea el contexto con un valor inicial nulo
@@ -57,6 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateUser = (updatedUser: User) => {
+    // PSQL: Esta función haría una llamada a la API para actualizar los datos del usuario.
+    // `UPDATE users SET ... WHERE id = $1`
+    // O `UPDATE user_lists SET ... WHERE user_id = $1`
+    setUser(updatedUser);
+  };
+
   // Función para simular el cierre de sesión
   const logout = () => {
     // PSQL: Esto simplemente eliminaría el token de sesión del cliente.
@@ -73,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     login,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

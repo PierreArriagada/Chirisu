@@ -6,12 +6,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "./ui/badge";
 import { Star } from "lucide-react";
+import DeleteItemButton from "./delete-item-button";
 
-function MediaItem({ item }: { item: TitleInfo }) {
+
+interface MediaItemProps {
+    item: TitleInfo;
+    onRemove?: () => void;
+}
+
+function MediaItem({ item, onRemove }: MediaItemProps) {
     const url = `/${item.type.toLowerCase().replace(' ', '-')}/${item.slug}`;
     return (
-        <Link href={url} className="group">
-            <Card className="flex items-center gap-4 p-3 overflow-hidden transition-all duration-200 hover:bg-accent/50 hover:shadow-md">
+        <Card className="relative group/item flex items-center gap-4 p-3 overflow-hidden transition-all duration-200 hover:bg-accent/50 hover:shadow-md">
+             {onRemove && (
+                <div className="absolute top-1 right-1 z-10">
+                    <DeleteItemButton onRemove={onRemove} />
+                </div>
+            )}
+            <Link href={url} className="flex items-center gap-4 w-full group">
                 <div className="flex-shrink-0">
                     <Image
                         src={item.imageUrl}
@@ -32,13 +44,18 @@ function MediaItem({ item }: { item: TitleInfo }) {
                         </div>
                     </div>
                 </div>
-            </Card>
-        </Link>
+            </Link>
+        </Card>
     );
 }
 
+interface UserMediaListProps {
+    items: TitleInfo[];
+    onRemoveItem?: (itemId: string) => void;
+}
 
-export default function UserMediaList({ items }: { items: TitleInfo[] }) {
+
+export default function UserMediaList({ items, onRemoveItem }: UserMediaListProps) {
     if (items.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-10">
@@ -51,7 +68,11 @@ export default function UserMediaList({ items }: { items: TitleInfo[] }) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {items.map(item => (
-                <MediaItem key={item.id} item={item} />
+                <MediaItem 
+                    key={item.id} 
+                    item={item} 
+                    onRemove={onRemoveItem ? () => onRemoveItem(item.id) : undefined}
+                />
             ))}
         </div>
     )

@@ -1,4 +1,4 @@
-import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review, RelatedTitle, GalleryImage, VoiceActor, MediaType, CharacterRole, User } from "./types";
+import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review, RelatedTitle, GalleryImage, VoiceActor, MediaType, CharacterRole, User, CustomList } from "./types";
 
 // --- "DATABASE" TABLES ---
 
@@ -136,6 +136,20 @@ const generateUserLists = () => ({
     favorites: [processedTitles[1], processedTitles[0]],
 });
 
+const generateCustomLists = (): CustomList[] => ([
+    {
+        id: 'cl1',
+        name: 'Obras maestras del Seinen',
+        items: [processedTitles.find(t => t.id === 'berserk-manga')!],
+    },
+    {
+        id: 'cl2',
+        name: 'Para leer en un día',
+        items: [processedTitles.find(t => t.id === 'the-boxer-manwha')!, processedTitles.find(t => t.id === 'che-daojuan-manhua')!],
+    }
+]);
+
+
 export const simulatedUsers: (User & { password: string })[] = [
   {
     id: '1-admin',
@@ -146,6 +160,7 @@ export const simulatedUsers: (User & { password: string })[] = [
     role: 'admin',
     lists: generateUserLists(),
     listSettings: { pending: 'public', following: 'public', watched: 'private', favorites: 'public' },
+    customLists: generateCustomLists(),
   },
   {
     id: '2-mod',
@@ -156,6 +171,7 @@ export const simulatedUsers: (User & { password: string })[] = [
     role: 'moderator',
     lists: generateUserLists(),
     listSettings: { pending: 'public', following: 'public', watched: 'public', favorites: 'private' },
+    customLists: [],
   },
   {
     id: '3-user',
@@ -166,6 +182,7 @@ export const simulatedUsers: (User & { password: string })[] = [
     role: 'user',
     lists: generateUserLists(),
     listSettings: { pending: 'private', following: 'public', watched: 'public', favorites: 'public' },
+    customLists: generateCustomLists(),
   },
   {
     id: '4-user',
@@ -176,6 +193,7 @@ export const simulatedUsers: (User & { password: string })[] = [
     role: 'user',
     lists: generateUserLists(),
     listSettings: { pending: 'public', following: 'private', watched: 'private', favorites: 'private' },
+    customLists: [],
   },
 ];
 

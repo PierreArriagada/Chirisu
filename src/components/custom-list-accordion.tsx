@@ -1,0 +1,86 @@
+'use client';
+
+import { useState } from 'react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import type { CustomList as CustomListType } from '@/lib/types';
+import ListFormDialog from './list-form-dialog';
+import UserMediaList from './user-media-list';
+
+interface CustomListAccordionProps {
+    lists: CustomListType[];
+    onEdit: (id: string, newName: string) => void;
+    onDelete: (id: string) => void;
+    onRemoveItem: (listId: string, itemId: string) => void;
+}
+
+export default function CustomListAccordion({ lists, onEdit, onDelete, onRemoveItem }: CustomListAccordionProps) {
+    const [editingList, setEditingList] = useState<CustomListType | null>(null);
+
+    const handleEditClick = (e: React.MouseEvent, list: CustomListType) => {
+        e.stopPropagation(); // Prevent accordion from toggling
+        setEditingList(list);
+    };
+
+    const handleDeleteClick = (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        // PSQL: Esto mostraría un diálogo de confirmación antes de llamar a onDelete.
+        // Por simplicidad, eliminamos directamente.
+        onDelete(id);
+    };
+
+    return (
+        <>
+            <Accordion type="multiple" className="w-full space-y-4">
+                {lists.map(list => (
+                    <AccordionItem key={list.id} value={list.id} className="border rounded-lg">
+                        <AccordionTrigger className="p-4 hover:no-underline">
+                            <div className="flex items-center justify-between w-full">
+                                <span className="font-semibold text-lg">{list.name}</span>
+                                <div onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={(e) => handleEditClick(e, list)}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                <span>Editar nombre</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={(e) => handleDeleteClick(e, list.id)} className="text-destructive">
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                <span>Eliminar lista</span>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="p-4 pt-0">
+                            <UserMediaList 
+                                items={list.items}
+                                onRemoveItem={(itemId) => onRemoveItem(list.id, itemId)}
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
+                ))}
+            </Accordion>
+
+            {editingList && (
+                <ListFormDialog
+                    isOpen={!!editingList}
+                    onOpenChange={() => setEditingList(null)}
+                    onSave={(newName) => onEdit(editingList.id, newName)}
+                    initialValue={editingList.name}
+                    title="Editar nombre de la lista"
+                    description="Elige un nuevo nombre para tu lista."
+                    buttonText="Guardar cambios"
+                />
+            )}
+        </>
+    );
+}

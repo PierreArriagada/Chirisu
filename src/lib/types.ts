@@ -6,6 +6,12 @@ export type UserRole = 'admin' | 'moderator' | 'user';
 
 export type UserList = 'pending' | 'following' | 'watched' | 'favorites';
 
+export type CustomList = {
+  id: string;
+  name: string;
+  items: TitleInfo[];
+};
+
 export type User = {
   id: string;
   name: string;
@@ -21,6 +27,7 @@ export type User = {
   listSettings: {
     [K in UserList]: 'public' | 'private';
   };
+  customLists: CustomList[];
 };
 
 export type TitleInfo = {
