@@ -25,7 +25,7 @@ function Stat({ icon, label, value }: StatProps) {
 
 export default function CoreInfoCard({ titleInfo }: { titleInfo: TitleInfo }) {
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl">
+    <Card className="overflow-hidden">
       <CardHeader>
         <div className="flex flex-col ss:flex-row ss:items-start ss:justify-between gap-2">
           <CardTitle className="font-headline text-lg">
