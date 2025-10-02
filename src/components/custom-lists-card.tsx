@@ -1,3 +1,14 @@
+/**
+ * @fileoverview CustomListsCard - Tarjeta para gestionar las listas personalizadas.
+ * 
+ * Es el componente contenedor que se muestra en la página de perfil del usuario.
+ * - Muestra el título "Mis listas creadas".
+ * - Incluye un botón para abrir un diálogo (`ListFormDialog`) y crear una nueva lista.
+ * - Renderiza `CustomListAccordion` para mostrar las listas existentes.
+ * - Muestra un mensaje de bienvenida si el usuario aún no ha creado ninguna lista.
+ * Centraliza la lógica de alto nivel para la creación de listas.
+ */
+
 'use client';
 
 import { useState } from 'react';

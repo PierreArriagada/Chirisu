@@ -1,3 +1,13 @@
+/**
+ * @fileoverview DeleteItemButton - Botón para eliminar un elemento de una lista.
+ * 
+ * Este es un pequeño componente reutilizable que muestra un icono de 'X'.
+ * Está diseñado para ser usado dentro de las tarjetas de `UserMediaList` cuando se
+ * muestran en un contexto editable (como en las listas personalizadas del perfil).
+ * Al hacer clic, invoca la función `onRemove` pasada como prop para ejecutar la
+ * lógica de eliminación.
+ */
+
 'use client';
 
 import { X } from 'lucide-react';

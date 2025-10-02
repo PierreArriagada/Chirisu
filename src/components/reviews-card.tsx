@@ -1,3 +1,13 @@
+/**
+ * @fileoverview ReviewsCard - Tarjeta para mostrar reseñas de usuarios.
+ * 
+ * Renderiza una lista de reseñas de usuarios para un título específico.
+ * Cada reseña individual muestra:
+ * - El avatar y nombre del autor de la reseña.
+ * - Una calificación por estrellas (`StarRating`).
+ * - El título y el cuerpo de la reseña.
+ */
+
 import type { Review } from "@/lib/types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";

@@ -1,3 +1,13 @@
+/**
+ * @fileoverview StarRating - Componente para mostrar una calificación con estrellas.
+ * 
+ * Renderiza una calificación numérica como una serie de iconos de estrellas.
+ * Es configurable para mostrar un número máximo de estrellas (`maxStars`) y
+ * ajustar su tamaño (`starSize`). Las estrellas llenas representan la
+ * calificación, mientras que las vacías completan el total. Se utiliza
+ * en las tarjetas de reseñas (`ReviewsCard`) y en las listas de usuario.
+ */
+
 'use client';
 
 import { cn } from '@/lib/utils';

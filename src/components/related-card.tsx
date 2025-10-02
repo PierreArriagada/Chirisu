@@ -1,3 +1,12 @@
+/**
+ * @fileoverview RelatedCard - Tarjeta para mostrar títulos relacionados.
+ * 
+ * Muestra una cuadrícula de otros medios que están relacionados con el título
+ * actual (ej. secuelas, precuelas, adaptaciones, etc.).
+ * Cada elemento en la cuadrícula es una tarjeta clickeable que muestra la
+ * imagen, el tipo de relación y el título del medio relacionado.
+ */
+
 import type { RelatedTitle } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";

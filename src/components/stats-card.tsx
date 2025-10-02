@@ -1,3 +1,12 @@
+/**
+ * @fileoverview StatsCard - Tarjeta para mostrar estadísticas detalladas de un título.
+ * 
+ * Presenta una cuadrícula de métricas sobre la interacción de los usuarios con
+ * un título, como la puntuación media, el ranking de popularidad, y el número
+ * de usuarios que lo han marcado como favorito, completado, viéndolo actualmente,
+ * o planean verlo. Cada estadística se muestra con un icono representativo.
+ */
+
 import type { AnimeDetails } from "@/lib/types";
 import { CardContent } from "@/components/ui/card";
 import { BarChart2, CheckCircle, Heart, Star, Users, ListVideo } from "lucide-react";

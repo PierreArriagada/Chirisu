@@ -1,3 +1,12 @@
+/**
+ * @fileoverview Breadcrumbs - Componente de migas de pan dinámico.
+ * 
+ * Renderiza una ruta de navegación (migas de pan) basada en la URL actual de la página.
+ * Es capaz de generar títulos amigables para rutas dinámicas, como los títulos de
+ * animes, episodios o personajes, consultando la "base de datos" simulada.
+ * Esto proporciona al usuario una clara indicación de su ubicación en el sitio y
+ * una forma fácil de navegar a páginas superiores en la jerarquía.
+ */
 
 "use client";
 
@@ -107,4 +116,3 @@ export default function Breadcrumbs() {
     </nav>
   );
 }
-

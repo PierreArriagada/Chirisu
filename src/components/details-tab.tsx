@@ -1,3 +1,12 @@
+/**
+ * @fileoverview DetailsTab - Pestaña con información detallada de un título.
+ * 
+ * Este componente es una alternativa a `DetailsCard`. En lugar de usar pestañas
+ * internas, presenta todos los detalles técnicos y los títulos alternativos
+ * en una sola vista, organizados en columnas. Es una forma más directa de
+ * mostrar la información si no se desea la interactividad de las pestañas.
+ */
+
 import type { AnimeDetails } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

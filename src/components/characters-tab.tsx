@@ -1,3 +1,12 @@
+/**
+ * @fileoverview CharactersTab - Pestaña de visualización de personajes y actores de voz.
+ * 
+ * Muestra una lista de personajes en formato de rejilla. Cada tarjeta de personaje
+ * detalla su nombre, imagen y rol. Además, incluye enlaces e imágenes para los
+ * actores de voz tanto en japonés como en español, dirigiendo a sus respectivas
+ * páginas de perfil. Es una vista más detallada que `CharactersCard`.
+ */
+
 import type { Character } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";

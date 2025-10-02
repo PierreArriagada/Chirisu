@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Recommendations - Sección de recomendaciones generadas por IA.
+ * 
+ * Este componente es un Server Component que invoca una Genkit Flow (`recommendSimilarTitles`)
+ * para obtener una lista de títulos similares al que se está viendo.
+ * - Pasa el título, tipo y descripción del medio actual a la IA.
+ * - Renderiza las recomendaciones recibidas utilizando `RecommendationCard`.
+ * - Incluye un manejo de errores para mostrar una alerta si la llamada a la IA falla.
+ * Se muestra en una columna lateral en la página de detalles de un medio.
+ */
+
 import { recommendSimilarTitles } from '@/ai/flows/recommend-similar-titles';
 import type { TitleInfo } from '@/lib/types';
 import RecommendationCard from './recommendation-card';

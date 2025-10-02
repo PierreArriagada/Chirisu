@@ -1,3 +1,13 @@
+/**
+ * @fileoverview DynamicTheme - Componente para aplicar un tema de color dinámico.
+ * 
+ * Este componente utiliza la librería `colorthief` para extraer el color dominante
+ * de una imagen proporcionada (`imageUrl`). Luego, si el tema "dinámico" está activo,
+ * ajusta las variables CSS de la aplicación (como fondo, primario, etc.) para
+ * que coincidan con la paleta de colores de la imagen.
+ * Cuando el tema dinámico se desactiva, se encarga de restaurar los colores originales.
+ */
+
 'use client';
 
 import { useEffect } from 'react';

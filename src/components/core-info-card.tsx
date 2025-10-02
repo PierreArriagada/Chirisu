@@ -1,3 +1,14 @@
+/**
+ * @fileoverview CoreInfoCard - Tarjeta principal de información de un título.
+ * 
+ * Este es uno de los componentes más importantes de la página de detalles de un medio.
+ * Muestra la información esencial:
+ * - Título e imagen de portada.
+ * - Estadísticas clave como ranking, popularidad, y puntuación.
+ * - Botones de acción principales para añadir a favoritos o a una lista.
+ * Se presenta de forma destacada en la parte superior de la página.
+ */
+
 import Image from "next/image";
 import { Bookmark, Heart, ListPlus, MessageCircle, TrendingUp, Trophy } from "lucide-react";
 import type { TitleInfo } from "@/lib/types";

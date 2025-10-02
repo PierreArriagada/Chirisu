@@ -1,3 +1,14 @@
+/**
+ * @fileoverview EpisodesCard - Tarjeta para listar los episodios de un anime.
+ * 
+ * Este componente recibe un array de episodios y los muestra en una lista vertical.
+ * Cada elemento de la lista es un enlace a la página de detalles de ese episodio
+ * e incluye:
+ * - Una miniatura (thumbnail) del episodio con un icono de "play".
+ * - El nombre del episodio.
+ * - Información secundaria como la duración y el número de comentarios.
+ */
+
 import type { Episode } from "@/lib/types";
 import { CardContent } from "@/components/ui/card";
 import Image from "next/image";

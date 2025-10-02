@@ -1,3 +1,15 @@
+/**
+ * @fileoverview DetailsCard - Tarjeta con detalles técnicos y alternativos de un título.
+ * 
+ * Este componente utiliza un sistema de pestañas para organizar y mostrar información
+ * detallada sobre un medio:
+ * - Pestaña "Detalles": Muestra datos como tipo, número de episodios, fecha de
+ *   lanzamiento, géneros, duración, etc.
+ * - Pestaña "Títulos alternativos": Lista los diferentes nombres que tiene el
+ *   título en varios idiomas, junto con una bandera representativa.
+ * Es una forma compacta de presentar una gran cantidad de datos secundarios.
+ */
+
 import type { AnimeDetails } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

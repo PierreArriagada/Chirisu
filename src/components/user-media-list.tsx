@@ -1,3 +1,15 @@
+/**
+ * @fileoverview UserMediaList - Lista de medios para el perfil del usuario.
+ * 
+ * Este componente renderiza una cuadrícula de títulos (animes, mangas, etc.)
+ * para ser mostrada en las diferentes listas del perfil de un usuario
+ * (Pendiente, Favoritos, listas personalizadas, etc.).
+ * - Cada elemento muestra la imagen, título, tipo y rating del medio.
+ * - Opcionalmente, puede mostrar un botón de eliminar (`DeleteItemButton`) si
+ *   se le proporciona la función `onRemoveItem`. Esto se usa en las listas
+ *   personalizadas para permitir al usuario quitar elementos.
+ */
+
 'use client';
 
 import type { TitleInfo } from "@/lib/types";

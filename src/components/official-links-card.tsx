@@ -1,3 +1,14 @@
+/**
+ * @fileoverview OfficialLinksCard - Tarjeta para mostrar enlaces oficiales y de fans.
+ * 
+ * Este componente organiza y muestra una lista de enlaces relacionados con un
+ * título, agrupados en tres categorías:
+ * - Sitios Oficiales (web, redes sociales).
+ * - Plataformas de Streaming (Crunchyroll, Netflix, etc.).
+ * - Traducciones de Fans (fansubs, scanlations).
+ * Cada enlace se muestra con un icono y es clickeable para abrir en una nueva pestaña.
+ */
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { OfficialLinks, OfficialLink } from "@/lib/types";
 import { Link as LinkIcon } from "lucide-react";

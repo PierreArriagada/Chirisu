@@ -1,3 +1,20 @@
+/**
+ * @fileoverview MediaPage - Plantilla principal para la página de detalles de un medio.
+ * 
+ * Este es un componente de servidor que ensambla la página de detalles completa para
+ * un anime, manga, etc. Recibe todos los datos necesarios (`mediaData`) y los distribuye
+ * a componentes hijos más pequeños y especializados.
+ * 
+ * Orquesta la renderización de:
+ * - `CoreInfoCard`: Información principal y portada.
+ * - `SocialsCard`: Enlaces a redes sociales.
+ * - `SynopsisCard`: Descripción del título.
+ * - `DetailsCard`: Detalles técnicos.
+ * - `OfficialLinksCard`: Enlaces oficiales.
+ * - Y varias secciones en acordeones como Personajes, Episodios, Estadísticas, etc.
+ * También integra `DynamicTheme` para el tema de color basado en la portada.
+ */
+
 import CoreInfoCard from '@/components/core-info-card';
 import Recommendations from '@/components/recommendations';
 import SynopsisCard from '@/components/synopsis-card';

@@ -1,3 +1,13 @@
+/**
+ * @fileoverview RecommendationCard - Tarjeta individual para una recomendación.
+ * 
+ * Muestra una vista previa de un título recomendado (anime, manga, etc.).
+ * Incluye la imagen de portada, el título y el tipo de medio (ej. "Anime").
+ * Está diseñado para ser un enlace que, en el futuro, podría dirigir a la
+ * página de detalles de ese título recomendado. Se utiliza dentro del
+ * componente `Recommendations`.
+ */
+
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import type { RecommendationInfo } from '@/lib/types';

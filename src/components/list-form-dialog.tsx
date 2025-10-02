@@ -1,3 +1,13 @@
+/**
+ * @fileoverview ListFormDialog - Diálogo para crear o editar una lista.
+ * 
+ * Este es un componente de diálogo modal reutilizable que contiene un formulario
+ * con un único campo de texto para el nombre de una lista.
+ * Se utiliza tanto para crear una nueva lista personalizada (con un valor inicial vacío)
+ * como para editar el nombre de una existente (recibiendo el nombre actual como
+ * valor inicial). Al guardar, invoca la función `onSave` con el nuevo nombre.
+ */
+
 'use client';
 
 import { useState, useEffect } from 'react';

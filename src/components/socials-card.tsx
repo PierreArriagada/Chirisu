@@ -1,3 +1,12 @@
+/**
+ * @fileoverview SocialsCard - Tarjeta con botones para compartir en redes sociales.
+ * 
+ * Este componente muestra una fila de botones con iconos de diferentes redes
+ * sociales (X, Facebook, Discord, etc.). Cada botón es un enlace que permitiría
+ * compartir la página actual. Los colores de fondo de cada botón coinciden con
+ * la marca de la red social correspondiente para una fácil identificación.
+ */
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Facebook, Instagram, X } from "lucide-react";
 

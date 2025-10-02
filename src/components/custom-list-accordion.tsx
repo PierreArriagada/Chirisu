@@ -1,3 +1,16 @@
+/**
+ * @fileoverview CustomListAccordion - Acordeón para listas personalizadas del usuario.
+ * 
+ * Este componente renderiza una lista de acordeones, donde cada uno representa una
+ * lista personalizada creada por el usuario.
+ * - El disparador del acordeón (trigger) muestra el nombre de la lista.
+ * - Un menú desplegable permite editar el nombre o eliminar la lista.
+ * - El contenido del acordeón muestra los títulos (animes, mangas, etc.) dentro
+ *   de esa lista, un interruptor para gestionar su privacidad (pública/privada), y
+ *   permite eliminar elementos individualmente.
+ * Utiliza `ListFormDialog` para la edición y creación.
+ */
+
 'use client';
 
 import { useState } from 'react';

@@ -1,3 +1,13 @@
+/**
+ * @fileoverview MediaGallery - Galería de imágenes para un título.
+ * 
+ * Este componente recibe un array de objetos de imagen y las renderiza en
+ * una cuadrícula (grid) responsiva. Cada imagen es un enlace que podría,
+ * en una futura implementación, abrir una vista de lightbox o una página
+ * de detalle de la imagen. Se utiliza en la página de detalles del medio
+ * para mostrar arte conceptual, capturas de pantalla, etc.
+ */
+
 import type { GalleryImage } from "@/lib/types";
 import Image from "next/image";
 

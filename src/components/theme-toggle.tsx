@@ -1,3 +1,14 @@
+/**
+ * @fileoverview ThemeToggle - Botón para cambiar el tema de la aplicación.
+ * 
+ * Renderiza un menú desplegable que permite al usuario seleccionar su tema
+ * preferido: Claro, Oscuro, Dinámico o Sistema.
+ * - Utiliza el hook `useTheme` de `next-themes` para obtener y cambiar el tema.
+ * - Muestra un icono de sol o luna según el tema activo.
+ * - La opción "Dinámico" activa el tema basado en la paleta de colores de la
+ *   imagen principal (gestionado por `DynamicTheme.tsx`).
+ */
+
 "use client"
 
 import * as React from "react"

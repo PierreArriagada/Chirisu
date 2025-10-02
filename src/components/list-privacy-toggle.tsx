@@ -1,3 +1,13 @@
+/**
+ * @fileoverview ListPrivacyToggle - Interruptor para cambiar la privacidad de una lista.
+ * 
+ * Componente visual que permite al usuario cambiar el estado de una lista entre
+ * "Pública" y "Privada". Muestra un icono de globo terráqueo o candado según
+ * el estado actual y un interruptor (switch) para modificarlo.
+ * Es reutilizable y se emplea tanto para las listas predeterminadas como para
+ * las listas personalizadas en la página de perfil.
+ */
+
 'use client';
 
 import { Globe, Lock } from "lucide-react";

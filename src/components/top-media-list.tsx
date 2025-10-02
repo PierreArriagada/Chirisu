@@ -1,3 +1,12 @@
+/**
+ * @fileoverview TopMediaList - Lista para rankings de medios.
+ * 
+ * Muestra una lista ordenada de títulos (animes, mangas, etc.) para una
+ * categoría de ranking específica (ej. "Top de Siempre", "Top Semanal").
+ * Cada elemento de la lista muestra su posición en el ranking, imagen, título
+ * y el ranking global.
+ */
+
 import type { TitleInfo } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import Link from "next/link";

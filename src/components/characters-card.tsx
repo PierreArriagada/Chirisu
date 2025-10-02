@@ -1,3 +1,12 @@
+/**
+ * @fileoverview CharactersCard - Tarjeta de visualización horizontal de personajes.
+ * 
+ * Este componente recibe un array de personajes y los muestra en un carrusel
+ * horizontal (`overflow-x-auto`). Cada tarjeta de personaje incluye su imagen,
+ * nombre, rol y una vista previa de su actor de voz japonés con un enlace a su perfil.
+ * Es utilizado en la página de detalles de un medio para mostrar su elenco principal.
+ */
+
 import type { Character } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";

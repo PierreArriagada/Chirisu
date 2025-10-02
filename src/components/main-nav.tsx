@@ -1,3 +1,18 @@
+/**
+ * @fileoverview MainNav - Componente de navegación principal de la aplicación.
+ * 
+ * Este componente renderiza la barra de navegación superior, que es visible en
+ * todas las páginas. Incluye:
+ * - El logo y título del sitio.
+ * - Un campo de búsqueda central (en escritorio).
+ * - El menú de categorías de medios (Anime, Manga, etc.).
+ * - Un interruptor para cambiar el tema (claro/oscuro/dinámico).
+ * - Lógica para mostrar un botón de "Iniciar Sesión" o, si el usuario está
+ *   autenticado, un menú de perfil con su avatar, nombre y enlaces a su
+ *   perfil y para cerrar sesión.
+ * También gestiona la navegación móvil a través de un menú lateral (Sheet).
+ */
+
 'use client';
 
 import Link from "next/link";
