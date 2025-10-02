@@ -59,7 +59,7 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
       >
         <CarouselContent className="pl-4 sm:pl-6 lg:pl-8">
           {items.map((item, index) => (
-            <CarouselItem key={index} className="basis-1/2 ss:basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 xl:basis-1/7 2xl:basis-1/8">
+            <CarouselItem key={index} className="basis-[45%] ss:basis-[40%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 2xl:basis-[11.5%]">
                <Link href={url(item)} className="block group cursor-pointer h-full">
                 <div className="flex flex-col h-full gap-2">
                   <Card className="overflow-hidden h-full flex-grow">
@@ -73,13 +73,11 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
                         data-ai-hint={item.imageHint}
                         priority={index < 5}
                       />
-                      {/* Rating */}
                       <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 text-white p-1 rounded-md text-xs font-bold">
                         <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                         <span>{item.rating.toFixed(1)}</span>
                       </div>
                       
-                       {/* Bottom Stats */}
                       <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
                           <div className="flex justify-between text-white text-xs">
                               <div className="flex items-center gap-1">
