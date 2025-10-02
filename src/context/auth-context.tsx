@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 // 1. Define la estructura de un usuario
 // PSQL: En una implementación real, esta estructura coincidiría con las columnas
-// de tu tabla 'users' en PostgreSQL (ej: id, name, email, image_url, role, created_at).
+// de tu tabla 'users' en PostgreSQL (ej: id, name, email, image_url, role, created_at, password_hash).
 type UserRole = 'admin' | 'moderator' | 'user';
 type User = {
   id: string;
@@ -15,10 +15,42 @@ type User = {
   role: UserRole;
 };
 
+// --- BASE DE DATOS SIMULADA ---
+// PSQL: Esto sería una tabla `users` en tu base de datos PostgreSQL.
+// La contraseña se guardaría como un hash (ej. usando bcrypt), no como texto plano.
+const simulatedUsers: (User & { password: string })[] = [
+  {
+    id: '1-admin',
+    name: 'Admin Demo',
+    email: 'admin@example.com',
+    password: 'adminpassword',
+    image: 'https://picsum.photos/seed/admin-avatar/100/100',
+    role: 'admin',
+  },
+  {
+    id: '2-mod',
+    name: 'Moderador Demo',
+    email: 'moderator@example.com',
+    password: 'modpassword',
+    image: 'https://picsum.photos/seed/mod-avatar/100/100',
+    role: 'moderator',
+  },
+  {
+    id: '3-user',
+    name: 'Usuario Demo',
+    email: 'user@example.com',
+    password: 'userpassword',
+    image: 'https://picsum.photos/seed/user-avatar/100/100',
+    role: 'user',
+  },
+];
+// --- FIN DE LA BASE DE DATOS SIMULADA ---
+
+
 // 2. Define la estructura del contexto de autenticación
 interface AuthContextType {
   user: User | null;
-  login: (role: UserRole) => void;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -39,48 +71,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
-  // Función para simular el inicio de sesión
-  const login = (role: UserRole) => {
-    // PSQL: Aquí, en lugar de datos quemados, harías una llamada a tu API de backend.
-    // 1. El usuario se autentica (ej. con Google, o email/contraseña).
-    // 2. Tu backend recibe la información del usuario.
-    // 3. Busca en la tabla 'users' si el email existe.
-    //    `SELECT * FROM users WHERE email = $1;`
-    // 4. Si no existe, crea un nuevo registro:
-    //    `INSERT INTO users (name, email, image_url, role) VALUES ($1, $2, $3, 'user') RETURNING *;`
-    // 5. Devuelve los datos del usuario (incluyendo su rol) al frontend.
-    // Para esta simulación, creamos un usuario basado en el rol.
-    
-    let mockUser: User;
+  // Función para simular el inicio de sesión con email y contraseña
+  const login = (email: string, password: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      // PSQL: Aquí, en lugar de buscar en un array, harías una llamada a tu API de backend.
+      // 1. El backend recibiría el email y la contraseña.
+      // 2. Buscaría en la tabla `users` por el email:
+      //    `SELECT * FROM users WHERE email = $1;`
+      // 3. Si encuentra un usuario, compararía la contraseña enviada con el hash guardado usando bcrypt.compare.
+      // 4. Si la contraseña es correcta, crearía un token de sesión (ej. JWT) y lo devolvería.
+      // 5. El frontend guardaría el token y los datos del usuario.
 
-    if (role === 'admin') {
-        mockUser = {
-            id: '1-admin',
-            name: 'Admin Demo',
-            email: 'admin@example.com',
-            image: 'https://picsum.photos/seed/admin-avatar/100/100',
-            role: 'admin',
-        };
-    } else if (role === 'moderator') {
-        mockUser = {
-            id: '2-mod',
-            name: 'Moderador Demo',
-            email: 'moderator@example.com',
-            image: 'https://picsum.photos/seed/mod-avatar/100/100',
-            role: 'moderator',
-        };
-    } else {
-        mockUser = {
-            id: '3-user',
-            name: 'Usuario Demo',
-            email: 'user@example.com',
-            image: 'https://picsum.photos/seed/user-avatar/100/100',
-            role: 'user',
-        };
-    }
-    
-    setUser(mockUser);
-    router.push('/'); // Redirige a la página de inicio
+      setTimeout(() => { // Simula la latencia de la red
+        const foundUser = simulatedUsers.find(
+          (u) => u.email === email && u.password === password
+        );
+
+        if (foundUser) {
+          const { password, ...userToSet } = foundUser;
+          setUser(userToSet);
+          resolve();
+        } else {
+          reject(new Error('Correo o contraseña incorrectos.'));
+        }
+      }, 500);
+    });
   };
 
   // Función para simular el cierre de sesión
