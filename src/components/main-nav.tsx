@@ -17,7 +17,7 @@ function MainNav() {
       ];
 
   return (
-    <div className="bg-card/95 backdrop-blur-sm border-b">
+    <div className="bg-card/95 backdrop-blur-sm">
         <header className="container mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex items-center justify-between h-16">
                 <div className="flex items-center gap-6">
@@ -27,7 +27,7 @@ function MainNav() {
                     </Link>
                 </div>
                 <div className="hidden md:flex flex-1 max-w-md items-center gap-2">
-                    <Input placeholder="Buscar anime, manga..." className="bg-background/50"/>
+                    <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
                     <Button variant="ghost" size="icon">
                         <Search />
                     </Button>
@@ -60,7 +60,7 @@ function MainNav() {
                 </div>
             </nav>
         </header>
-        <div className="hidden md:block border-t">
+        <div className="hidden md:block">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center gap-6 overflow-x-auto whitespace-nowrap py-2">
                      {navItems.map(item => (
