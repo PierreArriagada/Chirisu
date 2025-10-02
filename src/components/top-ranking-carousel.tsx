@@ -109,9 +109,9 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
           className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide"
         >
           {items.map((item, index) => (
-            <Link href={url(item)} key={item.id} className="block flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 group cursor-pointer">
+            <Link href={url(item)} key={item.id} className="block flex-shrink-0 w-24 ss:w-28 sm:w-36 md:w-40 lg:w-44 group cursor-pointer">
               <div className="relative">
-                <div className="relative w-full h-44 sm:h-48 md:h-52 lg:h-56 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300 bg-card">
+                <div className="relative w-full h-36 ss:h-40 sm:h-48 md:h-52 lg:h-56 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300 bg-card">
                   <Image
                     src={item.imageUrl}
                     alt={item.title}
