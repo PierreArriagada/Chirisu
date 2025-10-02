@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import './globals.css';
 import Link from 'next/link';
 import { BookOpen, Clapperboard, HomeIcon } from 'lucide-react';
+import Breadcrumbs from '@/components/breadcrumbs';
 
 export const metadata: Metadata = {
   title: 'AniHub Info',
@@ -47,6 +48,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <NavBar />
+        <Breadcrumbs />
         {children}
         <Toaster />
       </body>

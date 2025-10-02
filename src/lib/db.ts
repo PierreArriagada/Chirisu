@@ -153,8 +153,8 @@ const charactersRaw: (Omit<Character, 'voiceActors' | 'slug'> & { mediaId: strin
 ];
 
 const episodes: (Episode & { mediaId: string })[] = [
-    ...Array.from({ length: 12 }, (_, i) => ({ id: `ep${i + 1}`, mediaId: '1', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/ep${i + 1}/320/180`, imageHint: `anime episode ${i + 1}`, duration: '23 min', comments: Math.floor(Math.random() * 2000), })),
-    ...Array.from({ length: 15 }, (_, i) => ({ id: `dep${i + 1}`, mediaId: '7', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/dep${i + 1}/320/180`, imageHint: `dougua episode ${i + 1}`, duration: '24 min', comments: Math.floor(Math.random() * 1500), })),
+    ...Array.from({ length: 12 }, (_, i) => ({ id: `ep1-${i + 1}`, mediaId: '1', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/ep${i + 1}/320/180`, imageHint: `anime episode ${i + 1}`, duration: '23 min', releaseDate: new Date(2024, 0, 7 + i * 7).toISOString(), comments: Math.floor(Math.random() * 2000), watchLinks: { official: '#', crunchyroll: '#' } })),
+    ...Array.from({ length: 15 }, (_, i) => ({ id: `ep7-${i + 1}`, mediaId: '7', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/dep${i + 1}/320/180`, imageHint: `dougua episode ${i + 1}`, duration: '24 min', releaseDate: new Date(2018, 6, 9 + i*7).toISOString(), comments: Math.floor(Math.random() * 1500), watchLinks: { official: '#', wetv: '#' } })),
 ];
 
 const reviews: (Review & { mediaId: string })[] = [
@@ -209,6 +209,23 @@ const processedRelatedTitles: RelatedTitle[] = relatedTitlesRaw.map(rt => ({...r
 
 
 // --- "DATABASE QUERY" FUNCTIONS ---
+
+export function getMediaBySlug(slug: string) {
+    return processedTitles.find(a => a.slug === slug);
+}
+
+export function getEpisodeById(id: string) {
+    return episodes.find(e => e.id === id);
+}
+
+export function getCharacterBySlug(slug: string) {
+    return processedCharacters.find(c => c.slug === slug);
+}
+
+export function getVoiceActorBySlug(slug: string) {
+    return processedVoiceActors.find(va => va.slug === slug);
+}
+
 
 // This function simulates joining the tables to get all data for a specific media page.
 export function getMediaPageData(mediaIdOrSlug: string, mediaType: MediaType) {

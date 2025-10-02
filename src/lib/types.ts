@@ -52,6 +52,8 @@ export type Episode = {
   imageHint: string;
   duration: string;
   comments: number;
+  releaseDate?: string;
+  watchLinks?: Record<string, string>;
 };
 
 export type Review = {
