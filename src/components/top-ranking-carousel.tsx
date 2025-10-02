@@ -89,8 +89,13 @@ const TopRankingCarousel = ({ title, items, viewMoreLink }: TopRankingCarouselPr
   }, []);
 
   const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'k';
+    if (num >= 1_000_000) {
+      const formatted = (num / 1_000_000).toFixed(1);
+      return (formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted) + 'M';
+    }
+    if (num >= 1_000) {
+      const formatted = (num / 1_000).toFixed(1);
+       return (formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted) + 'k';
     }
     return num.toString();
   };
