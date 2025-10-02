@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BookOpen, Clapperboard, Film, Menu, Newspaper, Pencil, Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 
 function MainNav() {
     const navItems = [
@@ -39,6 +39,9 @@ function MainNav() {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="right">
+                            <SheetHeader>
+                                <SheetTitle className="sr-only">Navegación</SheetTitle>
+                            </SheetHeader>
                             <div className="flex flex-col gap-4 p-4">
                                 {navItems.map(item => (
                                 <Link key={item.href} href={item.href} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
