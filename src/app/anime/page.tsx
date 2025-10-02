@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getMediaListPage } from "@/lib/db";
 import { MediaType, TitleInfo } from "@/lib/types";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura"];
 
@@ -23,7 +23,7 @@ export default function AnimePage() {
         setTopWeekly(topAllTime.slice().sort(() => 0.5 - Math.random()));
         setRecommendations(topAllTime.slice().sort(() => 0.5 - Math.random()).slice(0, 4));
         setTopDaily(topAllTime.slice().sort(() => 0.5 - Math.random()));
-    }, [topAllTime]);
+    }, []);
 
     const handleShowMoreWeekly = () => {
         setWeeklyVisibleCount(prev => prev + 6);
