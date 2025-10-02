@@ -6,18 +6,19 @@ import { useRouter } from 'next/navigation';
 // 1. Define la estructura de un usuario
 // PSQL: En una implementación real, esta estructura coincidiría con las columnas
 // de tu tabla 'users' en PostgreSQL (ej: id, name, email, image_url, role, created_at).
+type UserRole = 'admin' | 'moderator' | 'user';
 type User = {
   id: string;
   name: string;
   email: string;
   image: string;
-  role: 'admin' | 'moderator' | 'user';
+  role: UserRole;
 };
 
 // 2. Define la estructura del contexto de autenticación
 interface AuthContextType {
   user: User | null;
-  login: () => void;
+  login: (role: UserRole) => void;
   logout: () => void;
 }
 
@@ -39,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   // Función para simular el inicio de sesión
-  const login = () => {
+  const login = (role: UserRole) => {
     // PSQL: Aquí, en lugar de datos quemados, harías una llamada a tu API de backend.
     // 1. El usuario se autentica (ej. con Google, o email/contraseña).
     // 2. Tu backend recibe la información del usuario.
@@ -48,13 +49,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 4. Si no existe, crea un nuevo registro:
     //    `INSERT INTO users (name, email, image_url, role) VALUES ($1, $2, $3, 'user') RETURNING *;`
     // 5. Devuelve los datos del usuario (incluyendo su rol) al frontend.
-    const mockUser: User = {
-      id: '1',
-      name: 'Usuario Demo',
-      email: 'demo@example.com',
-      image: 'https://picsum.photos/seed/user-avatar/100/100',
-      role: 'user', // Por defecto, todos son 'user'
-    };
+    // Para esta simulación, creamos un usuario basado en el rol.
+    
+    let mockUser: User;
+
+    if (role === 'admin') {
+        mockUser = {
+            id: '1-admin',
+            name: 'Admin Demo',
+            email: 'admin@example.com',
+            image: 'https://picsum.photos/seed/admin-avatar/100/100',
+            role: 'admin',
+        };
+    } else if (role === 'moderator') {
+        mockUser = {
+            id: '2-mod',
+            name: 'Moderador Demo',
+            email: 'moderator@example.com',
+            image: 'https://picsum.photos/seed/mod-avatar/100/100',
+            role: 'moderator',
+        };
+    } else {
+        mockUser = {
+            id: '3-user',
+            name: 'Usuario Demo',
+            email: 'user@example.com',
+            image: 'https://picsum.photos/seed/user-avatar/100/100',
+            role: 'user',
+        };
+    }
+    
     setUser(mockUser);
     router.push('/'); // Redirige a la página de inicio
   };
