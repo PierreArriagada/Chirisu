@@ -9,8 +9,6 @@ export default function Home() {
     <main className="space-y-12 my-8">
       {mediaTypes.map(type => {
         const { topAllTime } = getMediaListPage(type);
-        // Capitalize first letter of type for the link
-        const typePath = type.charAt(0).toUpperCase() + type.slice(1);
         
         // Handle multi-word types for path
         const path = `/${type.toLowerCase().replace(' ', '-')}`;
