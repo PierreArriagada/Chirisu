@@ -14,6 +14,7 @@ import { ArrowRight, Bookmark, MessageCircle, Star } from 'lucide-react';
 import type { TitleInfo } from '@/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
+import Autoplay from 'embla-carousel-autoplay';
 
 interface TopRankingCarouselProps {
   title: string;
@@ -53,13 +54,19 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
       <Carousel
         opts={{
           align: 'start',
-          loop: false,
+          loop: true,
         }}
+        plugins={[
+          Autoplay({
+            delay: 5000,
+            stopOnInteraction: true,
+          }),
+        ]}
         className="w-full"
       >
         <CarouselContent className="pl-4 sm:pl-6 lg:pl-8">
           {items.map((item, index) => (
-            <CarouselItem key={index} className="basis-[60%] ss:basis-[55%] sm:basis-[40%] md:basis-1/3 lg:basis-1/4 2xl:basis-1/5">
+            <CarouselItem key={index} className="basis-[80%] ss:basis-[70%] sm:basis-[45%] md:basis-[38%] lg:basis-[27%]">
                <Link href={url(item)} className="block group cursor-pointer h-full">
                 <div className="flex flex-col h-full gap-2">
                   <Card className="overflow-hidden h-full flex-grow">
