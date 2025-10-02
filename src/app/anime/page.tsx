@@ -1,6 +1,6 @@
 'use client';
 import TopMediaList from "@/components/top-media-list";
-import TopRankingCarousel from "@/components/top-ranking-carousel";
+import TopRankingSlideshow from "@/components/top-ranking-carousel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getMediaListPage } from "@/lib/db";
@@ -33,10 +33,8 @@ export default function AnimePage() {
         <main className="container mx-auto p-4 sm:p-8 space-y-12">
             
             {/* 1. Carrusel Top Diario */}
-            <TopRankingCarousel
-                title="Top Diario de Anime"
+            <TopRankingSlideshow
                 items={topDaily}
-                viewMoreLink="/anime/top-100"
             />
             
             {/* 2. Top Semanal Interactivo */}

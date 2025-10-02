@@ -1,6 +1,6 @@
 'use client';
 import TopMediaList from "@/components/top-media-list";
-import TopRankingCarousel from "@/components/top-ranking-carousel";
+import TopRankingSlideshow from "@/components/top-ranking-carousel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getMediaListPage } from "@/lib/db";
@@ -32,10 +32,8 @@ export default function ManhuaPage() {
     return (
         <main className="container mx-auto p-4 sm:p-8 space-y-12">
             
-            <TopRankingCarousel
-                title="Top Diario de Manhua"
+            <TopRankingSlideshow
                 items={topDaily}
-                viewMoreLink="/manhua/top-100"
             />
             
             <section>
