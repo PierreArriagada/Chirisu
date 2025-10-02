@@ -64,7 +64,7 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
       >
         <CarouselContent className="-ml-2 pl-4 sm:pl-6 lg:pl-8">
            {items.map((item, index) => (
-            <CarouselItem key={index} className="basis-[60%] sm:basis-[40%] md:basis-[30%] lg:basis-[22%] pl-2">
+            <CarouselItem key={index} className="basis-[60%] ss:basis-[45%] sm:basis-[35%] md:basis-[30%] lg:basis-[22%] pl-2">
                <Link href={url(item)} className="block group cursor-pointer h-full">
                 <Card className="overflow-hidden h-full flex flex-col border-none shadow-lg">
                   <CardContent className="p-0 relative flex-grow">
