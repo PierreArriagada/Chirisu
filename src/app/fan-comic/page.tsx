@@ -22,12 +22,11 @@ export default function FanComicPage() {
     const [topDaily, setTopDaily] = useState<TitleInfo[]>([]);
 
     useEffect(() => {
-        // Run randomization only on the client-side after hydration
-        const shuffled = topAllTime.slice().sort(() => 0.5 - Math.random());
+        const shuffled = [...topAllTime].sort(() => 0.5 - Math.random());
         setTopWeekly(shuffled);
         setRecommendations(shuffled.slice(0, 4));
         setTopDaily(shuffled.slice(0, 5));
-    }, [topAllTime]);
+    }, []);
 
     const handleShowMoreWeekly = () => {
         setWeeklyVisibleCount(prev => prev + 6);
