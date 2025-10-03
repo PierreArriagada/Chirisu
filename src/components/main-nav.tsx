@@ -47,18 +47,20 @@ function MainNav() {
   return (
     <div className="bg-card/95 backdrop-blur-sm">
         <header className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <nav className="flex items-center justify-between h-16">
+            <nav className="flex items-center justify-between h-auto min-h-16 flex-wrap py-2 gap-y-2">
                 <div className="flex items-center gap-6">
                     <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
                     <BookOpen />
                     <span className="hidden sm:inline">Chirisu</span>
                     </Link>
-                     <div className="hidden md:flex flex-1 max-w-md items-center gap-2">
-                        <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-                        <Button variant="ghost" size="icon">
-                            <Search />
-                        </Button>
-                    </div>
+                </div>
+                
+                {/* Search in the middle for large screens */}
+                <div className="hidden lg:flex flex-1 max-w-md items-center gap-2 mx-4">
+                  <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
+                  <Button variant="ghost" size="icon">
+                      <Search />
+                  </Button>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -121,6 +123,14 @@ function MainNav() {
                             </SheetContent>
                         </Sheet>
                     </div>
+                </div>
+
+                {/* Search for small/medium screens */}
+                <div className="flex lg:hidden w-full items-center gap-2">
+                  <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
+                  <Button variant="ghost" size="icon">
+                      <Search />
+                  </Button>
                 </div>
             </nav>
         </header>
