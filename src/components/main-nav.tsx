@@ -61,82 +61,86 @@ function MainNav() {
 
 
   return (
-    <div>
-        <header className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <nav className="flex items-center justify-between h-auto min-h-16 flex-wrap py-2 gap-y-2">
-                <div className="flex items-center gap-6">
-                    <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
-                    <BookOpen />
-                    <span className="hidden sm:inline">Chirisu</span>
+    <header className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-wrap items-center justify-between min-h-16 py-2 gap-y-2">
+        
+        {/* Main Nav Items: Logo on Left, Actions on Right */}
+        <nav className="flex items-center justify-between w-full">
+          {/* Left Side: Logo */}
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
+              <BookOpen />
+              <span className="hidden sm:inline">Chirisu</span>
+            </Link>
+          </div>
+
+          {/* Desktop Search Bar */}
+          {showSearch && (
+            <div className="hidden lg:flex flex-1 max-w-md items-center justify-center mx-4">
+              <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
+                <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
+                <Button type="submit" variant="ghost" size="icon">
+                    <Search />
+                </Button>
+              </form>
+            </div>
+          )}
+
+          {/* Right Side: Actions */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar>
+                      <AvatarImage src={user.image} alt={user.name} />
+                      <AvatarFallback>{user.name?.[0]}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Perfil</span>
                     </Link>
-                </div>
-                
-                {/* Search in the middle for large screens */}
-                {showSearch && (
-                  <div className="hidden lg:flex flex-1 max-w-md items-center gap-2 mx-4">
-                    <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
-                      <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-                      <Button type="submit" variant="ghost" size="icon">
-                          <Search />
-                      </Button>
-                    </form>
-                  </div>
-                )}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Cerrar sesión</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild variant="outline">
+                <Link href="/login">Iniciar Sesión</Link>
+              </Button>
+            )}
+          </div>
+        </nav>
 
-                <div className="flex items-center gap-2 ml-auto">
-                    <ThemeToggle />
-                    {user ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                                    <Avatar>
-                                        <AvatarImage src={user.image} alt={user.name} />
-                                        <AvatarFallback>{user.name?.[0]}</AvatarFallback>
-                                    </Avatar>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56" align="end" forceMount>
-                                <DropdownMenuLabel className="font-normal">
-                                    <div className="flex flex-col space-y-1">
-                                        <p className="text-sm font-medium leading-none">{user.name}</p>
-                                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                                    </div>
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild>
-                                    <Link href="/profile">
-                                        <User className="mr-2 h-4 w-4" />
-                                        <span>Perfil</span>
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={logout}>
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    <span>Cerrar sesión</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : (
-                        <Button asChild variant="outline">
-                            <Link href="/login">Iniciar Sesión</Link>
-                        </Button>
-                    )}
-                </div>
-
-                {/* Search for small/medium screens */}
-                {showSearch && (
-                  <div className="flex lg:hidden w-full items-center gap-2 order-last">
-                    <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
-                      <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-                      <Button type="submit" variant="ghost" size="icon">
-                          <Search />
-                      </Button>
-                    </form>
-                  </div>
-                )}
-            </nav>
-        </header>
-    </div>
+        {/* Mobile Search Bar: Takes full width on its own row */}
+        {showSearch && (
+          <div className="flex lg:hidden w-full items-center gap-2 order-last">
+            <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
+              <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
+              <Button type="submit" variant="ghost" size="icon">
+                  <Search />
+              </Button>
+            </form>
+          </div>
+        )}
+      </div>
+    </header>
   );
 }
 
