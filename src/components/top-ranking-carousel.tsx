@@ -39,7 +39,7 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
 
   return (
     <section>
-      <div className="flex items-baseline justify-between mb-4 container px-4 sm:px-6 lg:px-8">
+      <div className="flex items-baseline justify-between mb-4 container px-4">
         <h2 className="text-2xl font-bold font-headline">{title}</h2>
         {viewMoreLink && (
           <Button variant="link" asChild className="text-muted-foreground">
@@ -64,7 +64,7 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
       >
         <CarouselContent className="-ml-4">
            {items.map((item, index) => (
-            <CarouselItem key={index} className="pl-4 basis-1/2 ss:basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 xl:basis-[14%]">
+            <CarouselItem key={index} className="pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 xl:basis-[14%]">
                <Link href={url(item)} className="block group cursor-pointer h-full">
                 <Card className="overflow-hidden h-full flex flex-col border-none shadow-lg bg-transparent">
                   <CardContent className="p-0 relative flex-grow">
