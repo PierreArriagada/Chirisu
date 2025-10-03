@@ -5,6 +5,7 @@ import Breadcrumbs from '@/components/breadcrumbs';
 import MainNav from '@/components/main-nav';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/context/auth-context';
+import HorizontalMenu from '@/components/horizontal-menu';
 
 export const metadata: Metadata = {
   title: 'Chirisu',
@@ -32,6 +33,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <MainNav />
+            <HorizontalMenu />
             <Breadcrumbs />
             {children}
             <Toaster />

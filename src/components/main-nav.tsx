@@ -30,13 +30,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import HorizontalMenu from "./horizontal-menu";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 
 function MainNav() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
     
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,6 +46,19 @@ function MainNav() {
         router.push(`/search?q=${encodeURIComponent(query)}`);
     }
   };
+
+  const searchVisiblePaths = [
+    '/',
+    '/anime',
+    '/manga',
+    '/manhua',
+    '/manwha',
+    '/novela',
+    '/dougua',
+    '/fan-comic',
+  ];
+  const showSearch = searchVisiblePaths.includes(pathname);
+
 
   return (
     <div>
@@ -59,16 +72,18 @@ function MainNav() {
                 </div>
                 
                 {/* Search in the middle for large screens */}
-                <div className="hidden lg:flex flex-1 max-w-md items-center gap-2 mx-4">
-                  <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
-                    <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-                    <Button type="submit" variant="ghost" size="icon">
-                        <Search />
-                    </Button>
-                  </form>
-                </div>
+                {showSearch && (
+                  <div className="hidden lg:flex flex-1 max-w-md items-center gap-2 mx-4">
+                    <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
+                      <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
+                      <Button type="submit" variant="ghost" size="icon">
+                          <Search />
+                      </Button>
+                    </form>
+                  </div>
+                )}
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-auto">
                     <ThemeToggle />
                     {user ? (
                         <DropdownMenu>
@@ -109,19 +124,18 @@ function MainNav() {
                 </div>
 
                 {/* Search for small/medium screens */}
-                <div className="flex lg:hidden w-full items-center gap-2 order-last">
-                  <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
-                    <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-                    <Button type="submit" variant="ghost" size="icon">
-                        <Search />
-                    </Button>
-                  </form>
-                </div>
+                {showSearch && (
+                  <div className="flex lg:hidden w-full items-center gap-2 order-last">
+                    <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
+                      <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
+                      <Button type="submit" variant="ghost" size="icon">
+                          <Search />
+                      </Button>
+                    </form>
+                  </div>
+                )}
             </nav>
         </header>
-        <div className="md:border-t">
-          <HorizontalMenu />
-        </div>
     </div>
   );
 }
