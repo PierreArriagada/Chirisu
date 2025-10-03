@@ -36,7 +36,7 @@ function MainNav() {
   const { user, logout } = useAuth();
     
   return (
-    <div className="bg-card/95 backdrop-blur-sm sticky top-0 z-40 border-b">
+    <div className="bg-card/95 backdrop-blur-sm border-b">
         <header className="container mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex items-center justify-between h-auto min-h-16 flex-wrap py-2 gap-y-2">
                 <div className="flex items-center gap-6">
