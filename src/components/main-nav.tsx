@@ -16,10 +16,9 @@
 'use client';
 
 import Link from "next/link";
-import { BookOpen, Clapperboard, Film, Menu, Newspaper, Pencil, Search, User, LogOut } from "lucide-react";
+import { BookOpen, Search, User, LogOut } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/context/auth-context";
 import {
@@ -31,21 +30,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import HorizontalMenu from "./horizontal-menu";
 
 function MainNav() {
   const { user, logout } = useAuth();
-    const navItems = [
-        { href: "/anime", label: "Anime", icon: <Clapperboard /> },
-        { href: "/manga", label: "Manga", icon: <BookOpen /> },
-        { href: "/dougua", label: "Dougua", icon: <Film /> },
-        { href: "/novela", label: "Novelas", icon: <Pencil /> },
-        { href: "/fan-comic", label: "Fan Comics", icon: <Newspaper /> },
-        { href: "/manhua", label: "Manhua", icon: <BookOpen /> },
-        { href: "/manwha", label: "Manwha", icon: <BookOpen /> },
-      ];
-
+    
   return (
-    <div className="bg-card/95 backdrop-blur-sm">
+    <div className="bg-card/95 backdrop-blur-sm sticky top-0 z-40 border-b">
         <header className="container mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex items-center justify-between h-auto min-h-16 flex-wrap py-2 gap-y-2">
                 <div className="flex items-center gap-6">
@@ -101,32 +92,10 @@ function MainNav() {
                             <Link href="/login">Iniciar Sesión</Link>
                         </Button>
                     )}
-                    <div className="md:hidden">
-                        <Sheet>
-                            <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <Menu />
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="right">
-                                <SheetHeader>
-                                    <SheetTitle className="sr-only">Navegación</SheetTitle>
-                                </SheetHeader>
-                                <div className="flex flex-col gap-4 p-4">
-                                    {navItems.map(item => (
-                                    <Link key={item.href} href={item.href} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                                        {item.icon}
-                                        <span>{item.label}</span>
-                                    </Link>
-                                    ))}
-                                </div>
-                            </SheetContent>
-                        </Sheet>
-                    </div>
                 </div>
 
                 {/* Search for small/medium screens */}
-                <div className="flex lg:hidden w-full items-center gap-2">
+                <div className="flex lg:hidden w-full items-center gap-2 order-last">
                   <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
                   <Button variant="ghost" size="icon">
                       <Search />
@@ -134,16 +103,8 @@ function MainNav() {
                 </div>
             </nav>
         </header>
-        <div className="hidden md:block">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center gap-6 overflow-x-auto whitespace-nowrap py-2">
-                     {navItems.map(item => (
-                        <Link key={item.href} href={item.href} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors py-2">
-                            {item.label}
-                        </Link>
-                    ))}
-                </div>
-            </div>
+        <div className="md:border-t">
+          <HorizontalMenu />
         </div>
     </div>
   );
