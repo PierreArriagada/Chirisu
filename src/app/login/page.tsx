@@ -55,7 +55,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-[calc(100vh-200px)] p-4">
+    <main className="flex items-center justify-center min-h-[calc(100vh-200px)] p-2">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>

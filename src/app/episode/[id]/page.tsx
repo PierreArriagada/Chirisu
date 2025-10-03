@@ -49,7 +49,7 @@ export default function EpisodePage({ params }: Props) {
     const media = getMediaPageData(episode.mediaId, 'anime');
 
     return (
-        <main className="container mx-auto p-4 sm:p-8">
+        <main className="container mx-auto p-2 sm:p-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
                     {/* Video Player Card */}

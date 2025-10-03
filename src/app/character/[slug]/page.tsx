@@ -36,7 +36,7 @@ export default function CharacterPage({ params }: Props) {
   const { character, media } = data;
 
   return (
-    <main className="container mx-auto p-4 sm:p-8">
+    <main className="container mx-auto p-2 sm:p-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-1">
           <Card>

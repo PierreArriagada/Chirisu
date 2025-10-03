@@ -25,7 +25,7 @@ export default function ModeratorPage() {
    const allowedRoles = ['admin', 'moderator'];
   if (!user || !allowedRoles.includes(user.role)) {
     return (
-        <main className="container mx-auto p-4 sm:p-8">
+        <main className="container mx-auto p-2 sm:p-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Acceso Denegado</CardTitle>
@@ -39,7 +39,7 @@ export default function ModeratorPage() {
   }
 
   return (
-    <main className="container mx-auto p-4 sm:p-8">
+    <main className="container mx-auto p-2 sm:p-6">
         <Card>
             <CardHeader>
                 <CardTitle>Panel de Moderador</CardTitle>

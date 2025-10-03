@@ -22,18 +22,25 @@ export default function ManwhaPage() {
     const [topDaily, setTopDaily] = useState<TitleInfo[]>([]);
 
     useEffect(() => {
+        // This should only run on the client after hydration
         const shuffled = [...topAllTime].sort(() => 0.5 - Math.random());
-        setTopWeekly(shuffled);
-        setRecommendations(shuffled.slice(0, 4));
         setTopDaily(shuffled.slice(0, 5));
-    }, []);
+        
+        // A different shuffle for weekly to ensure they are not the same
+        const shuffledWeekly = [...topAllTime].sort(() => 0.5 - Math.random());
+        setTopWeekly(shuffledWeekly);
+
+        // A different shuffle for recommendations
+        const shuffledRecs = [...topAllTime].sort(() => 0.5 - Math.random());
+        setRecommendations(shuffledRecs.slice(0, 4));
+    }, [topAllTime]);
 
     const handleShowMoreWeekly = () => {
         setWeeklyVisibleCount(prev => prev + 6);
     };
 
     return (
-        <main className="container mx-auto p-4 sm:p-8 space-y-12">
+        <main className="container mx-auto p-2 sm:p-6 space-y-12">
             
             <TopRankingSlideshow items={topDaily} />
             
