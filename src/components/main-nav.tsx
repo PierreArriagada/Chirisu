@@ -51,7 +51,7 @@ function MainNav() {
                 <div className="flex items-center gap-6">
                     <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
                     <BookOpen />
-                    <span>Chirisu</span>
+                    <span className="hidden sm:inline">Chirisu</span>
                     </Link>
                      <div className="hidden md:flex flex-1 max-w-md items-center gap-2">
                         <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
