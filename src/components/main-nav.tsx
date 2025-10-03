@@ -20,7 +20,7 @@ function MainNav() {
 
   return (
     <header className="py-4">
-      <nav className="flex items-center justify-between">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo a la izquierda */}
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
           <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -67,7 +67,7 @@ function MainNav() {
             </Button>
           )}
         </div>
-      </nav>
+      </div>
     </header>
   );
 }

@@ -33,8 +33,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <MainNav />
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <MainNav />
               <SearchBar />
             </div>
             <HorizontalMenu />
