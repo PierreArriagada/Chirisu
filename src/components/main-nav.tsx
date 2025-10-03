@@ -31,12 +31,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import HorizontalMenu from "./horizontal-menu";
+import { useRouter } from "next/navigation";
+import React from "react";
 
 function MainNav() {
   const { user, logout } = useAuth();
+  const router = useRouter();
     
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get('search') as string;
+    if (query) {
+        router.push(`/search?q=${encodeURIComponent(query)}`);
+    }
+  };
+
   return (
-    <div className="bg-card/95 backdrop-blur-sm border-b">
+    <div>
         <header className="container mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex items-center justify-between h-auto min-h-16 flex-wrap py-2 gap-y-2">
                 <div className="flex items-center gap-6">
@@ -48,10 +60,12 @@ function MainNav() {
                 
                 {/* Search in the middle for large screens */}
                 <div className="hidden lg:flex flex-1 max-w-md items-center gap-2 mx-4">
-                  <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-                  <Button variant="ghost" size="icon">
-                      <Search />
-                  </Button>
+                  <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
+                    <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
+                    <Button type="submit" variant="ghost" size="icon">
+                        <Search />
+                    </Button>
+                  </form>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -96,10 +110,12 @@ function MainNav() {
 
                 {/* Search for small/medium screens */}
                 <div className="flex lg:hidden w-full items-center gap-2 order-last">
-                  <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-                  <Button variant="ghost" size="icon">
-                      <Search />
-                  </Button>
+                  <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
+                    <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
+                    <Button type="submit" variant="ghost" size="icon">
+                        <Search />
+                    </Button>
+                  </form>
                 </div>
             </nav>
         </header>

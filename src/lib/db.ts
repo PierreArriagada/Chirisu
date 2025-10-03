@@ -429,6 +429,14 @@ const processedRelatedTitles: RelatedTitle[] = relatedTitlesRaw.map(rt => ({...r
 
 // --- "DATABASE QUERY" FUNCTIONS ---
 
+export function searchTitles(query: string): TitleInfo[] {
+  if (!query) return [];
+  const lowerCaseQuery = query.toLowerCase();
+  return processedTitles.filter(title =>
+    title.title.toLowerCase().includes(lowerCaseQuery)
+  );
+}
+
 export function getMediaBySlug(slug: string) {
     return processedTitles.find(a => a.slug === slug);
 }
@@ -523,3 +531,41 @@ export function getMediaListPage(mediaType: MediaType) {
 export const getAnimePageData = (animeId: string) => getMediaPageData(animeId, 'anime');
 
 
+
+export function getCharacterPageData(slug: string) {
+    const character = getCharacterBySlug(slug);
+    if (!character) return null;
+
+    const media = processedTitles.find(t => t.id === (character as any).mediaId);
+
+    return {
+        character,
+        media: media || null,
+    };
+}
+
+export function getVoiceActorPageData(slug: string) {
+    const voiceActor = getVoiceActorBySlug(slug);
+    if (!voiceActor) return null;
+
+    const roles: CharacterRole[] = processedCharacters
+        .filter(c => c.voiceActors.japanese.slug === slug || c.voiceActors.spanish.slug === slug)
+        .map(character => {
+            const media = processedTitles.find(t => t.id === (character as any).mediaId)!;
+            return {
+                role: character.role,
+                characterName: character.name,
+                characterImageUrl: character.imageUrl,
+                characterImageHint: character.imageHint,
+                characterSlug: character.slug,
+                mediaTitle: media.title,
+                mediaType: media.type,
+                mediaSlug: media.slug,
+            }
+        });
+
+    return {
+        voiceActor,
+        roles
+    };
+}
