@@ -38,73 +38,98 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
   };
 
   return (
-    <section>
-      <div className="flex items-baseline justify-between mb-4 container px-4">
-        <h2 className="text-2xl font-bold font-headline">{title}</h2>
+    <section className="w-full overflow-hidden">
+      <div className="container mx-auto flex items-baseline justify-between mb-4 px-4">
+        <h2 className="text-xl sm:text-2xl font-bold font-headline">{title}</h2>
         {viewMoreLink && (
-          <Button variant="link" asChild className="text-muted-foreground">
+          <Button variant="link" asChild className="text-muted-foreground text-sm">
             <Link href={viewMoreLink}>
-              Ver más <ArrowRight className="ml-2" />
+              Ver más <ArrowRight className="ml-1 w-3 h-3 sm:w-4 sm:h-4" />
             </Link>
           </Button>
         )}
       </div>
-      <Carousel
-        opts={{
-          align: 'start',
-          loop: true,
-        }}
-        plugins={[
-          Autoplay({
-            delay: 5000,
-            stopOnInteraction: true,
-          }),
-        ]}
-        className="w-full"
-      >
-        <CarouselContent className="-ml-4">
-           {items.map((item, index) => (
-            <CarouselItem key={index} className="pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 xl:basis-[14%]">
-               <Link href={url(item)} className="block group cursor-pointer h-full">
-                <Card className="overflow-hidden h-full flex flex-col border-none shadow-lg bg-transparent">
-                  <CardContent className="p-0 relative flex-grow">
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.title}
-                      width={300}
-                      height={450}
-                      className="object-cover w-full h-full aspect-[2/3] transition-transform duration-300 group-hover:scale-105 rounded-lg"
-                      data-ai-hint={item.imageHint}
-                      priority={index < 5}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-lg" />
-                     <div className="absolute top-1 left-2 text-2xl font-bold text-white [text-shadow:1px_1px_3px_rgb(0_0_0_/_0.7)]">
-                        {index + 1}
-                    </div>
-                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 text-white text-xs font-bold p-1 rounded-md">
-                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400"/>
-                        <span>{item.rating.toFixed(1)}</span>
-                    </div>
-                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-white text-xs px-1">
-                        <div className="flex items-center gap-1">
-                            <MessageCircle className="w-3 h-3"/>
-                            <span>{formatNumber(item.commentsCount)}</span>
+      
+      <div className="relative">
+        <Carousel
+          opts={{
+            align: 'start',
+            loop: true,
+            containScroll: 'trimSnaps',
+          }}
+          plugins={[
+            Autoplay({
+              delay: 5000,
+              stopOnInteraction: true,
+              stopOnMouseEnter: true,
+            }),
+          ]}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {items.map((item, index) => (
+              <CarouselItem 
+                key={index} 
+                className="pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 xl:basis-1/7"
+              >
+                <Link href={url(item)} className="block group cursor-pointer h-full">
+                  <Card className="overflow-hidden h-full flex flex-col border-none shadow-md bg-transparent">
+                    <CardContent className="p-0 relative flex-grow">
+                      <div className="relative aspect-[2/3] w-full">
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.title}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105 rounded-md"
+                          sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 14vw"
+                          data-ai-hint={item.imageHint}
+                          priority={index < 7}
+                        />
+                        
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent rounded-md" />
+                        
+                        <div className="absolute top-1 left-1">
+                          <span className="text-2xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                            {index + 1}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <Bookmark className="w-3 h-3"/>
-                            <span>{formatNumber(item.listsCount)}</span>
+                        
+                        <div className="absolute top-1 right-1">
+                          <div className="flex items-center gap-0.5 bg-black/70 backdrop-blur-sm text-white px-1 py-0.5 rounded">
+                            <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-yellow-400 text-yellow-400"/>
+                            <span className="text-[10px] sm:text-xs font-semibold">{item.rating.toFixed(1)}</span>
+                          </div>
                         </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                 <h3 className="font-semibold text-sm leading-tight truncate text-left w-full group-hover:text-primary transition-colors mt-2 px-1">
+                        
+                        <div className="absolute bottom-1 left-1 right-1">
+                          <div className="flex items-center justify-between bg-black/50 backdrop-blur-sm rounded px-1.5 py-0.5">
+                            <div className="flex items-center gap-0.5">
+                              <MessageCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/90"/>
+                              <span className="text-[10px] sm:text-xs text-white/90 font-medium">
+                                {formatNumber(item.commentsCount)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-0.5">
+                              <Bookmark className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/90"/>
+                              <span className="text-[10px] sm:text-xs text-white/90 font-medium">
+                                {formatNumber(item.listsCount)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <h3 className="font-semibold text-xs sm:text-sm leading-tight line-clamp-2 text-left w-full group-hover:text-primary transition-colors mt-1.5 px-0.5">
                     {item.title}
-                </h3>
-              </Link>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
+                  </h3>
+                </Link>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </div>
     </section>
   );
 }
