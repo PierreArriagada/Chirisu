@@ -53,12 +53,12 @@ function MainNav() {
                     <BookOpen />
                     <span>Chirisu</span>
                     </Link>
-                </div>
-                <div className="hidden md:flex flex-1 max-w-md items-center gap-2">
-                    <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-                    <Button variant="ghost" size="icon">
-                        <Search />
-                    </Button>
+                     <div className="hidden md:flex flex-1 max-w-md items-center gap-2">
+                        <Input placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
+                        <Button variant="ghost" size="icon">
+                            <Search />
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">
