@@ -1,6 +1,6 @@
 'use client';
 import TopMediaList from "@/components/top-media-list";
-import TopRankingSlideshow from "@/components/top-ranking-carousel";
+import TopRankingSlideshow from "@/components/top-ranking-slideshow";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getMediaListPage } from "@/lib/db";
@@ -22,7 +22,7 @@ export default function FanComicPage() {
         // Run randomization only on the client-side after hydration
         setTopWeekly(topAllTime.slice().sort(() => 0.5 - Math.random()));
         setRecommendations(topAllTime.slice().sort(() => 0.5 - Math.random()).slice(0, 4));
-        setTopDaily(topAllTime.slice().sort(() => 0.5 - Math.random()));
+        setTopDaily(topAllTime.slice().sort(() => 0.5 - Math.random()).slice(0, 5));
     }, []);
 
     const handleShowMoreWeekly = () => {
@@ -32,9 +32,7 @@ export default function FanComicPage() {
     return (
         <main className="container mx-auto p-4 sm:p-8 space-y-12">
             
-            <TopRankingSlideshow
-                items={topDaily}
-            />
+            <TopRankingSlideshow items={topDaily} />
             
             <section>
                 <h2 className="text-2xl font-bold font-headline mb-4">Top Semanal</h2>
