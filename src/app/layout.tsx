@@ -6,6 +6,7 @@ import MainNav from '@/components/main-nav';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/context/auth-context';
 import HorizontalMenu from '@/components/horizontal-menu';
+import SearchBar from '@/components/search-bar';
 
 export const metadata: Metadata = {
   title: 'Chirisu',
@@ -32,7 +33,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <MainNav />
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <MainNav />
+              <SearchBar />
+            </div>
             <HorizontalMenu />
             <Breadcrumbs />
             {children}

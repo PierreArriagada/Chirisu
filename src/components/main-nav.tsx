@@ -1,23 +1,7 @@
-/**
- * @fileoverview MainNav - Componente de navegación principal de la aplicación.
- * 
- * Este componente renderiza la barra de navegación superior, que es visible en
- * todas las páginas. Incluye:
- * - El logo y título del sitio.
- * - Un campo de búsqueda central (en escritorio).
- * - El menú de categorías de medios (Anime, Manga, etc.).
- * - Un interruptor para cambiar el tema (claro/oscuro/dinámico).
- * - Lógica para mostrar un botón de "Iniciar Sesión" o, si el usuario está
- *   autenticado, un menú de perfil con su avatar, nombre y enlaces a su
- *   perfil y para cerrar sesión.
- * También gestiona la navegación móvil a través de un menú lateral (Sheet).
- */
-
 'use client';
 
 import Link from "next/link";
-import { BookOpen, Search, User, LogOut } from "lucide-react";
-import { Input } from "./ui/input";
+import { BookOpen, User, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/context/auth-context";
@@ -30,116 +14,60 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { usePathname, useRouter } from "next/navigation";
-import React from "react";
 
 function MainNav() {
   const { user, logout } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
-    
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const query = formData.get('search') as string;
-    if (query) {
-        router.push(`/search?q=${encodeURIComponent(query)}`);
-    }
-  };
-
-  const searchVisiblePaths = [
-    '/',
-    '/anime',
-    '/manga',
-    '/manhua',
-    '/manwha',
-    '/novela',
-    '/dougua',
-    '/fan-comic',
-  ];
-  const showSearch = searchVisiblePaths.includes(pathname);
-
 
   return (
-    <header className="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-wrap items-center justify-between min-h-16 py-2 gap-y-2">
-        
-        {/* Main Nav Items: Logo on Left, Actions on Right */}
-        <nav className="flex items-center justify-between w-full">
-          {/* Left Side: Logo */}
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
-              <BookOpen />
-              <span className="hidden sm:inline">Chirisu</span>
-            </Link>
-          </div>
+    <header className="py-4">
+      <nav className="flex items-center justify-between">
+        {/* Logo a la izquierda */}
+        <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
+          <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+          <span className="hidden sm:inline">Chirisu</span>
+        </Link>
 
-          {/* Desktop Search Bar */}
-          {showSearch && (
-            <div className="hidden lg:flex flex-1 max-w-md items-center justify-center mx-4">
-              <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
-                <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-                <Button type="submit" variant="ghost" size="icon">
-                    <Search />
+        {/* Acciones a la derecha */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full">
+                  <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
+                    <AvatarImage src={user.image} alt={user.name} />
+                    <AvatarFallback>{user.name?.[0]}</AvatarFallback>
+                  </Avatar>
                 </Button>
-              </form>
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Perfil</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Cerrar sesión</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm">
+              <Link href="/login">Iniciar Sesión</Link>
+            </Button>
           )}
-
-          {/* Right Side: Actions */}
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar>
-                      <AvatarImage src={user.image} alt={user.name} />
-                      <AvatarFallback>{user.name?.[0]}</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Perfil</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Cerrar sesión</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button asChild variant="outline">
-                <Link href="/login">Iniciar Sesión</Link>
-              </Button>
-            )}
-          </div>
-        </nav>
-
-        {/* Mobile Search Bar: Takes full width on its own row */}
-        {showSearch && (
-          <div className="flex lg:hidden w-full items-center gap-2 order-last">
-            <form onSubmit={handleSearch} className="w-full flex items-center gap-2">
-              <Input name="search" placeholder="Buscar anime, manga..." className="bg-background/50 border-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"/>
-              <Button type="submit" variant="ghost" size="icon">
-                  <Search />
-              </Button>
-            </form>
-          </div>
-        )}
-      </div>
+        </div>
+      </nav>
     </header>
   );
 }
