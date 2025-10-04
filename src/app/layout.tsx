@@ -37,7 +37,7 @@ export default function RootLayout({
             <SearchBar />
             <HorizontalMenu />
             <Breadcrumbs />
-            <main className="px-4 sm:px-6 lg:px-8">
+            <main>
               {children}
             </main>
             <Toaster />
