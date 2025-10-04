@@ -2,103 +2,33 @@
  * @fileoverview Página de la categoría "Anime".
  * 
  * Esta página actúa como el hub principal para todo el contenido de anime.
- * Muestra diferentes secciones de rankings y recomendaciones:
- * - Un carrusel destacado con el "Top Diario".
- * - Una lista con el "Top Semanal", con opción de cargar más.
- * - Una cuadrícula interactiva de "Top por Géneros".
- * - Una sección de "Recomendado para ti".
- * Los datos se obtienen de forma aleatoria en el cliente para simular dinamismo.
+ * Muestra diferentes secciones de rankings y recomendaciones, y en la vista de escritorio
+ * incluye una barra lateral con rankings de personajes y últimas publicaciones del foro.
  */
 
-'use client';
-import TopMediaList from "@/components/top-media-list";
-import TopRankingSlideshow from "@/components/top-ranking-slideshow";
-import { Button } from "@/components/ui/button";
-import { getMediaListPage } from "@/lib/db";
-import { MediaType, TitleInfo } from "@/lib/types";
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import Link from "next/link";
-import GenreGridCard from "@/components/genre-grid-card";
+import AnimePageClient from "@/components/anime-page-client";
+import LatestPostsCard from "@/components/latest-posts-card";
+import TopCharactersCard from "@/components/top-characters-card";
+import { getTopCharacters } from "@/lib/db";
 
-const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura", "Misterio", "Drama", "Sci-Fi"];
 
 export default function AnimePage() {
-    const mediaType: MediaType = "Anime";
-    
-    const [topDaily, setTopDaily] = useState<TitleInfo[]>([]);
-    const [topWeekly, setTopWeekly] = useState<TitleInfo[]>([]);
-    const [recommendations, setRecommendations] = useState<TitleInfo[]>([]);
-    const [genreItems, setGenreItems] = useState<TitleInfo[]>([]);
-
-    const [weeklyVisibleCount, setWeeklyVisibleCount] = useState(6);
-
-
-    useEffect(() => {
-        const allItems = getMediaListPage(mediaType).topAllTime;
-        // This should only run on the client after hydration
-        const shuffled = [...allItems].sort(() => 0.5 - Math.random());
-        setTopDaily(shuffled.slice(0, 5));
-        
-        // A different shuffle for weekly to ensure they are not the same
-        const shuffledWeekly = [...allItems].sort(() => 0.5 - Math.random());
-        setTopWeekly(shuffledWeekly);
-
-        // A different shuffle for recommendations
-        const shuffledRecs = [...allItems].sort(() => 0.5 - Math.random());
-        setRecommendations(shuffledRecs.slice(0, 4));
-
-        const shuffledGenres = [...allItems].sort(() => 0.5 - Math.random());
-        setGenreItems(shuffledGenres);
-
-    }, []);
-
-    const handleShowMoreWeekly = () => {
-        setWeeklyVisibleCount(prev => prev + 6);
-    };
+    const topCharacters = getTopCharacters(5);
+    const latestPosts = [
+        { id: 'post1', title: '¿Qué tan fiel es la adaptación de Honzuki no Gekokujou?', author: 'MangaReader', replies: 45 },
+        { id: 'post2', title: 'Mejor momento del último capítulo de The Boxer', author: 'AnimeWatcher', replies: 102 },
+        { id: 'post3', title: 'Teorías sobre el final de Berserk', author: 'GutsFan', replies: 234 },
+    ];
 
     return (
-        <main className="space-y-12">
-            
-            <TopRankingSlideshow items={topDaily} />
-            
-            <section>
-                <h2 className="text-2xl font-bold font-headline mb-4">Top Semanal</h2>
-                <TopMediaList items={topWeekly.slice(0, weeklyVisibleCount)} />
-                {weeklyVisibleCount < topWeekly.length && weeklyVisibleCount < 12 && (
-                     <div className="flex justify-center mt-4">
-                        <Button variant="outline" onClick={handleShowMoreWeekly}>
-                            <span className="text-lg">+</span>
-                        </Button>
-                    </div>
-                )}
-                {weeklyVisibleCount >= 12 && topWeekly.length > 0 && (
-                    <div className="flex justify-center mt-4">
-                        <Button>Ver el ranking completo</Button>
-                    </div>
-                )}
-            </section>
-
-            <section>
-                <h2 className="text-2xl font-bold font-headline mb-4">Top por Géneros</h2>
-                <GenreGridCard categories={popularGenres} items={genreItems} />
-            </section>
-
-            <section>
-                <h2 className="text-2xl font-bold font-headline mb-4">Recomendado para ti</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {recommendations.map(item => (
-                        <Card key={item.id} className="flex items-center gap-4 p-3 overflow-hidden transition-all duration-200 hover:bg-accent/50 hover:shadow-md">
-                           <img src={item.imageUrl} alt={item.title} className="w-16 h-24 object-cover rounded-md" />
-                            <div className="overflow-hidden">
-                                <h4 className="font-semibold leading-tight truncate">{item.title}</h4>
-                                <p className="text-sm text-muted-foreground">{item.type}</p>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            </section>
-            
-        </main>
+        <div className="grid grid-cols-1 lg:grid-cols-4 lg:gap-8 my-8">
+            <div className="lg:col-span-3">
+                <AnimePageClient />
+            </div>
+            <aside className="hidden lg:block lg:col-span-1 space-y-8">
+                <TopCharactersCard characters={topCharacters} />
+                <LatestPostsCard posts={latestPosts} />
+            </aside>
+        </div>
     );
 }
