@@ -22,16 +22,17 @@ export default function FanComicPage() {
     const [topDaily, setTopDaily] = useState<TitleInfo[]>([]);
 
     useEffect(() => {
+        const allItems = getMediaListPage(mediaType).topAllTime;
         // This should only run on the client after hydration
-        const shuffled = [...topAllTime].sort(() => 0.5 - Math.random());
+        const shuffled = [...allItems].sort(() => 0.5 - Math.random());
         setTopDaily(shuffled.slice(0, 5));
         
         // A different shuffle for weekly to ensure they are not the same
-        const shuffledWeekly = [...topAllTime].sort(() => 0.5 - Math.random());
+        const shuffledWeekly = [...allItems].sort(() => 0.5 - Math.random());
         setTopWeekly(shuffledWeekly);
 
         // A different shuffle for recommendations
-        const shuffledRecs = [...topAllTime].sort(() => 0.5 - Math.random());
+        const shuffledRecs = [...allItems].sort(() => 0.5 - Math.random());
         setRecommendations(shuffledRecs.slice(0, 4));
     }, []);
 
@@ -40,7 +41,7 @@ export default function FanComicPage() {
     };
 
     return (
-        <main className="container mx-auto p-2 sm:p-6 space-y-12">
+        <div className="space-y-12">
             
             <TopRankingSlideshow items={topDaily} />
             
@@ -111,6 +112,6 @@ export default function FanComicPage() {
                 </div>
             </section>
             
-        </main>
+        </div>
     );
 }

@@ -38,7 +38,7 @@ export default function RootLayout({
             <SearchBar />
             <HorizontalMenu />
             <Breadcrumbs />
-            <main className="flex-grow">
+            <main className="flex-grow container">
               {children}
             </main>
             <Footer />

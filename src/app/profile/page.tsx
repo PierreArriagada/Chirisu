@@ -141,7 +141,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <main className="container mx-auto p-2 sm:p-6 space-y-8">
+    <div className="space-y-8">
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -208,6 +208,6 @@ export default function ProfilePage() {
             <UserMediaList items={user.lists.favorites} />
           </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

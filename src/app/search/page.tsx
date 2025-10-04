@@ -79,10 +79,8 @@ function SearchResults() {
 
 export default function SearchPage() {
     return (
-        <main className="container mx-auto p-2 sm:p-6">
-            <Suspense fallback={<div className="text-center p-8">Cargando resultados...</div>}>
-                <SearchResults />
-            </Suspense>
-        </main>
+        <Suspense fallback={<div className="text-center p-8">Cargando resultados...</div>}>
+            <SearchResults />
+        </Suspense>
     )
 }
