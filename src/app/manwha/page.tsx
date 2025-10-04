@@ -34,7 +34,7 @@ export default function ManwhaPage() {
         // A different shuffle for recommendations
         const shuffledRecs = [...allItems].sort(() => 0.5 - Math.random());
         setRecommendations(shuffledRecs.slice(0, 4));
-    }, [mediaType]);
+    }, []);
 
     const handleShowMoreWeekly = () => {
         setWeeklyVisibleCount(prev => prev + 6);
