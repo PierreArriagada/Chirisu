@@ -36,7 +36,7 @@ export default function SearchBar() {
   }
 
   return (
-    <div className="w-full pb-4">
+    <div className="w-full pb-4 px-4 sm:px-6 lg:px-8">
       <form onSubmit={handleSearch} className="w-full max-w-xl mx-auto flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

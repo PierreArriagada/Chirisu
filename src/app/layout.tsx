@@ -35,9 +35,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <MainNav />
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <SearchBar />
-            </div>
+            <SearchBar />
             <HorizontalMenu />
             <Breadcrumbs />
             <main className="flex-grow">
