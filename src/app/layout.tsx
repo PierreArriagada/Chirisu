@@ -25,7 +25,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased flex flex-col min-h-screen">
+      <body>
         <AuthProvider>
           <ThemeProvider
             attribute="class"
@@ -37,7 +37,7 @@ export default function RootLayout({
             <SearchBar />
             <HorizontalMenu />
             <Breadcrumbs />
-            <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8">
+            <main>
               {children}
             </main>
             <Toaster />
