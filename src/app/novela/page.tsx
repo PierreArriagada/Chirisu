@@ -33,7 +33,7 @@ export default function NovelaPage() {
         // A different shuffle for recommendations
         const shuffledRecs = [...topAllTime].sort(() => 0.5 - Math.random());
         setRecommendations(shuffledRecs.slice(0, 4));
-    }, [topAllTime]);
+    }, []);
 
     const handleShowMoreWeekly = () => {
         setWeeklyVisibleCount(prev => prev + 6);
