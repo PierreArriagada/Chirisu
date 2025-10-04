@@ -367,12 +367,14 @@ const voiceActorsRaw: (Omit<VoiceActor, 'slug'> & { id: string })[] = [
     { id: 'va4', name: 'Yuka Iguchi', imageUrl: 'https://picsum.photos/seed/yukaiguchi/200/300', imageHint: 'Yuka Iguchi voice actor' },
 ];
 
-const charactersRaw: (Omit<Character, 'voiceActors' | 'slug'> & { mediaId: string; japaneseVoiceActorId: string; spanishVoiceActorId: string; })[] = [
-    { id: 'char1', mediaId: '1', name: 'Myne', imageUrl: 'https://picsum.photos/seed/myne/200/300', imageHint: 'Myne character', role: 'Main', japaneseVoiceActorId: 'va4', spanishVoiceActorId: 'va2', },
-    { id: 'char2', mediaId: '1', name: 'Ferdinand', imageUrl: 'https://picsum.photos/seed/ferdinand/200/300', imageHint: 'Ferdinand character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }, // reusing va
-    { id: 'char3', mediaId: 'berserk-manga', name: 'Guts', imageUrl: 'https://picsum.photos/seed/guts/200/300', imageHint: 'Guts character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }, // Reusing VAs for demo
-    { id: 'char4', mediaId: 'modaozushi-dougua', name: 'Wei Wuxian', imageUrl: 'https://picsum.photos/seed/weiwuxian/200/300', imageHint: 'Wei Wuxian character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', }
+const charactersRaw: (Omit<Character, 'voiceActors' | 'slug'> & { mediaId: string; japaneseVoiceActorId: string; spanishVoiceActorId: string; popularity: number; })[] = [
+    { id: 'char1', mediaId: '1', name: 'Myne', imageUrl: 'https://picsum.photos/seed/myne/200/300', imageHint: 'Myne character', role: 'Main', japaneseVoiceActorId: 'va4', spanishVoiceActorId: 'va2', popularity: 1 },
+    { id: 'char3', mediaId: 'berserk-manga', name: 'Guts', imageUrl: 'https://picsum.photos/seed/guts/200/300', imageHint: 'Guts character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', popularity: 2 },
+    { id: 'char2', mediaId: '1', name: 'Ferdinand', imageUrl: 'https://picsum.photos/seed/ferdinand/200/300', imageHint: 'Ferdinand character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', popularity: 3 },
+    { id: 'char4', mediaId: 'modaozushi-dougua', name: 'Wei Wuxian', imageUrl: 'https://picsum.photos/seed/weiwuxian/200/300', imageHint: 'Wei Wuxian character', role: 'Main', japaneseVoiceActorId: 'va1', spanishVoiceActorId: 'va2', popularity: 4 },
+    { id: 'char5', mediaId: 'berserk-manga', name: 'Casca', imageUrl: 'https://picsum.photos/seed/casca/200/300', imageHint: 'Casca character', role: 'Main', japaneseVoiceActorId: 'va3', spanishVoiceActorId: 'va2', popularity: 5 },
 ];
+
 
 const episodes: (Episode & { mediaId: string })[] = [
     ...Array.from({ length: 12 }, (_, i) => ({ id: `ep1-${i + 1}`, mediaId: '1', name: `Episode ${i + 1}`, imageUrl: `https://picsum.photos/seed/ep${i + 1}/320/180`, imageHint: `anime episode ${i + 1}`, duration: '23 min', releaseDate: new Date(2019, 9, 3 + i * 7).toISOString(), comments: Math.floor(Math.random() * 2000), watchLinks: { official: '#', crunchyroll: '#' } })),
@@ -451,6 +453,24 @@ export function getCharacterBySlug(slug: string) {
 
 export function getVoiceActorBySlug(slug: string) {
     return processedVoiceActors.find(va => va.slug === slug);
+}
+
+export function getTopCharacters(limit: number): Character[] {
+    const sortedCharacters = [...charactersRaw].sort((a, b) => a.popularity - b.popularity);
+    return sortedCharacters.slice(0, limit).map(c => {
+        const japanese = processedVoiceActors.find(va => va.id === c.japaneseVoiceActorId)!;
+        const spanish = processedVoiceActors.find(va => va.id === c.spanishVoiceActorId)!;
+        return {
+            ...c,
+            slug: createSlug(c.name),
+            voiceActors: { japanese, spanish }
+        };
+    });
+}
+
+export function getTopPeople(limit: number): VoiceActor[] {
+    // For now, we'll just return a slice of voice actors as "top people"
+    return processedVoiceActors.slice(0, limit);
 }
 
 

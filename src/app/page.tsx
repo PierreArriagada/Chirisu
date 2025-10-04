@@ -1,27 +1,46 @@
-import { getMediaListPage } from '@/lib/db';
+import { getMediaListPage, getTopCharacters, getTopPeople } from '@/lib/db';
 import { MediaType } from '@/lib/types';
 import TopRankingCarousel from '@/components/top-ranking-carousel';
+import TopCharactersCard from '@/components/top-characters-card';
+import TopPeopleCard from '@/components/top-people-card';
+import LatestPostsCard from '@/components/latest-posts-card';
 
 export default function Home() {
   const mediaTypes: MediaType[] = ['Anime', 'Manga', 'Manhua', 'Manwha', 'Novela', 'Fan Comic', 'Dougua'];
+  const topCharacters = getTopCharacters(5);
+  const topPeople = getTopPeople(5);
+
+  const latestPosts = [
+    { id: 'post1', title: '¿Qué tan fiel es la adaptación de Honzuki no Gekokujou?', author: 'MangaReader', replies: 45 },
+    { id: 'post2', title: 'Mejor momento del último capítulo de The Boxer', author: 'AnimeWatcher', replies: 102 },
+    { id: 'post3', title: 'Teorías sobre el final de Berserk', author: 'GutsFan', replies: 234 },
+  ];
 
   return (
-    <div className="space-y-12 my-8">
-      {mediaTypes.map(type => {
-        const { topAllTime } = getMediaListPage(type);
-        
-        // Handle multi-word types for path
-        const path = `/${type.toLowerCase().replace(' ', '-')}`;
+    <div className="grid grid-cols-1 lg:grid-cols-4 lg:gap-8 my-8">
+      <aside className="hidden lg:block lg:col-span-1 space-y-8">
+        <TopCharactersCard characters={topCharacters} />
+        <TopPeopleCard people={topPeople} />
+        <LatestPostsCard posts={latestPosts} />
+      </aside>
 
-        return (
-          <TopRankingCarousel
-            key={type}
-            title={`${type} - Top Ranking`}
-            items={topAllTime}
-            viewMoreLink={path}
-          />
-        );
-      })}
+      <div className="lg:col-span-3 space-y-12">
+        {mediaTypes.map(type => {
+          const { topAllTime } = getMediaListPage(type);
+          
+          // Handle multi-word types for path
+          const path = `/${type.toLowerCase().replace(' ', '-')}`;
+
+          return (
+            <TopRankingCarousel
+              key={type}
+              title={`${type} - Top Ranking`}
+              items={topAllTime}
+              viewMoreLink={path}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
