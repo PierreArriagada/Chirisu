@@ -22,9 +22,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import Image from "next/image";
 import { Badge } from "./ui/badge";
 import Link from "next/link";
-import { ArrowRight, Calendar } from "lucide-react";
+import { ArrowRight, Calendar, PlayCircle } from "lucide-react";
+import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 
 const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura", "Misterio", "Drama", "Sci-Fi"];
+
+const mostViewedTrailers = [
+    { title: "Jujutsu Kaisen Temporada 3", imageSeed: "trailer-main" },
+    { title: "Frieren: Beyond Journey's End", imageSeed: "trailer-second" },
+    { title: "Attack on Titan The Final Season", imageSeed: "trailer-aot" },
+    { title: "Chainsaw Man Movie: Reze Arc", imageSeed: "trailer-csm" },
+    { title: "Oshi no Ko Season 2", imageSeed: "trailer-onk" },
+    { title: "Dandadan First Trailer", imageSeed: "trailer-dnd" },
+    { title: "Bleach: Thousand-Year Blood War", imageSeed: "trailer-bleach" },
+    { title: "One Piece: Egghead Arc", imageSeed: "trailer-op" },
+    { title: "Solo Leveling Season 2", imageSeed: "trailer-sl" },
+    { title: "Vinland Saga Season 3", imageSeed: "trailer-vs" },
+];
 
 export default function AnimePageClient() {
     const mediaType: MediaType = "Anime";
@@ -133,36 +147,35 @@ export default function AnimePageClient() {
 
             <section>
                 <h2 className="text-2xl font-bold font-headline mb-4">Trailers más Vistos</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="relative aspect-video">
-                                <Image src="https://picsum.photos/seed/trailer-main/600/338" alt="Main Trailer" fill className="rounded-lg object-cover" />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg">
-                                    <div className="w-12 h-12 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer hover:bg-white/50 transition-colors">
-                                        <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <h3 className="font-semibold mt-3">Trailer Oficial de la Temporada 3</h3>
-                            <p className="text-sm text-muted-foreground">Jujutsu Kaisen</p>
-                        </CardContent>
-                    </Card>
-                     <Card>
-                        <CardContent className="p-4">
-                            <div className="relative aspect-video">
-                                <Image src="https://picsum.photos/seed/trailer-second/600/338" alt="Secondary Trailer" fill className="rounded-lg object-cover" />
-                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg">
-                                    <div className="w-12 h-12 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer hover:bg-white/50 transition-colors">
-                                        <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <h3 className="font-semibold mt-3">Nuevo Video Promocional</h3>
-                            <p className="text-sm text-muted-foreground">Frieren: Beyond Journey's End</p>
-                        </CardContent>
-                    </Card>
-                </div>
+                <Carousel
+                    opts={{
+                        align: "start",
+                        slidesToScroll: 'auto',
+                    }}
+                    className="w-full"
+                >
+                    <CarouselContent className="-ml-2">
+                        {mostViewedTrailers.map((trailer, index) => (
+                            <CarouselItem key={index} className="pl-2 pr-2 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                                <Card className="group overflow-hidden">
+                                    <CardContent className="p-0">
+                                        <div className="relative aspect-video">
+                                            <Image src={`https://picsum.photos/seed/${trailer.imageSeed}/300/169`} alt={trailer.title} fill className="rounded-t-lg object-cover transition-transform duration-300 group-hover:scale-105" />
+                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-t-lg">
+                                                <div className="w-10 h-10 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer hover:bg-white/50 transition-colors">
+                                                    <PlayCircle className="w-6 h-6 text-white" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="p-3">
+                                            <h3 className="font-semibold mt-1 text-sm line-clamp-2">{trailer.title}</h3>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                </Carousel>
             </section>
 
             <section>
