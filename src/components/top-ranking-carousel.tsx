@@ -39,7 +39,7 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
 
   return (
     <section className="w-full overflow-hidden">
-      <div className="flex items-baseline justify-between mb-4 px-4">
+      <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-xl sm:text-2xl font-bold font-headline">{title}</h2>
         {viewMoreLink && (
           <Button variant="link" asChild className="text-muted-foreground text-sm">
@@ -50,8 +50,7 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
         )}
       </div>
       
-      {/* Contenedor principal con padding para evitar que las imágenes toquen los bordes */}
-      <div className="relative px-4 sm:px-8">
+      <div className="relative">
         <Carousel
           opts={{
             align: 'start',
@@ -68,11 +67,11 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
           ]}
           className="w-full"
         >
-          <CarouselContent className="-ml-2 pl-2"> {/* Ajuste del margen izquierdo */}
+          <CarouselContent className="-ml-2">
             {items.map((item, index) => (
               <CarouselItem 
                 key={index} 
-                className="pl-2 pr-2 basis-[45%] sm:basis-[33.333%] md:basis-[25%] lg:basis-[20%] xl:basis-[16.666%]"
+                className="pl-2 pr-2 basis-[45%] ss:basis-[40%] sm:basis-[33.333%] md:basis-[25%] lg:basis-[20%] xl:basis-[16.666%]"
               >
                 <Link href={url(item)} className="block group cursor-pointer h-full">
                   <div className="flex flex-col h-full">
@@ -89,17 +88,14 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
                             priority={index < 6}
                           />
                           
-                          {/* Overlay gradient */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent rounded-md" />
                           
-                          {/* Ranking number */}
                           <div className="absolute top-1 left-1 sm:top-2 sm:left-2">
                             <span className="text-lg sm:text-xl md:text-2xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                               {index + 1}
                             </span>
                           </div>
                           
-                          {/* Rating badge */}
                           <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
                             <div className="flex items-center gap-0.5 bg-black/70 backdrop-blur-sm text-white px-1 py-0.5 rounded">
                               <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-yellow-400 text-yellow-400"/>
@@ -107,7 +103,6 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
                             </div>
                           </div>
                           
-                          {/* Bottom stats */}
                           <div className="absolute bottom-1 left-1 right-1 sm:bottom-2 sm:left-2 sm:right-2">
                             <div className="flex items-center justify-between bg-black/50 backdrop-blur-sm rounded px-1.5 py-0.5">
                               <div className="flex items-center gap-0.5">
@@ -128,7 +123,6 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
                       </CardContent>
                     </Card>
                     
-                    {/* Title */}
                     <h3 className="font-semibold text-xs sm:text-sm leading-tight line-clamp-2 text-left w-full group-hover:text-primary transition-colors mt-1.5 px-0.5">
                       {item.title}
                     </h3>

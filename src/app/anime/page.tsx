@@ -14,12 +14,14 @@ const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "
 
 export default function AnimePage() {
     const mediaType: MediaType = "Anime";
-    const { topAllTime } = getMediaListPage(mediaType);
     
-    const [weeklyVisibleCount, setWeeklyVisibleCount] = useState(6);
+    const [topDaily, setTopDaily] = useState<TitleInfo[]>([]);
     const [topWeekly, setTopWeekly] = useState<TitleInfo[]>([]);
     const [recommendations, setRecommendations] = useState<TitleInfo[]>([]);
-    const [topDaily, setTopDaily] = useState<TitleInfo[]>([]);
+    const [genreItems, setGenreItems] = useState<TitleInfo[]>([]);
+
+    const [weeklyVisibleCount, setWeeklyVisibleCount] = useState(6);
+
 
     useEffect(() => {
         const allItems = getMediaListPage(mediaType).topAllTime;
@@ -34,6 +36,10 @@ export default function AnimePage() {
         // A different shuffle for recommendations
         const shuffledRecs = [...allItems].sort(() => 0.5 - Math.random());
         setRecommendations(shuffledRecs.slice(0, 4));
+
+        const shuffledGenres = [...allItems].sort(() => 0.5 - Math.random());
+        setGenreItems(shuffledGenres.slice(0,4));
+
     }, []);
 
     const handleShowMoreWeekly = () => {
@@ -74,7 +80,7 @@ export default function AnimePage() {
                             ))}
                         </div>
                         <div className="grid grid-cols-2 ss:grid-cols-3 sm:grid-cols-4 gap-4">
-                            {topAllTime.slice(0, 4).map(item => (
+                            {genreItems.map(item => (
                                 <Link key={item.id} href={`/${item.type.toLowerCase().replace(/ /g, '-')}/${item.slug}`} className="group">
                                     <Card className="overflow-hidden h-full">
                                         <div className="relative aspect-[2/3] w-full">
