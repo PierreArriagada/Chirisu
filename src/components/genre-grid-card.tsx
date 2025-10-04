@@ -126,8 +126,8 @@ export default function GenreGridCard({ categories, items }: GenreGridCardProps)
                         data-ai-hint={item.imageHint}
                     />
                     </div>
-                    <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors mt-1 text-center truncate">
-                    {item.title}
+                    <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors mt-1 text-center line-clamp-2 h-8">
+                      {item.title}
                     </p>
                 </Link>
             ))}
