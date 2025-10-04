@@ -7,7 +7,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/context/auth-context';
 import HorizontalMenu from '@/components/horizontal-menu';
 import SearchBar from '@/components/search-bar';
-import Footer from '@/components/footer';
 
 export const metadata: Metadata = {
   title: 'Chirisu',
@@ -41,7 +40,6 @@ export default function RootLayout({
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8">
               {children}
             </main>
-            <Footer />
             <Toaster />
           </ThemeProvider>
         </AuthProvider>
