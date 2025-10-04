@@ -41,6 +41,26 @@ const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => 
   return [h * 360, s * 100, l * 100];
 };
 
+const getBestColorFromPalette = (palette: [number, number, number][]): [number, number, number] => {
+    if (!palette || palette.length === 0) return [0, 0, 0];
+
+    const filteredPalette = palette.map(color => {
+        const [r, g, b] = color;
+        const [h, s, l] = rgbToHsl(r, g, b);
+        // Descartar colores muy oscuros o muy claros
+        if (l < 10 || l > 90) return null;
+        return { color, h, s, l };
+    }).filter(Boolean) as { color: [number, number, number], h: number, s: number, l: number }[];
+
+    if (filteredPalette.length === 0) {
+        return palette[0];
+    }
+
+    // Ordenar por saturación descendente para obtener el color más vibrante
+    filteredPalette.sort((a, b) => b.s - a.s);
+
+    return filteredPalette[0].color;
+};
 
 const DynamicTheme = ({ imageUrl }: DynamicThemeProps) => {
   const { theme, systemTheme } = useTheme();
@@ -98,8 +118,9 @@ const DynamicTheme = ({ imageUrl }: DynamicThemeProps) => {
         proxyImg.src = img.src;
         proxyImg.onload = () => {
             const colorThief = new ColorThief();
-            const dominantColor = colorThief.getColor(proxyImg);
-            applyTheme(dominantColor);
+            const palette = colorThief.getPalette(proxyImg, 5);
+            const bestColor = getBestColorFromPalette(palette);
+            applyTheme(bestColor);
         };
       } catch (e) {
         console.error('Error getting color from image:', e);
