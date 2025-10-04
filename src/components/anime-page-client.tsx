@@ -18,14 +18,21 @@ import { getMediaListPage, getUpcomingReleases, getLatestAdditions } from "@/lib
 import { MediaType, TitleInfo } from "@/lib/types";
 import { useState, useEffect } from "react";
 import GenreGridCard from "@/components/genre-grid-card";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 import Image from "next/image";
-import { Badge } from "./ui/badge";
 import Link from "next/link";
 import { ArrowRight, Calendar, PlayCircle } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem } from "./ui/carousel";
 
-const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura", "Misterio", "Drama", "Sci-Fi"];
+const popularGenres: Record<MediaType, string[]> = {
+    'Anime': ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura", "Misterio", "Drama", "Sci-Fi"],
+    'Manga': ["Seinen", "Acción", "Aventura", "Drama", "Fantasía", "Sobrenatural"],
+    'Dougua': ["Acción", "Aventura", "Fantasía", "Histórico", "Artes Marciales", "Sobrenatural"],
+    'Manhua': ["Acción", "Artes Marciales", "Fantasía", "Histórico", "Aventura", "Romance"],
+    'Manwha': ["Acción", "Fantasía", "Drama", "Aventura", "Psicológico", "Deportes"],
+    'Novela': ["Fantasía", "Acción", "Aventura", "Misterio", "Isekai", "Sobrenatural"],
+    'Fan Comic': ["Acción", "Superhéroes", "Aventura", "Comedia", "Drama", "Fantasía"],
+};
 
 const mostViewedTrailers = [
     { title: "Jujutsu Kaisen Temporada 3", imageSeed: "trailer-main" },
@@ -40,8 +47,7 @@ const mostViewedTrailers = [
     { title: "Vinland Saga Season 3", imageSeed: "trailer-vs" },
 ];
 
-export default function AnimePageClient() {
-    const mediaType: MediaType = "Anime";
+export default function AnimePageClient({ mediaType = "Anime" }: { mediaType?: MediaType }) {
     
     const [topDaily, setTopDaily] = useState<TitleInfo[]>([]);
     const [topWeekly, setTopWeekly] = useState<TitleInfo[]>([]);
@@ -52,6 +58,7 @@ export default function AnimePageClient() {
     const [weeklyVisibleCount, setWeeklyVisibleCount] = useState(6);
     const [latestVisibleCount, setLatestVisibleCount] = useState(6);
 
+    const showVideoSections = mediaType === 'Anime' || mediaType === 'Dougua';
 
     useEffect(() => {
         const allItems = getMediaListPage(mediaType).topAllTime;
@@ -66,10 +73,12 @@ export default function AnimePageClient() {
         const shuffledGenres = [...allItems].sort(() => 0.5 - Math.random());
         setGenreItems(shuffledGenres);
 
-        setLatestAdditions(getLatestAdditions(12, 'Anime'));
-        setUpcomingReleases(getUpcomingReleases(5, 'Anime'));
+        setLatestAdditions(getLatestAdditions(12, mediaType));
+        if (showVideoSections) {
+            setUpcomingReleases(getUpcomingReleases(5, mediaType));
+        }
 
-    }, []);
+    }, [mediaType, showVideoSections]);
 
     const handleShowMoreWeekly = () => {
         setWeeklyVisibleCount(prev => prev + 6);
@@ -103,12 +112,12 @@ export default function AnimePageClient() {
 
             <section>
                 <h2 className="text-2xl font-bold font-headline mb-4">Top por Géneros</h2>
-                <GenreGridCard categories={popularGenres} items={genreItems} />
+                <GenreGridCard categories={popularGenres[mediaType]} items={genreItems} />
             </section>
 
             <section>
                 <div className="flex items-baseline justify-between mb-4">
-                    <h2 className="text-2xl font-bold font-headline">Últimos Animes Agregados</h2>
+                    <h2 className="text-2xl font-bold font-headline">Últimos Agregados</h2>
                     <Button variant="link" asChild className="text-muted-foreground">
                         <Link href="#">
                         Ver más <ArrowRight className="ml-1 w-4 h-4" />
@@ -145,66 +154,69 @@ export default function AnimePageClient() {
                 )}
             </section>
 
-            <section>
-                <h2 className="text-2xl font-bold font-headline mb-4">Trailers más Vistos</h2>
-                <Carousel
-                    opts={{
-                        align: "start",
-                        slidesToScroll: 'auto',
-                    }}
-                    className="w-full"
-                >
-                    <CarouselContent className="-ml-2">
-                        {mostViewedTrailers.map((trailer, index) => (
-                            <CarouselItem key={index} className="pl-2 pr-2 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
-                                <Card className="group overflow-hidden">
-                                    <CardContent className="p-0">
-                                        <div className="relative aspect-video">
-                                            <Image src={`https://picsum.photos/seed/${trailer.imageSeed}/300/169`} alt={trailer.title} fill className="rounded-t-lg object-cover transition-transform duration-300 group-hover:scale-105" />
-                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-t-lg">
-                                                <div className="w-10 h-10 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer hover:bg-white/50 transition-colors">
-                                                    <PlayCircle className="w-6 h-6 text-white" />
+            {showVideoSections && (
+                <>
+                    <section>
+                        <h2 className="text-2xl font-bold font-headline mb-4">Trailers más Vistos</h2>
+                        <Carousel
+                            opts={{
+                                align: "start",
+                                slidesToScroll: 'auto',
+                            }}
+                            className="w-full"
+                        >
+                            <CarouselContent className="-ml-2">
+                                {mostViewedTrailers.map((trailer, index) => (
+                                    <CarouselItem key={index} className="pl-2 pr-2 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                                        <Card className="group overflow-hidden">
+                                            <CardContent className="p-0">
+                                                <div className="relative aspect-video">
+                                                    <Image src={`https://picsum.photos/seed/${trailer.imageSeed}/300/169`} alt={trailer.title} fill className="rounded-t-lg object-cover transition-transform duration-300 group-hover:scale-105" />
+                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-t-lg">
+                                                        <div className="w-10 h-10 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer hover:bg-white/50 transition-colors">
+                                                            <PlayCircle className="w-6 h-6 text-white" />
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
+                                                <div className="p-3">
+                                                    <h3 className="font-semibold mt-1 text-sm line-clamp-2">{trailer.title}</h3>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                        </Carousel>
+                    </section>
+
+                    <section>
+                        <div className="flex items-baseline justify-between mb-4">
+                            <h2 className="text-2xl font-bold font-headline">Próximos Estrenos</h2>
+                            <Button variant="link" asChild className="text-muted-foreground">
+                                <Link href="#">
+                                Ver calendario <ArrowRight className="ml-1 w-4 h-4" />
+                                </Link>
+                            </Button>
+                        </div>
+                        <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4">
+                            {upcomingReleases.map(item => (
+                                <Card key={item.id} className="flex-shrink-0 w-64">
+                                    <CardContent className="p-0">
+                                        <Image src={item.imageUrl} alt={item.title} width={260} height={146} className="w-full h-36 object-cover rounded-t-lg" data-ai-hint={item.imageHint} />
                                         <div className="p-3">
-                                            <h3 className="font-semibold mt-1 text-sm line-clamp-2">{trailer.title}</h3>
+                                            <h4 className="font-semibold truncate">{item.title}</h4>
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                                <Calendar size={14} />
+                                                <span>Invierno 2025</span>
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
-                            </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                </Carousel>
-            </section>
-
-            <section>
-                 <div className="flex items-baseline justify-between mb-4">
-                    <h2 className="text-2xl font-bold font-headline">Próximos Estrenos</h2>
-                    <Button variant="link" asChild className="text-muted-foreground">
-                        <Link href="#">
-                        Ver calendario <ArrowRight className="ml-1 w-4 h-4" />
-                        </Link>
-                    </Button>
-                </div>
-                 <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4">
-                    {upcomingReleases.map(item => (
-                         <Card key={item.id} className="flex-shrink-0 w-64">
-                            <CardContent className="p-0">
-                                <Image src={item.imageUrl} alt={item.title} width={260} height={146} className="w-full h-36 object-cover rounded-t-lg" data-ai-hint={item.imageHint} />
-                                <div className="p-3">
-                                    <h4 className="font-semibold truncate">{item.title}</h4>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                        <Calendar size={14} />
-                                        <span>Invierno 2025</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                 </div>
-            </section>
-            
+                            ))}
+                        </div>
+                    </section>
+                </>
+            )}
         </main>
     );
 }
