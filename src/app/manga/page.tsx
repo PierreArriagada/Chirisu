@@ -34,14 +34,14 @@ export default function MangaPage() {
         // A different shuffle for recommendations
         const shuffledRecs = [...allItems].sort(() => 0.5 - Math.random());
         setRecommendations(shuffledRecs.slice(0, 4));
-    }, []);
+    }, [mediaType]);
 
     const handleShowMoreWeekly = () => {
         setWeeklyVisibleCount(prev => prev + 6);
     };
 
     return (
-        <div className="space-y-12">
+        <main className="container mx-auto p-2 sm:p-6 space-y-12">
             
             <TopRankingSlideshow items={topDaily} />
             
@@ -112,6 +112,6 @@ export default function MangaPage() {
                 </div>
             </section>
             
-        </div>
+        </main>
     );
 }
