@@ -6,7 +6,6 @@
  * - Un carrusel destacado con el "Top Diario".
  * - Una lista con el "Top Semanal", con opción de cargar más.
  * - Una cuadrícula interactiva de "Top por Géneros".
- * - Una sección de "Recomendado para ti".
  */
 
 'use client';
@@ -16,8 +15,6 @@ import { Button } from "@/components/ui/button";
 import { getMediaListPage } from "@/lib/db";
 import { MediaType, TitleInfo } from "@/lib/types";
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import Link from "next/link";
 import GenreGridCard from "@/components/genre-grid-card";
 
 const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura", "Misterio", "Drama", "Sci-Fi"];
@@ -27,7 +24,6 @@ export default function AnimePageClient() {
     
     const [topDaily, setTopDaily] = useState<TitleInfo[]>([]);
     const [topWeekly, setTopWeekly] = useState<TitleInfo[]>([]);
-    const [recommendations, setRecommendations] = useState<TitleInfo[]>([]);
     const [genreItems, setGenreItems] = useState<TitleInfo[]>([]);
 
     const [weeklyVisibleCount, setWeeklyVisibleCount] = useState(6);
@@ -42,10 +38,6 @@ export default function AnimePageClient() {
         // A different shuffle for weekly to ensure they are not the same
         const shuffledWeekly = [...allItems].sort(() => 0.5 - Math.random());
         setTopWeekly(shuffledWeekly);
-
-        // A different shuffle for recommendations
-        const shuffledRecs = [...allItems].sort(() => 0.5 - Math.random());
-        setRecommendations(shuffledRecs.slice(0, 4));
 
         const shuffledGenres = [...allItems].sort(() => 0.5 - Math.random());
         setGenreItems(shuffledGenres);
@@ -81,21 +73,6 @@ export default function AnimePageClient() {
             <section>
                 <h2 className="text-2xl font-bold font-headline mb-4">Top por Géneros</h2>
                 <GenreGridCard categories={popularGenres} items={genreItems} />
-            </section>
-
-            <section>
-                <h2 className="text-2xl font-bold font-headline mb-4">Recomendado para ti</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {recommendations.map(item => (
-                        <Card key={item.id} className="flex items-center gap-4 p-3 overflow-hidden transition-all duration-200 hover:bg-accent/50 hover:shadow-md">
-                           <img src={item.imageUrl} alt={item.title} className="w-16 h-24 object-cover rounded-md" />
-                            <div className="overflow-hidden">
-                                <h4 className="font-semibold leading-tight truncate">{item.title}</h4>
-                                <p className="text-sm text-muted-foreground">{item.type}</p>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
             </section>
             
         </main>

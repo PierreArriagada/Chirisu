@@ -8,12 +8,14 @@
 
 import AnimePageClient from "@/components/anime-page-client";
 import LatestPostsCard from "@/components/latest-posts-card";
+import RecommendationsCard from "@/components/recommendations-card";
 import TopCharactersCard from "@/components/top-characters-card";
-import { getTopCharacters } from "@/lib/db";
+import { getMediaListPage, getTopCharacters } from "@/lib/db";
 
 
 export default function AnimePage() {
     const topCharacters = getTopCharacters(5);
+    const recommendations = getMediaListPage("Anime").topAllTime.sort(() => 0.5 - Math.random()).slice(0, 4);
     const latestPosts = [
         { id: 'post1', title: '¿Qué tan fiel es la adaptación de Honzuki no Gekokujou?', author: 'MangaReader', replies: 45 },
         { id: 'post2', title: 'Mejor momento del último capítulo de The Boxer', author: 'AnimeWatcher', replies: 102 },
@@ -26,6 +28,7 @@ export default function AnimePage() {
                 <AnimePageClient />
             </div>
             <aside className="hidden lg:block lg:col-span-1 space-y-8">
+                <RecommendationsCard items={recommendations} />
                 <TopCharactersCard characters={topCharacters} />
                 <LatestPostsCard posts={latestPosts} />
             </aside>
