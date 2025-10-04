@@ -116,12 +116,12 @@ export default function GenreGridCard({ categories, items }: GenreGridCardProps)
           <div className="grid grid-cols-3 min-[390px]:grid-cols-4 gap-2">
             {displayedItems.map((item) => (
                 <Link href={`/${item.type.toLowerCase().replace(/ /g, '-')}/${item.slug}`} key={item.id} className="group flex flex-col">
-                    <div className="aspect-square bg-muted rounded overflow-hidden">
+                    <div className="aspect-[2/3] bg-muted rounded overflow-hidden">
                     <Image
                         src={item.imageUrl}
                         alt={item.title}
                         width={200}
-                        height={200}
+                        height={300}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                         data-ai-hint={item.imageHint}
                     />

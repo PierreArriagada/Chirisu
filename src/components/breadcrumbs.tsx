@@ -98,21 +98,27 @@ export default function Breadcrumbs() {
   });
 
   return (
-    <nav aria-label="Breadcrumb" className="py-3 px-4 sm:px-6 lg:px-8">
-      <ol className="flex items-center space-x-2 text-sm text-muted-foreground">
-        {finalCrumbs.map((crumb, index) => (
-          <li key={crumb.href + index} className="flex items-center space-x-2">
-            {index > 0 && <ChevronRight size={16} />}
-            {index === finalCrumbs.length - 1 ? (
-              <span className="font-semibold text-foreground truncate max-w-48 sm:max-w-96">{crumb.label}</span>
-            ) : (
-              <Link href={crumb.href} className="hover:text-primary transition-colors">
-                <span className="truncate max-w-48 sm:max-w-96">{crumb.label}</span>
-              </Link>
-            )}
-          </li>
-        ))}
-      </ol>
+    <nav 
+      aria-label="Breadcrumb" 
+      className="py-3 px-4 sm:px-6 lg:px-8 w-full"
+      style={{ paddingLeft: '16px', paddingRight: '16px' }}
+    >
+      <div className="max-w-full">
+        <ol className="flex items-center space-x-2 text-sm text-muted-foreground">
+          {finalCrumbs.map((crumb, index) => (
+            <li key={crumb.href + index} className="flex items-center space-x-2">
+              {index > 0 && <ChevronRight size={16} />}
+              {index === finalCrumbs.length - 1 ? (
+                <span className="font-semibold text-foreground truncate max-w-48 sm:max-w-96">{crumb.label}</span>
+              ) : (
+                <Link href={crumb.href} className="hover:text-primary transition-colors">
+                  <span className="truncate max-w-48 sm:max-w-96">{crumb.label}</span>
+                </Link>
+              )}
+            </li>
+          ))}
+        </ol>
+      </div>
     </nav>
   );
 }
