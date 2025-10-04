@@ -41,7 +41,7 @@ export default function MangaPage() {
     };
 
     return (
-        <main className="container mx-auto p-2 sm:p-6 space-y-12">
+        <main className="space-y-12">
             
             <TopRankingSlideshow items={topDaily} />
             
