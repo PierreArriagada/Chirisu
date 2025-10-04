@@ -51,7 +51,7 @@ export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps)
                 <CarouselItem key={index}>
                     <Link href={url(item)} className="block group cursor-pointer">
                          <Card className="border-none">
-                            <CardContent className="p-0 relative aspect-video md:aspect-[2.5/1]">
+                            <CardContent className="p-0 relative aspect-[3/4] md:aspect-[2.5/1]">
                                 <Image
                                     src={item.imageUrl}
                                     alt={item.title}
@@ -65,7 +65,7 @@ export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps)
                                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent" />
 
                                 <div className="absolute bottom-0 left-0 p-4 md:p-8 text-white w-full md:w-2/3 lg:w-1/2">
-                                    <h3 className="text-4xl md:text-6xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-tight">
+                                    <h3 className="text-3xl md:text-6xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-tight">
                                         #{index + 1}
                                     </h3>
                                     <h4 className="text-xl md:text-3xl font-bold group-hover:text-primary-foreground/80 transition-colors line-clamp-2 my-2">
@@ -86,8 +86,8 @@ export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps)
                                     <p className="mt-4 text-sm text-white/80 line-clamp-2 md:line-clamp-3">
                                         {item.description}
                                     </p>
-                                    <Button size="sm" className='mt-4'>
-                                        Ver ahora
+                                    <Button size="sm" className='mt-4 md:absolute md:bottom-8 md:right-8'>
+                                        Información
                                     </Button>
                                 </div>
                             </CardContent>
