@@ -88,27 +88,23 @@ const DynamicTheme = ({ imageUrl }: DynamicThemeProps) => {
     const applyTheme = (color: [number, number, number]) => {
       const [r, g, b] = color;
       const [h, s, l] = rgbToHsl(r, g, b);
-
-      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-      let bgLuminance, cardLuminance;
+      
       const isDark = document.documentElement.classList.contains('dark');
       
+      // The extracted color defines the background hue and saturation
+      const backgroundHue = h;
+      const backgroundSaturation = Math.min(s, 60); // Cap saturation for background
+
+      // Set background and card colors based on the theme
       if (isDark) {
-        bgLuminance = Math.min(15, l * 0.8);
-        cardLuminance = Math.min(20, l * 0.8 + 5);
+          document.documentElement.style.setProperty('--background', `${backgroundHue} ${backgroundSaturation}% 10%`);
+          document.documentElement.style.setProperty('--card', `${backgroundHue} ${backgroundSaturation}% 15%`);
+          document.documentElement.style.setProperty('--primary', `${backgroundHue} 80% 80%`); // Contrasting light primary
       } else {
-        bgLuminance = Math.max(90, l + (100 - l) * 0.8);
-        cardLuminance = Math.max(95, l + (100 - l) * 0.9);
+          document.documentElement.style.setProperty('--background', `${backgroundHue} ${backgroundSaturation}% 96%`);
+          document.documentElement.style.setProperty('--card', `${backgroundHue} ${backgroundSaturation}% 100%`);
+          document.documentElement.style.setProperty('--primary', `${backgroundHue} 70% 40%`); // Contrasting dark primary
       }
-
-
-      document.documentElement.style.setProperty('--background', `${h} ${s}% ${bgLuminance}%`);
-      document.documentElement.style.setProperty('--card', `${h} ${s}% ${cardLuminance}%`);
-      
-      const primarySaturation = Math.min(100, s + 20);
-      const primaryLuminance = isDark ? Math.min(60, l + 25) : Math.max(40, l - 25);
-      document.documentElement.style.setProperty('--primary', `${h} ${primarySaturation}% ${primaryLuminance}%`);
     };
 
     const handleLoad = () => {
