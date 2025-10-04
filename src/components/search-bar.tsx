@@ -5,6 +5,7 @@ import React from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function SearchBar() {
   const router = useRouter();
@@ -31,12 +32,8 @@ export default function SearchBar() {
   ];
   const showSearch = searchVisiblePaths.includes(pathname);
 
-  if (!showSearch) {
-    return null;
-  }
-
   return (
-    <div className="w-full pb-4 px-4 sm:px-6 lg:px-8">
+    <div className={cn("w-full pb-4 px-4 sm:px-6 lg:px-8", { "hidden": !showSearch })}>
       <form onSubmit={handleSearch} className="w-full max-w-xl mx-auto flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
