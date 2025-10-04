@@ -67,7 +67,7 @@ export default function GenreGridCard({ categories, items }: GenreGridCardProps)
 
   return (
     <div className="w-full flex items-center justify-center">
-      <div className="bg-card rounded-lg shadow-lg w-full max-w-4xl border">
+      <div className="w-full max-w-4xl">
         {/* Navigation Menu */}
         <div className="relative border-b">
           {canScrollLeft && (
