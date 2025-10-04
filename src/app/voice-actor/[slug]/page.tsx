@@ -1,3 +1,12 @@
+/**
+ * @fileoverview Página de detalles para un actor de voz específico.
+ * 
+ * Muestra información sobre un actor de voz, incluyendo su foto y una lista
+ * de los roles que ha interpretado. Cada rol muestra tanto el personaje
+ * como el medio (anime/manga) al que pertenece, con enlaces a sus
+ * respectivas páginas de detalles.
+ */
+
 import { getVoiceActorPageData } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';

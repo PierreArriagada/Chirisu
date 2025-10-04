@@ -1,5 +1,5 @@
 /**
- * @fileoverview MediaPage - Plantilla principal para la página de detalles de un medio.
+ * @fileoverview Plantilla principal para la página de detalles de un medio.
  * 
  * Este es un componente de servidor que ensambla la página de detalles completa para
  * un anime, manga, etc. Recibe todos los datos necesarios (`mediaData`) y los distribuye

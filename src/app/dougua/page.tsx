@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Página de la categoría "Dougua".
+ * 
+ * Esta página actúa como el hub principal para todo el contenido de dougua (animación china).
+ * Similar a la página de anime, muestra rankings y recomendaciones:
+ * - Un carrusel destacado con el "Top Diario".
+ * - Una lista con el "Top Semanal".
+ * - Una sección de "Top por Géneros".
+ * - Una sección de "Recomendado para ti".
+ */
+
 'use client';
 import TopMediaList from "@/components/top-media-list";
 import TopRankingSlideshow from "@/components/top-ranking-slideshow";

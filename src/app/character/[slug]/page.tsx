@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Página de detalles para un personaje específico.
+ * 
+ * Esta página de servidor muestra información completa sobre un personaje,
+ * identificado por su `slug` en la URL.
+ * - Muestra la imagen, nombre y rol del personaje.
+ * - Lista el medio (anime/manga) en el que aparece.
+ * - Muestra y enlaza a los perfiles de sus actores de voz (japonés y español).
+ */
+
 import { getCharacterPageData } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';

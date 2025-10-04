@@ -1,5 +1,5 @@
 /**
- * @fileoverview Recommendations - Sección de recomendaciones generadas por IA.
+ * @fileoverview Sección de recomendaciones generadas por IA.
  * 
  * Este componente es un Server Component que invoca una Genkit Flow (`recommendSimilarTitles`)
  * para obtener una lista de títulos similares al que se está viendo.

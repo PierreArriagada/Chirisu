@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Página de detalles para una novela específica.
+ * 
+ * Página de servidor para mostrar los detalles de una novela.
+ * Su estructura es idéntica a las otras páginas de medios, obteniendo los datos
+ * y renderizando el componente `MediaPage`.
+ */
+
 import MediaPage from "@/components/media-page";
 import { getMediaPageData } from "@/lib/db";
 import type { Metadata } from 'next';

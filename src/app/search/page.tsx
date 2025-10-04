@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Página de resultados de búsqueda.
+ * 
+ * Esta página muestra los resultados de una consulta de búsqueda proporcionada
+ * a través de parámetros de URL (`?q=`).
+ * - Es un componente de cliente que utiliza `useSearchParams` para obtener la consulta.
+ * - Implementa filtros interactivos para refinar los resultados por tipo, género y fecha.
+ * - La lógica de filtrado y ordenación se ejecuta en el cliente para una respuesta rápida.
+ * - Utiliza `Suspense` para una mejor experiencia de carga.
+ */
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';

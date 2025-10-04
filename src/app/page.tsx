@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Página de inicio de la aplicación.
+ * 
+ * Esta página es la entrada principal al sitio. Muestra una vista agregada
+ * de los rankings más importantes de cada tipo de medio (Anime, Manga, etc.)
+ * en un carrusel. En la versión de escritorio, también presenta una barra
+ * lateral con rankings de personajes, personas y las últimas publicaciones
+ * del foro para fomentar la interacción del usuario.
+ */
+
 import { getMediaListPage, getTopCharacters, getTopPeople } from '@/lib/db';
 import { MediaType } from '@/lib/types';
 import TopRankingCarousel from '@/components/top-ranking-carousel';

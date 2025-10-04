@@ -1,14 +1,24 @@
+/**
+ * @fileoverview Página de la categoría "Anime".
+ * 
+ * Esta página actúa como el hub principal para todo el contenido de anime.
+ * Muestra diferentes secciones de rankings y recomendaciones:
+ * - Un carrusel destacado con el "Top Diario".
+ * - Una lista con el "Top Semanal", con opción de cargar más.
+ * - Una cuadrícula interactiva de "Top por Géneros".
+ * - Una sección de "Recomendado para ti".
+ * Los datos se obtienen de forma aleatoria en el cliente para simular dinamismo.
+ */
+
 'use client';
 import TopMediaList from "@/components/top-media-list";
 import TopRankingSlideshow from "@/components/top-ranking-slideshow";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { getMediaListPage } from "@/lib/db";
 import { MediaType, TitleInfo } from "@/lib/types";
 import { useState, useEffect } from "react";
-import Image from "next/image";
+import { Card } from "@/components/ui/card";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import GenreGridCard from "@/components/genre-grid-card";
 
 const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura", "Misterio", "Drama", "Sci-Fi"];

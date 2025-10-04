@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Página de detalles para un episodio específico.
+ * 
+ * Muestra información detallada sobre un episodio de anime o dougua.
+ * - Incluye un "reproductor" de video simulado.
+ * - Muestra detalles del episodio como fecha de lanzamiento y duración.
+ * - Proporciona enlaces a plataformas de visualización.
+ * - Simula una sección de comentarios.
+ * - Muestra una tarjeta con información del anime al que pertenece el episodio.
+ */
+
 import { getEpisodeById, getMediaPageData } from "@/lib/db";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';

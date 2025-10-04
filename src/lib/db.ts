@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Simulador de base de datos y funciones de acceso a datos.
+ *
+ * Este archivo centraliza toda la lógica para obtener datos de la aplicación.
+ * Simula una base de datos con tablas para títulos, personajes, actores de voz, etc.,
+ * y proporciona funciones de "consulta" para buscar, filtrar y obtener datos
+ * estructurados que los componentes y páginas pueden usar.
+ *
+ * En una aplicación real, este archivo sería reemplazado por un cliente de base de datos
+ * real (como `node-postgres`, Prisma, o una API de fetch) que se comunicaría
+ * con un backend y una base de datos real.
+ */
+
 import type { AnimeDetails, TitleInfo, OfficialLinks, Character, Episode, Review, RelatedTitle, GalleryImage, VoiceActor, MediaType, CharacterRole, User, CustomList } from "./types";
 
 // --- "DATABASE" TABLES ---

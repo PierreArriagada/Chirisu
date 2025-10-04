@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Página de la categoría "Manhua".
+ * 
+ * Hub principal para todo el contenido de manhua (cómics chinos). Sigue la misma
+ * estructura que las otras páginas de categoría, mostrando rankings
+ * diarios, semanales, por género y recomendaciones.
+ */
+
 'use client';
 import TopMediaList from "@/components/top-media-list";
 import TopRankingSlideshow from "@/components/top-ranking-slideshow";
