@@ -8,9 +8,9 @@
  */
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import type { TitleInfo } from '@/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,12 +18,41 @@ import Autoplay from 'embla-carousel-autoplay';
 import { Star, Eye } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
 
 interface TopRankingSlideshowProps {
   items: TitleInfo[];
 }
 
 export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
+
+    const onSelect = () => {
+      setCurrent(api.selectedScrollSnap());
+    };
+
+    api.on('select', onSelect);
+    
+    return () => {
+      api.off('select', onSelect);
+    };
+  }, [api]);
+
+  const scrollTo = useCallback((index: number) => {
+    api?.scrollTo(index);
+  }, [api]);
+
+
   if (!items || items.length === 0) {
     return null;
   }
@@ -31,9 +60,10 @@ export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps)
   const url = (item: TitleInfo) => `/${item.type.toLowerCase().replace(' ', '-')}/${item.slug}`;
 
   return (
-    <section className="w-full relative">
+    <section className="w-full relative group/slideshow">
         <h2 className="text-xl md:text-2xl font-bold font-headline mb-3 md:mb-4">Top Diario</h2>
         <Carousel
+            setApi={setApi}
             opts={{
                 align: 'start',
                 loop: true,
@@ -84,11 +114,11 @@ export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps)
                                                 <span>{item.listsCount.toLocaleString()}</span>
                                             </div>
                                         </div>
-                                        <p className="mt-2 text-xs sm:text-sm text-white/90 line-clamp-2 md:line-clamp-3">
+                                        <p className="mt-2 text-xs sm:text-sm text-white/90 line-clamp-2 md:line-clamp-3 md:max-w-prose">
                                             {item.description}
                                         </p>
                                     </div>
-                                    <div className="self-start md:self-end">
+                                    <div className="self-start md:self-end mt-2 md:mt-0">
                                       <Button size="sm" className="text-xs sm:text-sm px-4 py-2">
                                           Información
                                       </Button>
@@ -100,9 +130,22 @@ export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps)
                 </CarouselItem>
             ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 bg-black/30 hover:bg-black/50 border-none text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 bg-black/30 hover:bg-black/50 border-none text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 bg-background/50 hover:bg-background/80 border-none text-foreground opacity-0 group-hover/slideshow:opacity-100 transition-opacity" />
+            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 bg-background/50 hover:bg-background/80 border-none text-foreground opacity-0 group-hover/slideshow:opacity-100 transition-opacity" />
         </Carousel>
+        <div className="flex justify-center gap-2 mt-4">
+            {Array.from({ length: count }).map((_, index) => (
+                <button
+                    key={index}
+                    onClick={() => scrollTo(index)}
+                    className={cn(
+                        'h-2 w-2 rounded-full transition-all',
+                        current === index ? 'w-4 bg-primary' : 'bg-muted-foreground/50'
+                    )}
+                    aria-label={`Go to slide ${index + 1}`}
+                />
+            ))}
+        </div>
     </section>
   );
 }
