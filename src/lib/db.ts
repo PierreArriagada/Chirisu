@@ -38,7 +38,14 @@ const titles: Omit<TitleInfo, 'slug'>[] = [
     { id: 'jujutsu-kaisen-anime', title: 'Jujutsu Kaisen', type: 'Anime', description: '', imageUrl: 'https://picsum.photos/seed/jjk/400/600', imageHint: 'anime cover', rating: 8.8, ranking: 8, commentsCount: 42000, listsCount: 85000 },
     { id: 'vinland-saga-anime', title: 'Vinland Saga', type: 'Anime', description: '', imageUrl: 'https://picsum.photos/seed/vinlandsaga/400/600', imageHint: 'anime cover', rating: 8.8, ranking: 9, commentsCount: 35000, listsCount: 65000 },
     { id: 'demon-slayer-anime', title: 'Demon Slayer: Kimetsu no Yaiba', type: 'Anime', description: '', imageUrl: 'https://picsum.photos/seed/demonslayer/400/600', imageHint: 'anime cover', rating: 8.7, ranking: 10, commentsCount: 48000, listsCount: 95000 },
-    
+    { id: 'frieren-anime', title: 'Frieren: Beyond Journey\'s End', type: 'Anime', description: 'The adventure is over but life goes on for an elf mage just beginning to learn what living is.', imageUrl: 'https://picsum.photos/seed/frieren/400/600', imageHint: 'anime cover', rating: 9.4, ranking: 0, commentsCount: 60000, listsCount: 150000 },
+    { id: 'mushishi-anime', title: 'Mushishi', type: 'Anime', description: 'Ginko, a Mushi Master, travels to investigate and help people troubled by supernatural creatures called Mushi.', imageUrl: 'https://picsum.photos/seed/mushishi/400/600', imageHint: 'anime cover', rating: 8.7, ranking: 11, commentsCount: 25000, listsCount: 50000 },
+    { id: 'chainsaw-man-anime', title: 'Chainsaw Man', type: 'Anime', description: 'Following a betrayal, a young man left for dead is reborn as a powerful devil-human hybrid.', imageUrl: 'https://picsum.photos/seed/chainsaw/400/600', imageHint: 'anime cover', rating: 8.6, ranking: 12, commentsCount: 52000, listsCount: 98000 },
+    { id: 'cyberpunk-edgerunners-anime', title: 'Cyberpunk: Edgerunners', type: 'Anime', description: 'A street kid trying to survive in a technology and body-modification-obsessed city of the future.', imageUrl: 'https://picsum.photos/seed/cyberpunk/400/600', imageHint: 'anime cover', rating: 8.6, ranking: 13, commentsCount: 45000, listsCount: 80000 },
+    { id: 'odd-taxi-anime', title: 'Odd Taxi', type: 'Anime', description: 'A taxi driver gets involved in a mystery of a missing girl.', imageUrl: 'https://picsum.photos/seed/oddtaxi/400/600', imageHint: 'anime cover', rating: 8.7, ranking: 14, commentsCount: 30000, listsCount: 60000 },
+    { id: 'dandadan-anime', title: 'Dandadan', type: 'Anime', description: 'A sci-fi adventure involving ghosts, aliens, and high school romance.', imageUrl: 'https://picsum.photos/seed/dandadan/400/600', imageHint: 'upcoming anime cover', rating: 0, ranking: 0, commentsCount: 5000, listsCount: 15000 },
+    { id: 'z तुम्हारा-नाम-anime', title: 'Z तुम्हारा नाम', type: 'Anime', description: 'Upcoming sci-fi romance anime.', imageUrl: 'https://picsum.photos/seed/ztumhara/400/600', imageHint: 'upcoming anime cover', rating: 0, ranking: 0, commentsCount: 1000, listsCount: 5000 },
+
 
     // === MANGA (10) ===
     {
@@ -371,6 +378,38 @@ const mediaDetails: (Omit<AnimeDetails, 'characters' | 'episodesList' | 'reviews
         ],
         stats: { score: 9.5, popularity: 5, favorites: 18000, completed: 28000, watching: 5000, planToWatch: 8000 },
     },
+    {
+        mediaId: 'dandadan-anime',
+        type: 'TV',
+        episodes: 0,
+        releaseDate: '2025-01-10',
+        promotion: 'Shueisha',
+        producer: 'Science SARU',
+        licensors: [],
+        genres: ['Action', 'Comedy', 'Sci-Fi'],
+        duration: 'N/A',
+        rating: 'N/A',
+        alternativeTitles: [
+            { lang: 'Japanese', flag: '🇯🇵', title: 'ダンダダン' },
+        ],
+        stats: { score: 0, popularity: 0, favorites: 15000, completed: 0, watching: 0, planToWatch: 150000 },
+    },
+     {
+        mediaId: 'z तुम्हारा-नाम-anime',
+        type: 'Movie',
+        episodes: 1,
+        releaseDate: '2025-03-20',
+        promotion: 'Toho',
+        producer: 'CoMix Wave Films',
+        licensors: [],
+        genres: ['Romance', 'Sci-Fi', 'Drama'],
+        duration: 'N/A',
+        rating: 'N/A',
+        alternativeTitles: [
+            { lang: 'Japanese', flag: '🇯🇵', title: 'Z 君の名は' },
+        ],
+        stats: { score: 0, popularity: 0, favorites: 5000, completed: 0, watching: 0, planToWatch: 80000 },
+    },
 ];
 
 const voiceActorsRaw: (Omit<VoiceActor, 'slug'> & { id: string })[] = [
@@ -484,6 +523,27 @@ export function getTopCharacters(limit: number): Character[] {
 export function getTopPeople(limit: number): VoiceActor[] {
     // For now, we'll just return a slice of voice actors as "top people"
     return processedVoiceActors.slice(0, limit);
+}
+
+export function getLatestAdditions(limit: number, mediaType: MediaType): TitleInfo[] {
+    // Simulate getting the latest additions by taking some from the end of the list.
+    return processedTitles.filter(t => t.type === mediaType).slice(-limit).reverse();
+}
+
+export function getUpcomingReleases(limit: number, mediaType: MediaType): TitleInfo[] {
+    const futureDate = new Date();
+    futureDate.setFullYear(futureDate.getFullYear() + 1);
+
+    return processedTitles
+        .filter(t => t.type === mediaType)
+        .map(t => ({
+            ...t,
+            // Try to find a real release date, otherwise generate a fake future one
+            releaseDate: mediaDetails.find(d => d.mediaId === t.id)?.releaseDate || futureDate.toISOString()
+        }))
+        .filter(t => new Date(t.releaseDate) > new Date())
+        .sort((a, b) => new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime())
+        .slice(0, limit);
 }
 
 
