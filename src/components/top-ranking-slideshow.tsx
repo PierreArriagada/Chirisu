@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import type { TitleInfo } from '@/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -100,6 +100,8 @@ export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps)
                 </CarouselItem>
             ))}
             </CarouselContent>
+            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 bg-black/30 hover:bg-black/50 border-none text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-10 sm:w-10 bg-black/30 hover:bg-black/50 border-none text-white opacity-0 group-hover:opacity-100 transition-opacity" />
         </Carousel>
     </section>
   );
