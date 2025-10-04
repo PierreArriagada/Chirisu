@@ -9,8 +9,9 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import GenreGridCard from "@/components/genre-grid-card";
 
-const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura"];
+const popularGenres = ["Acción", "Fantasía", "Romance", "Seinen", "Comedia", "Aventura", "Misterio", "Drama", "Sci-Fi"];
 
 export default function AnimePage() {
     const mediaType: MediaType = "Anime";
@@ -38,7 +39,7 @@ export default function AnimePage() {
         setRecommendations(shuffledRecs.slice(0, 4));
 
         const shuffledGenres = [...allItems].sort(() => 0.5 - Math.random());
-        setGenreItems(shuffledGenres.slice(0,4));
+        setGenreItems(shuffledGenres);
 
     }, []);
 
@@ -70,37 +71,7 @@ export default function AnimePage() {
 
             <section>
                 <h2 className="text-2xl font-bold font-headline mb-4">Top por Géneros</h2>
-                <Card>
-                    <CardContent className="p-4 space-y-4">
-                        <div className="flex flex-wrap gap-2">
-                            {popularGenres.map(genre => (
-                                <Button key={genre} variant="secondary">
-                                    {genre}
-                                </Button>
-                            ))}
-                        </div>
-                        <div className="grid grid-cols-2 ss:grid-cols-3 sm:grid-cols-4 gap-4">
-                            {genreItems.map(item => (
-                                <Link key={item.id} href={`/${item.type.toLowerCase().replace(/ /g, '-')}/${item.slug}`} className="group">
-                                    <Card className="overflow-hidden h-full">
-                                        <div className="relative aspect-[2/3] w-full">
-                                            <Image
-                                                src={item.imageUrl}
-                                                alt={item.title}
-                                                fill
-                                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                                data-ai-hint={item.imageHint}
-                                            />
-                                        </div>
-                                    </Card>
-                                </Link>
-                            ))}
-                        </div>
-                        <div className="flex justify-center mt-4">
-                            <Button variant="outline">Ver más</Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                <GenreGridCard categories={popularGenres} items={genreItems} />
             </section>
 
             <section>
