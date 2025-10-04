@@ -51,7 +51,7 @@ export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps)
                 <CarouselItem key={index}>
                     <Link href={url(item)} className="block group cursor-pointer">
                          <Card className="border-none">
-                            <CardContent className="p-0 relative aspect-[3/4] sm:aspect-video md:aspect-[2.5/1]">
+                            <CardContent className="p-0 relative aspect-video md:aspect-[2.5/1]">
                                 <Image
                                     src={item.imageUrl}
                                     alt={item.title}
