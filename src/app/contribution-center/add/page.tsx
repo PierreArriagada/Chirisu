@@ -16,7 +16,7 @@ const contributionTypes = [
   { href: "/contribution-center/add-character", label: "Personaje", icon: <UserPlus /> },
 ];
 
-export default function ContributionCenterPage() {
+export default function AddContributionPage() {
     const { user } = useAuth();
     const router = useRouter();
 
@@ -46,7 +46,7 @@ export default function ContributionCenterPage() {
         <main className="container mx-auto p-4">
             <Card className="bg-card/50">
                 <CardHeader>
-                    <CardTitle className="text-3xl font-bold font-headline">Centro de Aportes</CardTitle>
+                    <CardTitle className="text-3xl font-bold font-headline">Añadir Nuevo Contenido</CardTitle>
                     <CardDescription className="text-lg text-muted-foreground">
                         ¡Gracias por ayudar a crecer la comunidad! ¿Qué te gustaría agregar hoy?
                     </CardDescription>

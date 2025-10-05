@@ -56,7 +56,7 @@ export default function MediaPage({ mediaData }: MediaPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
         <div className="lg:col-span-2 flex flex-col gap-8">
           <CoreInfoCard titleInfo={titleInfo} />
-          <SocialsCard />
+          <SocialsCard titleInfo={titleInfo} />
           <SynopsisCard description={titleInfo.description} />
           <DetailsCard details={details} />
           <OfficialLinksCard links={officialLinks} />

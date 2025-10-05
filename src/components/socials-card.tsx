@@ -1,16 +1,15 @@
 /**
- * @fileoverview SocialsCard - Tarjeta con botones para compartir en redes sociales.
+ * @fileoverview SocialsCard - Tarjeta con botones para compartir en redes sociales y reportar problemas.
  * 
- * Este componente muestra una fila de botones con iconos de diferentes redes
- * sociales (X, Facebook, Discord, etc.). Cada botón es un enlace que permitiría
- * compartir la página actual. Los colores de fondo de cada botón coinciden con
- * la marca de la red social correspondiente para una fácil identificación.
+ * Muestra una fila de botones con iconos de redes sociales y un botón para reportar
+ * problemas de contenido, que activa el `ReportProblemDialog`.
  */
 'use client';
 import { Card, CardContent } from "@/components/ui/card";
-import { Facebook, Instagram, X, Flag } from "lucide-react";
+import { Facebook, Flag } from "lucide-react";
 import { useState } from "react";
 import ReportProblemDialog from "./report-problem-dialog";
+import type { TitleInfo } from "@/lib/types";
 
 function DiscordIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -28,6 +27,14 @@ function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
     )
 }
 
+function XIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.1 464H35.5l184.3-206.3L38.9 48h147l97.2 130.3L389.2 48zm-24.8 393.1h39.7L159.2 88.5h-41.2L364.4 441.1z"/>
+      </svg>
+    )
+}
+
 const SocialLink = ({ href, icon, bgColor, hoverBgColor, onClick }: { href?: string, icon: React.ReactNode, bgColor: string, hoverBgColor: string, onClick?: () => void }) => {
     const Component = onClick ? 'button' : 'a';
     const props = onClick ? { onClick } : { href, target: "_blank", rel: "noopener noreferrer" };
@@ -42,11 +49,11 @@ const SocialLink = ({ href, icon, bgColor, hoverBgColor, onClick }: { href?: str
     );
 };
 
-export default function SocialsCard() {
+export default function SocialsCard({ titleInfo }: { titleInfo: TitleInfo }) {
     const [isReportDialogOpen, setReportDialogOpen] = useState(false);
 
     const socials = [
-        { name: 'X', icon: <X size={24} />, href: '#', bgColor: 'bg-black', hoverBgColor: 'hover:bg-gray-800' },
+        { name: 'X', icon: <XIcon className="w-5 h-5 fill-current" />, href: '#', bgColor: 'bg-black', hoverBgColor: 'hover:bg-gray-800' },
         { name: 'Facebook', icon: <Facebook size={24} />, href: '#', bgColor: 'bg-blue-600', hoverBgColor: 'hover:bg-blue-700' },
         { name: 'Discord', icon: <DiscordIcon className="w-6 h-6 fill-current" />, href: '#', bgColor: 'bg-indigo-600', hoverBgColor: 'hover:bg-indigo-700' },
         { name: 'WhatsApp', icon: <WhatsAppIcon className="w-6 h-6 fill-current" />, href: '#', bgColor: 'bg-green-500', hoverBgColor: 'hover:bg-green-600' },
@@ -70,7 +77,11 @@ export default function SocialsCard() {
           </div>
         </CardContent>
       </Card>
-      <ReportProblemDialog isOpen={isReportDialogOpen} onOpenChange={setReportDialogOpen} />
+      <ReportProblemDialog 
+        isOpen={isReportDialogOpen} 
+        onOpenChange={setReportDialogOpen}
+        titleInfo={titleInfo}
+      />
     </>
   );
 }

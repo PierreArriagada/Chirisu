@@ -3,10 +3,9 @@
  * 
  * Este componente es un diálogo modal que se activa desde la tarjeta de redes
  * sociales. Ofrece al usuario dos opciones principales:
- * 1. Reportar que la información de la página actual es incorrecta o está incompleta.
- *    (Actualmente, esta acción solo cierra el diálogo).
- * 2. Navegar al "Centro de Aportes" para agregar un nuevo título (anime, manga, etc.)
- *    a la base de datos.
+ * 1. Reportar que la información de la página actual es incorrecta o está incompleta,
+ *    redirigiendo al usuario a un formulario de edición pre-rellenado.
+ * 2. Navegar al "Centro de Aportes" para agregar un nuevo título.
  * Sirve como un punto de entrada para que los usuarios ayuden a mantener y expandir
  * el contenido del sitio.
  */
@@ -23,19 +22,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { FileWarning, PlusSquare } from 'lucide-react';
+import type { TitleInfo } from '@/lib/types';
+import Link from 'next/link';
 
 interface ReportProblemDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  titleInfo: TitleInfo;
 }
 
-export default function ReportProblemDialog({ isOpen, onOpenChange }: ReportProblemDialogProps) {
+export default function ReportProblemDialog({ isOpen, onOpenChange, titleInfo }: ReportProblemDialogProps) {
   const router = useRouter();
 
   const handleNavigate = (path: string) => {
     onOpenChange(false);
     router.push(path);
   };
+  
+  const editPath = `/contribution-center/edit/${titleInfo.type.toLowerCase().replace(/ /g, '-')}/${titleInfo.slug}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -47,14 +51,16 @@ export default function ReportProblemDialog({ isOpen, onOpenChange }: ReportProb
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <Button variant="outline" className="justify-start h-auto py-3" onClick={() => onOpenChange(false)}>
-            <FileWarning className="mr-3 h-5 w-5 text-destructive" />
-            <div className='text-left'>
-              <p className="font-semibold">Falta información o es incorrecta</p>
-              <p className="text-xs text-muted-foreground">La sinopsis, géneros, fechas, etc., no son correctos.</p>
-            </div>
+           <Button variant="outline" className="justify-start h-auto py-3" asChild>
+            <Link href={editPath} onClick={() => onOpenChange(false)}>
+                <FileWarning className="mr-3 h-5 w-5 text-destructive" />
+                <div className='text-left'>
+                <p className="font-semibold">Falta información o es incorrecta</p>
+                <p className="text-xs text-muted-foreground">La sinopsis, géneros, fechas, etc., no son correctos.</p>
+                </div>
+            </Link>
           </Button>
-          <Button variant="outline" className="justify-start h-auto py-3" onClick={() => handleNavigate('/contribution-center')}>
+          <Button variant="outline" className="justify-start h-auto py-3" onClick={() => handleNavigate('/contribution-center/add')}>
             <PlusSquare className="mr-3 h-5 w-5 text-primary" />
             <div className='text-left'>
               <p className="font-semibold">Agregar Información</p>
