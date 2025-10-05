@@ -60,7 +60,7 @@ export default function ReportProblemDialog({ isOpen, onOpenChange, titleInfo }:
                 </div>
             </Link>
           </Button>
-          <Button variant="outline" className="justify-start h-auto py-3" onClick={() => handleNavigate('/contribution-center/add')}>
+          <Button variant="outline" className="justify-start h-auto py-3" onClick={() => handleNavigate('/contribution-center')}>
             <PlusSquare className="mr-3 h-5 w-5 text-primary" />
             <div className='text-left'>
               <p className="font-semibold">Agregar Información</p>
