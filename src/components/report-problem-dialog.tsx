@@ -1,3 +1,15 @@
+/**
+ * @fileoverview ReportProblemDialog - Diálogo para reportar problemas de contenido.
+ * 
+ * Este componente es un diálogo modal que se activa desde la tarjeta de redes
+ * sociales. Ofrece al usuario dos opciones principales:
+ * 1. Reportar que la información de la página actual es incorrecta o está incompleta.
+ *    (Actualmente, esta acción solo cierra el diálogo).
+ * 2. Navegar al "Centro de Aportes" para agregar un nuevo título (anime, manga, etc.)
+ *    a la base de datos.
+ * Sirve como un punto de entrada para que los usuarios ayuden a mantener y expandir
+ * el contenido del sitio.
+ */
 'use client';
 
 import {
