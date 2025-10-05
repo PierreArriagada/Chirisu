@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { BookOpen, User, LogOut } from "lucide-react";
+import { BookOpen, User, LogOut, PlusCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/context/auth-context";
@@ -52,6 +52,12 @@ function MainNav() {
                   <Link href="/profile">
                     <User className="mr-2 h-4 w-4" />
                     <span>Perfil</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/contribution-center">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    <span>Centro de Aportes</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
