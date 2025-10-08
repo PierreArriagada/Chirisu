@@ -1,3 +1,12 @@
+/**
+ * @fileoverview Página del panel de administrador.
+ * 
+ * Esta página es accesible solo por usuarios con el rol de 'admin'.
+ * Permite la gestión completa de la aplicación, incluyendo todas las funciones
+ * de un moderador, más capacidades adicionales como la gestión de usuarios
+ * y configuración del sitio.
+ * Redirige a los usuarios no autorizados.
+ */
 'use client';
 
 import { useAuth } from '@/context/auth-context';

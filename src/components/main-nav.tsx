@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { BookOpen, User, LogOut, PlusCircle } from "lucide-react";
+import { BookOpen, User, LogOut, PlusCircle, ShieldCheck, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/context/auth-context";
@@ -12,11 +12,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 function MainNav() {
   const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const isModerator = user?.role === 'moderator';
 
   return (
     <header className="py-4 px-4 sm:px-6 lg:px-8">
@@ -48,18 +51,46 @@ function MainNav() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/profile">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Perfil</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/contribution-center">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    <span>Centro de Aportes</span>
-                  </Link>
-                </DropdownMenuItem>
+                <DropdownMenuGroup>
+                    <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Perfil</span>
+                    </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                    <Link href="/contribution-center">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <span>Centro de Aportes</span>
+                    </Link>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+                
+                {(isAdmin || isModerator) && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuLabel>Gestión</DropdownMenuLabel>
+                             {isModerator && (
+                                <DropdownMenuItem asChild>
+                                    <Link href="/dashboard/moderator">
+                                        <ShieldCheck className="mr-2 h-4 w-4" />
+                                        <span>Moderar</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                            )}
+                            {isAdmin && (
+                                <DropdownMenuItem asChild>
+                                    <Link href="/dashboard/admin">
+                                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                                        <span>Admin Dashboard</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuGroup>
+                    </>
+                )}
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />

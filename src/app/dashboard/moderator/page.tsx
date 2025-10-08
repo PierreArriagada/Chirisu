@@ -1,4 +1,14 @@
-'use client';
+/**
+ * @fileoverview Página del panel de moderación.
+ * 
+ * Esta página está diseñada para usuarios con rol de 'moderator' o 'admin'.
+ * Proporciona las herramientas necesarias para revisar y gestionar el contenido
+ * aportado por la comunidad.
+ * - Utiliza un sistema de pestañas para separar las contribuciones de contenido de los reportes de comentarios.
+ * - Permite a los moderadores visualizar, aprobar o rechazar cambios propuestos.
+ * - Incluye un flujo de rechazo con feedback para notificar al usuario contribuyente.
+ */
+'use-client';
 
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
@@ -96,13 +106,6 @@ export default function ModeratorPage() {
 
   return (
     <main className="container mx-auto p-2 sm:p-6 space-y-8">
-        <Card>
-            <CardHeader>
-                <CardTitle>Panel de Moderador</CardTitle>
-                <CardDescription>Bienvenido, {user.name}. Aquí puedes moderar el contenido y revisar las contribuciones de la comunidad.</CardDescription>
-            </CardHeader>
-        </Card>
-
         <Tabs defaultValue="content">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="content">Contribuciones de Contenido</TabsTrigger>
