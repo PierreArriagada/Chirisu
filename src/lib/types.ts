@@ -160,3 +160,24 @@ export type CharacterRole = {
   mediaType: MediaType;
   mediaSlug: string;
 };
+
+
+// Moderation Types
+export type Contribution = {
+  id: string;
+  mediaTitle: string;
+  mediaType: MediaType;
+  user: { id: string; name: string };
+  date: string;
+  changeType: 'Nueva Entrada' | 'Corrección';
+  oldData?: { [key: string]: any };
+  newData: { [key: string]: any };
+};
+
+export type ReportedComment = {
+  id: string;
+  content: string;
+  reporter: string;
+  reason: string;
+  date: string;
+};
