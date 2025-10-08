@@ -14,7 +14,7 @@ import type { TitleInfo } from '@/lib/types';
 import RecommendationCard from './recommendation-card';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Terminal } from 'lucide-react';
+import { Terminal, ServerCog } from 'lucide-react';
 
 export default async function Recommendations({ titleInfo }: { titleInfo: TitleInfo }) {
   let recommendations = [];
@@ -24,14 +24,27 @@ export default async function Recommendations({ titleInfo }: { titleInfo: TitleI
       type: titleInfo.type === 'Anime' ? 'anime' : titleInfo.type === 'Manga' ? 'manga' : 'novel',
       description: titleInfo.description,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to fetch recommendations:", error);
+
+    if (error.message && error.message.includes('503 Service Unavailable')) {
+      return (
+        <Alert variant="default" className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-200 [&>svg]:text-amber-600 dark:[&>svg]:text-amber-400">
+            <ServerCog className="h-4 w-4" />
+            <AlertTitle>Servicio Ocupado</AlertTitle>
+            <AlertDescription>
+                El motor de recomendaciones está sobrecargado. Por favor, inténtalo de nuevo más tarde.
+            </AlertDescription>
+        </Alert>
+      );
+    }
+    
     return (
         <Alert variant="destructive">
             <Terminal className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
-                Could not load recommendations at this time.
+                No se pudieron cargar las recomendaciones en este momento.
             </AlertDescription>
         </Alert>
     );
