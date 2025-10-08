@@ -35,16 +35,17 @@ function XIcon(props: React.SVGProps<SVGSVGElement>) {
     )
 }
 
-const SocialLink = ({ href, icon, bgColor, hoverBgColor, onClick }: { href?: string, icon: React.ReactNode, bgColor: string, hoverBgColor: string, onClick?: () => void }) => {
+const SocialLink = ({ href, icon, label, bgColor, hoverBgColor, onClick }: { href?: string, icon: React.ReactNode, label: string, bgColor: string, hoverBgColor: string, onClick?: () => void }) => {
     const Component = onClick ? 'button' : 'a';
     const props = onClick ? { onClick } : { href, target: "_blank", rel: "noopener noreferrer" };
 
     return (
         <Component
         {...props}
-        className={`flex items-center justify-center p-3 rounded-lg transition-colors duration-300 ${bgColor} ${hoverBgColor} text-white aspect-square`}
+        className={`flex items-center justify-center p-3 rounded-lg transition-colors duration-300 ${bgColor} ${hoverBgColor} text-white gap-2`}
         >
         {icon}
+        <span className="font-semibold text-sm">{label}</span>
         </Component>
     );
 };
@@ -53,23 +54,24 @@ export default function SocialsCard({ titleInfo }: { titleInfo: TitleInfo }) {
     const [isReportDialogOpen, setReportDialogOpen] = useState(false);
 
     const socials = [
-        { name: 'X', icon: <XIcon className="w-5 h-5 fill-current" />, href: '#', bgColor: 'bg-black', hoverBgColor: 'hover:bg-gray-800' },
-        { name: 'Facebook', icon: <Facebook size={24} />, href: '#', bgColor: 'bg-blue-600', hoverBgColor: 'hover:bg-blue-700' },
-        { name: 'Discord', icon: <DiscordIcon className="w-6 h-6 fill-current" />, href: '#', bgColor: 'bg-indigo-600', hoverBgColor: 'hover:bg-indigo-700' },
-        { name: 'WhatsApp', icon: <WhatsAppIcon className="w-6 h-6 fill-current" />, href: '#', bgColor: 'bg-green-500', hoverBgColor: 'hover:bg-green-600' },
+        { name: 'X', label: 'X', icon: <XIcon className="w-4 h-4 fill-current" />, href: '#', bgColor: 'bg-black', hoverBgColor: 'hover:bg-gray-800' },
+        { name: 'Facebook', label: 'Facebook', icon: <Facebook size={20} />, href: '#', bgColor: 'bg-blue-600', hoverBgColor: 'hover:bg-blue-700' },
+        { name: 'Discord', label: 'Discord', icon: <DiscordIcon className="w-5 h-5 fill-current" />, href: '#', bgColor: 'bg-indigo-600', hoverBgColor: 'hover:bg-indigo-700' },
+        { name: 'WhatsApp', label: 'WhatsApp', icon: <WhatsAppIcon className="w-5 h-5 fill-current" />, href: '#', bgColor: 'bg-green-500', hoverBgColor: 'hover:bg-green-600' },
     ];
     
   return (
     <>
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
               {socials.map(social => (
-                  <SocialLink key={social.name} href={social.href} icon={social.icon} bgColor={social.bgColor} hoverBgColor={social.hoverBgColor} />
+                  <SocialLink key={social.name} href={social.href} icon={social.icon} label={social.label} bgColor={social.bgColor} hoverBgColor={social.hoverBgColor} />
               ))}
               <SocialLink 
                 key="report" 
-                icon={<Flag size={24} />} 
+                icon={<Flag size={20} />} 
+                label="Reportar"
                 bgColor="bg-destructive" 
                 hoverBgColor="hover:bg-destructive/90"
                 onClick={() => setReportDialogOpen(true)}
