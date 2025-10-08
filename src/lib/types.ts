@@ -124,6 +124,9 @@ export type AnimeDetails = {
   type: string;
   episodes: number;
   releaseDate: string;
+  status: string;
+  season: string;
+  countryOfOrigin: string;
   promotion: string;
   producer: string;
   licensors: string[];

@@ -16,14 +16,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function DetailsCard({ details }: { details: AnimeDetails }) {
 
-  const detailItem = (label: string, value: string | number | string[]) => (
-    <div className="text-sm">
-      <span className="font-semibold text-foreground">{label}: </span>
-      <span className="text-muted-foreground">
-        {Array.isArray(value) ? value.join(', ') : value}
-      </span>
-    </div>
-  );
+  const detailItem = (label: string, value: string | number | string[] | undefined) => {
+    if (!value || (Array.isArray(value) && value.length === 0)) {
+        return null;
+    }
+    return (
+        <div className="text-sm">
+        <span className="font-semibold text-foreground">{label}: </span>
+        <span className="text-muted-foreground">
+            {Array.isArray(value) ? value.join(', ') : value}
+        </span>
+        </div>
+    );
+  };
 
   return (
     <Card>
@@ -39,15 +44,20 @@ export default function DetailsCard({ details }: { details: AnimeDetails }) {
             <div className="flex flex-col gap-2">
                 {detailItem('Tipo', details.type)}
                 {detailItem('Episodios', details.episodes)}
+                {detailItem('Estado', details.status)}
                 {detailItem('Fecha', new Date(details.releaseDate).toLocaleDateString())}
-                {detailItem('Promoción', details.promotion)}
-                {detailItem('Productor', details.producer)}
+                {detailItem('Temporada', details.season)}
             </div>
             <div className="flex flex-col gap-2">
+                {detailItem('País', details.countryOfOrigin)}
+                {detailItem('Productor', details.producer)}
                 {detailItem('Licencias', details.licensors)}
                 {detailItem('Géneros', details.genres)}
                 {detailItem('Duración', details.duration)}
+            </div>
+             <div className="flex flex-col gap-2">
                 {detailItem('Rating', details.rating)}
+                {detailItem('Promoción', details.promotion)}
             </div>
           </CardContent>
         </TabsContent>
