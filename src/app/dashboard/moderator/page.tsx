@@ -8,7 +8,7 @@
  * - Permite a los moderadores visualizar, aprobar o rechazar cambios propuestos.
  * - Incluye un flujo de rechazo con feedback para notificar al usuario contribuyente.
  */
-'use-client';
+'use client';
 
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
