@@ -9,7 +9,7 @@
 
 import type { Character } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import Link from 'next/link';
 
 interface TopCharactersCardProps {
@@ -29,13 +29,13 @@ export default function TopCharactersCard({ characters }: TopCharactersCardProps
               <span className="text-lg font-bold text-muted-foreground w-6 text-center">
                 {index + 1}
               </span>
-              <Image
+              <SafeImage
                 src={character.imageUrl}
                 alt={character.name}
                 width={40}
                 height={60}
-                className="rounded-md aspect-[2/3] object-cover"
-                data-ai-hint={character.imageHint}
+                className="rounded-md aspect-[2/3]"
+                objectFit="cover"
               />
               <h4 className="font-semibold text-sm leading-tight truncate group-hover:text-accent-foreground">
                 {character.name}

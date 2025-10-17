@@ -10,7 +10,7 @@ import {
 import { Button } from './ui/button';
 import { ArrowRight, Bookmark, MessageCircle, Star } from 'lucide-react';
 import type { TitleInfo } from '@/lib/types';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import Link from 'next/link';
 import Autoplay from 'embla-carousel-autoplay';
 
@@ -78,13 +78,13 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
                     <Card className="overflow-hidden border-none shadow-md bg-transparent">
                       <CardContent className="p-0 relative">
                         <div className="relative aspect-[2/3] w-full">
-                          <Image
+                          <SafeImage
                             src={item.imageUrl}
                             alt={item.title}
                             fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105 rounded-md"
+                            className="transition-transform duration-300 group-hover:scale-105 rounded-md"
                             sizes="(max-width: 320px) 45vw, (max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
-                            data-ai-hint={item.imageHint}
+                            objectFit="cover"
                             priority={index < 6}
                           />
                           

@@ -8,7 +8,6 @@ import SynopsisCard from '@/components/synopsis-card';
 import DetailsCard from '@/components/details-card';
 import OfficialLinksCard from '@/components/official-links-card';
 import SocialsCard from '@/components/socials-card';
-import CharactersCard from '@/components/characters-card';
 import EpisodesCard from '@/components/episodes-card';
 import ReviewsCard from '@/components/reviews-card';
 import StatsCard from '@/components/stats-card';
@@ -16,6 +15,10 @@ import MediaGallery from '@/components/media-gallery';
 import RelatedCard from '@/components/related-card';
 import Recommendations from '@/components/recommendations';
 import DynamicTheme from '@/components/dynamic-theme';
+import CharactersDisplay from '@/components/characters-display';
+import StaffDisplay from '@/components/staff-display';
+import EpisodesDisplay from '@/components/episodes-display';
+import StudiosDisplay from '@/components/studios-display';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import type { MediaType, OfficialLinks, RelatedTitle } from '@/lib/types';
@@ -345,27 +348,61 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
 
           {/* Acordeones - SIEMPRE VISIBLES */}
           <Accordion type="multiple" className="w-full space-y-4">
-            {/* Acordeón de Personajes - SIEMPRE VISIBLE */}
+            {/* Acordeón de Personajes con Actores de Voz - DE BASE DE DATOS */}
             <AccordionItem value="characters" className="border rounded-lg px-6">
               <AccordionTrigger className="hover:no-underline">
-                <span className="text-xl font-semibold">Personajes &amp; Actores</span>
+                <span className="text-xl font-semibold">Personajes &amp; Actores de Voz</span>
               </AccordionTrigger>
               <AccordionContent>
-                {characters.length > 0 ? (
-                  <CharactersCard characters={characters} />
-                ) : (
-                  <div className="py-8 text-center text-muted-foreground">
-                    Sin información de personajes disponible.
-                  </div>
-                )}
+                <CharactersDisplay 
+                  mediaId={mediaData.id} 
+                  mediaType={reviewableType === 'anime' ? 'anime' : 'manga'} 
+                />
               </AccordionContent>
             </AccordionItem>
+
+            {/* Acordeón de Staff & Producción */}
+            <AccordionItem value="staff" className="border rounded-lg px-6">
+              <AccordionTrigger className="hover:no-underline">
+                <span className="text-xl font-semibold">Staff &amp; Producción</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <StaffDisplay 
+                  mediaId={mediaData.id} 
+                  mediaType={reviewableType === 'anime' ? 'anime' : 'manga'} 
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Acordeón de Estudios - SOLO PARA ANIME */}
+            {showEpisodes && (
+              <AccordionItem value="studios" className="border rounded-lg px-6">
+                <AccordionTrigger className="hover:no-underline">
+                  <span className="text-xl font-semibold">Estudios de Animación</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <StudiosDisplay animeId={mediaData.id} />
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
+            {/* Acordeón de Episodios Reales - DE BASE DE DATOS */}
+            {showEpisodes && (
+              <AccordionItem value="episodes-real" className="border rounded-lg px-6">
+                <AccordionTrigger className="hover:no-underline">
+                  <span className="text-xl font-semibold">Lista de Episodios</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <EpisodesDisplay animeId={mediaData.id} />
+                </AccordionContent>
+              </AccordionItem>
+            )}
 
             {/* Acordeón de Episodios - SOLO PARA ANIME/DOUGUA, SIEMPRE VISIBLE */}
             {showEpisodes && (
               <AccordionItem value="episodes" className="border rounded-lg px-6">
                 <AccordionTrigger className="hover:no-underline">
-                  <span className="text-xl font-semibold">Episodios</span>
+                  <span className="text-xl font-semibold">Episodios (Placeholder)</span>
                 </AccordionTrigger>
                 <AccordionContent>
                   {episodes.length > 0 ? (

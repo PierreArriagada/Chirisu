@@ -14,6 +14,7 @@ import ListPrivacyToggle from '@/components/list-privacy-toggle';
 import { useToast } from '@/hooks/use-toast';
 import CustomListsCard from '@/components/custom-lists-card';
 import { Skeleton } from '@/components/ui/skeleton';
+import FavoritesCard from '@/components/favorites-card';
 
 // ============================================
 // TIPOS (coinciden con la API)
@@ -130,11 +131,51 @@ export default function ProfilePage() {
   // ==========================================
   
   const handlePrivacyChange = async (list: UserList, isPublic: boolean) => {
-    // TODO: Implementar con API PATCH /api/user/lists/settings
-    toast({
-      title: 'Función en desarrollo',
-      description: 'Pronto podrás cambiar la privacidad de tus listas.',
-    });
+    if (!user) return;
+
+    try {
+      const response = await fetch('/api/user/lists/settings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id.toString()
+        },
+        body: JSON.stringify({
+          listName: list,
+          isPublic
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Actualizar el estado local
+        setProfile(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            listSettings: {
+              ...prev.listSettings,
+              [list]: isPublic ? 'public' : 'private'
+            }
+          };
+        });
+
+        toast({
+          title: isPublic ? '🌍 Lista pública' : '🔒 Lista privada',
+          description: data.message
+        });
+      } else {
+        throw new Error('Error al actualizar privacidad');
+      }
+    } catch (error) {
+      console.error('Error al cambiar privacidad:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo cambiar la privacidad de la lista',
+        variant: 'destructive'
+      });
+    }
   };
 
   const handleCreateList = async (name: string) => {
@@ -162,19 +203,148 @@ export default function ProfilePage() {
   };
 
   const handleRemoveItemFromList = async (listId: string, itemId: string) => {
-    // TODO: Implementar con API DELETE /api/user/lists/:id/items/:itemId
-    toast({
-      title: 'Función en desarrollo',
-      description: 'Pronto podrás eliminar items de tus listas.',
-    });
+    if (!user) return;
+
+    try {
+      const response = await fetch(`/api/user/lists/${listId}/items/${itemId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        // Actualizar el estado local
+        setProfile(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            customLists: prev.customLists.map(list =>
+              list.id === listId
+                ? { ...list, items: list.items.filter(item => item.id !== itemId) }
+                : list
+            )
+          };
+        });
+
+        toast({
+          title: '✅ Item eliminado',
+          description: 'El elemento se ha eliminado de tu lista'
+        });
+      } else {
+        throw new Error('Error al eliminar item');
+      }
+    } catch (error) {
+      console.error('Error al eliminar item:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar el item de la lista',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // Handler para eliminar de listas predefinidas (Pendiente, Siguiendo, Visto, Favoritos)
+  const handleRemoveFromPredefinedList = async (listName: UserList, itemId: string) => {
+    if (!user) return;
+
+    try {
+      // Primero necesitamos obtener el ID de la lista predefinida
+      const listsResponse = await fetch(`/api/user/lists?userId=${user.id}`);
+      const listsData = await listsResponse.json();
+      
+      // Mapeo de nombres a slugs de lista
+      const listSlugMap: Record<UserList, string> = {
+        'pending': 'pendiente',
+        'following': 'siguiendo',
+        'watched': 'visto',
+        'favorites': 'favoritos'
+      };
+
+      const targetSlug = listSlugMap[listName];
+      
+      // Buscar en defaultLists por slug
+      const targetList = listsData.defaultLists?.find((l: any) => l.slug === targetSlug);
+
+      if (!targetList) {
+        console.error('❌ Lista no encontrada. Buscando slug:', targetSlug, 'listName recibido:', listName);
+        console.log('Listas disponibles:', listsData.defaultLists?.map((l: any) => ({ name: l.name, slug: l.slug })));
+        throw new Error('Lista no encontrada');
+      }
+
+      const response = await fetch(`/api/user/lists/${targetList.id}/items/${itemId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        // Actualizar el estado local
+        setProfile(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            lists: {
+              ...prev.lists,
+              [listName]: prev.lists[listName].filter((item: ListItem) => item.id !== itemId)
+            }
+          };
+        });
+
+        toast({
+          title: '✅ Item eliminado',
+          description: 'El elemento se ha eliminado de tu lista'
+        });
+      } else {
+        throw new Error('Error al eliminar item');
+      }
+    } catch (error) {
+      console.error('Error al eliminar item de lista predefinida:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar el item de la lista',
+        variant: 'destructive'
+      });
+    }
   };
   
   const handleCustomListPrivacyChange = async (listId: string, isPublic: boolean) => {
-    // TODO: Implementar con API PATCH /api/user/lists/:id/settings
-    toast({
-      title: 'Función en desarrollo',
-      description: 'Pronto podrás cambiar la privacidad de tus listas.',
-    });
+    if (!user) return;
+
+    try {
+      const response = await fetch(`/api/lists/${listId}/privacy`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id.toString()
+        },
+        body: JSON.stringify({ isPublic })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Actualizar el estado local
+        setProfile(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            customLists: prev.customLists.map(list =>
+              list.id === listId ? { ...list, isPublic } : list
+            )
+          };
+        });
+
+        toast({
+          title: isPublic ? '🌍 Lista pública' : '🔒 Lista privada',
+          description: data.message
+        });
+      } else {
+        throw new Error('Error al actualizar privacidad');
+      }
+    } catch (error) {
+      console.error('Error al cambiar privacidad de lista personalizada:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo cambiar la privacidad de la lista',
+        variant: 'destructive'
+      });
+    }
   };
 
   // ==========================================
@@ -273,7 +443,10 @@ export default function ProfilePage() {
                   isPublic={profile.listSettings[tab.value] === 'public'}
                   onCheckedChange={(isPublic) => handlePrivacyChange(tab.value, isPublic)}
                 />
-                <UserMediaList items={profile.lists[tab.value] as unknown as TitleInfo[]} />
+                <UserMediaList 
+                  items={profile.lists[tab.value] as unknown as TitleInfo[]} 
+                  onRemoveItem={(itemId) => handleRemoveFromPredefinedList(tab.value, itemId)}
+                />
                 {profile.lists[tab.value].length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     No hay elementos en esta lista todavía.
@@ -295,17 +468,23 @@ export default function ProfilePage() {
         onPrivacyChange={handleCustomListPrivacyChange}
       />
 
-      {/* CARD: Favoritos */}
+      {/* CARD: Favoritos Generales (Anime, Manga, Novelas) */}
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
-          <CardTitle>Favoritos</CardTitle>
+          <CardTitle>Favoritos - Series y Mangas</CardTitle>
+          <CardDescription>
+            Tus series, películas, mangas y novelas favoritas
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <ListPrivacyToggle
             isPublic={profile.listSettings.favorites === 'public'}
             onCheckedChange={(isPublic) => handlePrivacyChange('favorites', isPublic)}
           />
-          <UserMediaList items={profile.lists.favorites as unknown as TitleInfo[]} />
+          <UserMediaList 
+            items={profile.lists.favorites as unknown as TitleInfo[]} 
+            onRemoveItem={(itemId) => handleRemoveFromPredefinedList('favorites', itemId)}
+          />
           {profile.lists.favorites.length === 0 && (
             <p className="text-center text-muted-foreground py-8">
               No tienes favoritos todavía.
@@ -313,6 +492,9 @@ export default function ProfilePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* CARD: Favoritos de Personas (Personajes, Actores de Voz, Staff) */}
+      <FavoritesCard userId={profile.id} isOwnProfile={true} />
     </div>
   );
 }

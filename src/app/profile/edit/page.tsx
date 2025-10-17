@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
+import { ChangePasswordDialog } from '@/components/change-password-dialog';
 
 interface UserProfile {
   username: string;
@@ -416,6 +417,29 @@ export default function EditProfilePage() {
                   <SelectItem value="ko-KR">한국어</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Seguridad */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Seguridad</CardTitle>
+            <CardDescription>
+              Gestiona la seguridad de tu cuenta
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Contraseña</p>
+                  <p className="text-sm text-muted-foreground">
+                    Última actualización: hace tiempo
+                  </p>
+                </div>
+                <ChangePasswordDialog />
+              </div>
             </div>
           </CardContent>
         </Card>

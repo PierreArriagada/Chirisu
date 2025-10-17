@@ -517,9 +517,9 @@ export async function PATCH(request: Request) {
 
     // 5. REGISTRAR EN AUDIT LOG
     await db.query(
-      `INSERT INTO app.audit_log (user_id, action, resource_type, payload)
-       VALUES ($1, 'update_profile', 'user', $2)`,
-      [userId, JSON.stringify(body)]
+      `INSERT INTO app.audit_log (user_id, action, resource_type, resource_id, new_values)
+       VALUES ($1, 'update_profile', 'user', $2, $3)`,
+      [userId, userId, JSON.stringify(body)]
     );
 
     // 6. RETORNAR USUARIO ACTUALIZADO

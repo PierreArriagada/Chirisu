@@ -8,7 +8,7 @@
 
 import type { TitleInfo } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import Link from 'next/link';
 
 interface RecommendationsCardProps {
@@ -26,13 +26,13 @@ export default function RecommendationsCard({ items }: RecommendationsCardProps)
             <Link key={item.id} href={`/${item.type.toLowerCase().replace(/ /g, '-')}/${item.slug}`} className="block group">
                 <Card className="flex items-center gap-4 p-3 overflow-hidden transition-all duration-200 hover:bg-accent/50 hover:shadow-md">
                     <div className="relative w-16 h-24 flex-shrink-0">
-                        <Image 
+                        <SafeImage 
                             src={item.imageUrl} 
                             alt={item.title} 
                             fill
-                            className="object-cover rounded-md"
+                            className="rounded-md"
                             sizes="(max-width: 768px) 10vw, 5vw"
-                            data-ai-hint={item.imageHint}
+                            objectFit="cover"
                         />
                     </div>
                     <div className="overflow-hidden">

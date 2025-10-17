@@ -14,7 +14,7 @@
 
 import type { TitleInfo } from "@/lib/types";
 import { Card } from "@/components/ui/card";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import Link from "next/link";
 import { Badge } from "./ui/badge";
 import { Star } from "lucide-react";
@@ -59,13 +59,13 @@ function MediaItem({ item, onRemove }: MediaItemProps) {
             )}
             <Link href={url} className="flex items-center gap-4 w-full group">`
                 <div className="flex-shrink-0">
-                    <Image
+                    <SafeImage
                         src={item.imageUrl}
                         alt={`Cover for ${item.title}`}
                         width={60}
                         height={90}
-                        className="rounded-md object-cover aspect-[2/3]"
-                        data-ai-hint={item.imageHint}
+                        className="rounded-md aspect-[2/3]"
+                        objectFit="cover"
                     />
                 </div>
                 <div className="flex flex-col justify-center gap-1 overflow-hidden">

@@ -1,26 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/database';
+import { getCurrentUser } from '@/lib/auth';
 
 /**
  * GET /api/favorites
  * 
  * Query params:
- * - type: 'character' | 'voice_actor' | 'anime' | 'manga' | 'novel' (opcional)
+ * - type: 'character' | 'voice_actor' | 'staff' | 'anime' | 'manga' | 'novel' (opcional)
  * - userId: ID del usuario (required)
+ * - itemId: ID del item (opcional, para verificar si está en favoritos)
  * 
- * Obtiene los favoritos de un usuario
+ * Si itemId está presente, retorna { inFavorites: boolean }
+ * Si no, obtiene la lista de favoritos del usuario
  */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type');
     const userId = searchParams.get('userId');
+    const itemId = searchParams.get('itemId');
 
     if (!userId) {
       return NextResponse.json(
         { error: 'userId es requerido' },
         { status: 400 }
       );
+    }
+
+    // Si itemId está presente, solo verificar si está en favoritos
+    if (itemId && type) {
+      const checkResult = await pool.query(`
+        SELECT id FROM app.user_favorites
+        WHERE user_id = $1 AND favorable_type = $2 AND favorable_id = $3
+      `, [parseInt(userId), type, parseInt(itemId)]);
+
+      return NextResponse.json({
+        inFavorites: checkResult.rows.length > 0,
+        favoriteId: checkResult.rows[0]?.id || null
+      });
     }
 
     let query = `
@@ -75,6 +92,20 @@ export async function GET(request: NextRequest) {
               WHERE id = $1
             `, [row.favorable_id]);
             details = vaResult.rows[0];
+            break;
+
+          case 'staff':
+            const staffResult = await pool.query(`
+              SELECT 
+                id,
+                COALESCE(name_romaji, name_native) as name,
+                image_url,
+                slug,
+                primary_occupations
+              FROM app.staff
+              WHERE id = $1
+            `, [row.favorable_id]);
+            details = staffResult.rows[0];
             break;
 
           case 'anime':
@@ -148,7 +179,7 @@ export async function GET(request: NextRequest) {
  * Body:
  * {
  *   "userId": number,
- *   "favorableType": 'character' | 'voice_actor' | 'anime' | 'manga' | 'novel',
+ *   "favorableType": 'character' | 'voice_actor' | 'staff' | 'anime' | 'manga' | 'novel',
  *   "favorableId": number
  * }
  * 
@@ -167,7 +198,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validTypes = ['character', 'voice_actor', 'anime', 'manga', 'novel'];
+    const validTypes = ['character', 'voice_actor', 'staff', 'anime', 'manga', 'novel'];
     if (!validTypes.includes(favorableType)) {
       return NextResponse.json(
         { error: 'favorableType inválido' },
@@ -196,9 +227,16 @@ export async function POST(request: NextRequest) {
     `, [userId, favorableType, favorableId]);
 
     // Incrementar contador según el tipo
-    const tableName = favorableType === 'voice_actor' ? 'voice_actors' : 
-                      favorableType === 'character' ? 'characters' :
-                      favorableType === 'novel' ? 'novels' : favorableType;
+    const tableMap: Record<string, string> = {
+      'character': 'characters',
+      'voice_actor': 'voice_actors',
+      'staff': 'staff',
+      'anime': 'anime',
+      'manga': 'manga',
+      'novel': 'novels'
+    };
+
+    const tableName = tableMap[favorableType];
 
     await pool.query(`
       UPDATE app.${tableName}
@@ -229,23 +267,41 @@ export async function POST(request: NextRequest) {
 /**
  * DELETE /api/favorites
  * 
- * Body:
- * {
- *   "userId": number,
- *   "favorableType": string,
- *   "favorableId": number
- * }
+ * Query Params:
+ * - favorableType: string (character, voice_actor, staff, anime, manga, etc.)
+ * - favorableId: number
  * 
- * Elimina un favorito
+ * Elimina un favorito del usuario autenticado
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { userId, favorableType, favorableId } = body;
-
-    if (!userId || !favorableType || !favorableId) {
+    // Autenticación usando JWT
+    const currentUser = await getCurrentUser();
+    
+    if (!currentUser) {
       return NextResponse.json(
-        { error: 'userId, favorableType y favorableId son requeridos' },
+        { error: 'No autenticado. Inicia sesión primero.' },
+        { status: 401 }
+      );
+    }
+
+    const userId = currentUser.userId;
+    const { searchParams } = new URL(request.url);
+    const favorableType = searchParams.get('favorableType');
+    const favorableIdStr = searchParams.get('favorableId');
+
+    if (!favorableType || !favorableIdStr) {
+      return NextResponse.json(
+        { error: 'favorableType y favorableId son requeridos' },
+        { status: 400 }
+      );
+    }
+
+    const favorableId = parseInt(favorableIdStr);
+
+    if (isNaN(favorableId)) {
+      return NextResponse.json(
+        { error: 'favorableId debe ser un número válido' },
         { status: 400 }
       );
     }
@@ -265,9 +321,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Decrementar contador según el tipo
-    const tableName = favorableType === 'voice_actor' ? 'voice_actors' : 
-                      favorableType === 'character' ? 'characters' :
-                      favorableType === 'novel' ? 'novels' : favorableType;
+    const tableMap: Record<string, string> = {
+      'character': 'characters',
+      'voice_actor': 'voice_actors',
+      'staff': 'staff',
+      'anime': 'anime',
+      'manga': 'manga',
+      'novel': 'novels'
+    };
+
+    const tableName = tableMap[favorableType];
 
     await pool.query(`
       UPDATE app.${tableName}

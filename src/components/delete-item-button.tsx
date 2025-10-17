@@ -21,19 +21,18 @@ export default function DeleteItemButton({ onRemove }: DeleteItemButtonProps) {
     const handleClick = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        // PSQL: En una implementación real, esto podría mostrar un diálogo de confirmación.
         onRemove();
     };
 
     return (
         <Button
-            variant="ghost"
+            variant="destructive"
             size="icon"
-            className="h-6 w-6 rounded-full text-muted-foreground opacity-0 group-hover/item:opacity-100 transition-opacity hover:bg-destructive/20 hover:text-destructive"
+            className="h-6 w-6 rounded-full opacity-100 transition-opacity hover:scale-110"
             onClick={handleClick}
-            aria-label="Remove item from list"
+            aria-label="Eliminar de la lista"
         >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3" />
         </Button>
     );
 }

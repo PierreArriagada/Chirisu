@@ -10,7 +10,7 @@
 import type { TitleInfo } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import { Trophy } from "lucide-react";
 
 function RankingItem({ item, index }: { item: TitleInfo; index: number }) {
@@ -22,12 +22,12 @@ function RankingItem({ item, index }: { item: TitleInfo; index: number }) {
         <div className="flex items-center gap-3 w-20 flex-shrink-0">
           <span className="text-xl font-bold text-muted-foreground w-8 text-center">{index + 1}</span>
           <div className="relative w-12 h-16 flex-shrink-0">
-            <Image
+            <SafeImage
               src={item.imageUrl}
               alt={`Cover for ${item.title}`}
               fill
-              className="rounded-md object-cover"
-              data-ai-hint={item.imageHint}
+              className="rounded-md"
+              objectFit="cover"
             />
           </div>
         </div>

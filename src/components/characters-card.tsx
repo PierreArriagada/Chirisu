@@ -9,7 +9,7 @@
 
 import type { Character } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import { Badge } from "./ui/badge";
 import Link from "next/link";
 
@@ -25,11 +25,11 @@ export default function CharactersCard({ characters }: { characters: Character[]
                     <Card key={character.id} className="flex-shrink-0 w-[300px] flex gap-4 p-4 rounded-lg hover:bg-muted/50 transition-colors">
                             {characterHref ? (
                                 <Link href={characterHref} className="flex-shrink-0">
-                                    <Image src={character.imageUrl} alt={character.name} width={60} height={90} className="rounded-md aspect-[2/3] object-cover" data-ai-hint={character.imageHint} />
+                                    <SafeImage src={character.imageUrl} alt={character.name} width={60} height={90} className="rounded-md aspect-[2/3]" objectFit="cover" />
                                 </Link>
                             ) : (
                                 <div className="flex-shrink-0">
-                                    <Image src={character.imageUrl} alt={character.name} width={60} height={90} className="rounded-md aspect-[2/3] object-cover" data-ai-hint={character.imageHint} />
+                                    <SafeImage src={character.imageUrl} alt={character.name} width={60} height={90} className="rounded-md aspect-[2/3]" objectFit="cover" />
                                 </div>
                             )}
                             <div className="flex flex-col gap-1 overflow-hidden">
@@ -43,12 +43,12 @@ export default function CharactersCard({ characters }: { characters: Character[]
                                     <Badge variant="secondary" className="w-min">{character.role}</Badge>
                                     {voiceActorHref ? (
                                         <Link href={voiceActorHref} className="group flex items-center gap-2 pt-2">
-                                            <Image src={character.voiceActors.japanese.imageUrl} alt={character.voiceActors.japanese.name} width={40} height={60} className="rounded-md aspect-[2/3] object-cover" data-ai-hint={character.voiceActors.japanese.imageHint} />
+                                            <SafeImage src={character.voiceActors.japanese.imageUrl} alt={character.voiceActors.japanese.name} width={40} height={60} className="rounded-md aspect-[2/3]" objectFit="cover" />
                                             <span className="text-sm text-muted-foreground truncate group-hover:text-primary transition-colors">{character.voiceActors.japanese.name}</span>
                                         </Link>
                                     ) : (
                                         <div className="flex items-center gap-2 pt-2">
-                                            <Image src={character.voiceActors.japanese.imageUrl} alt={character.voiceActors.japanese.name} width={40} height={60} className="rounded-md aspect-[2/3] object-cover" data-ai-hint={character.voiceActors.japanese.imageHint} />
+                                            <SafeImage src={character.voiceActors.japanese.imageUrl} alt={character.voiceActors.japanese.name} width={40} height={60} className="rounded-md aspect-[2/3]" objectFit="cover" />
                                             <span className="text-sm text-muted-foreground truncate">{character.voiceActors.japanese.name}</span>
                                         </div>
                                     )}

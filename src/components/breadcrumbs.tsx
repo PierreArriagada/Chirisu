@@ -25,6 +25,13 @@ const slugToTitle = (slug: string) => {
     .join(' ');
 };
 
+// Map singular routes to their plural listing pages
+const routeMapping: Record<string, { href: string; label: string }> = {
+  'character': { href: '/characters', label: 'Characters' },
+  'voice-actor': { href: '/voice-actors', label: 'Voice Actors' },
+  'staff': { href: '/staff', label: 'Staff' },
+};
+
 export default function Breadcrumbs() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter((i) => i);
@@ -42,8 +49,17 @@ export default function Breadcrumbs() {
   segments.forEach((segment, index) => {
     currentPath += `/${segment}`;
     
-    // Convert slug to readable title
-    const label = slugToTitle(segment);
+    // Check if this is a mapped route (singular to plural)
+    const mapping = routeMapping[segment];
+    
+    let href = currentPath;
+    let label = slugToTitle(segment);
+    
+    // If it's the first segment and has a mapping, use the listing page
+    if (mapping && index === 0) {
+      href = mapping.href;
+      label = mapping.label;
+    }
     
     // Don't add duplicate labels
     const lastLabel = breadcrumbs[breadcrumbs.length - 1]?.label;
@@ -51,7 +67,7 @@ export default function Breadcrumbs() {
       return;
     }
     
-    breadcrumbs.push({ href: currentPath, label });
+    breadcrumbs.push({ href, label });
   });
 
   return (
