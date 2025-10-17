@@ -8,48 +8,76 @@
  * del foro para fomentar la interacción del usuario.
  */
 
-import { getMediaListPage, getTopCharacters, getTopPeople } from '@/lib/db';
-import { MediaType } from '@/lib/types';
-import TopRankingCarousel from '@/components/top-ranking-carousel';
 import TopCharactersCard from '@/components/top-characters-card';
 import TopPeopleCard from '@/components/top-people-card';
 import LatestPostsCard from '@/components/latest-posts-card';
+import HomePageClient from '@/components/home-page-client';
 
-export default function Home() {
-  const mediaTypes: MediaType[] = ['Anime', 'Manga', 'Manhua', 'Manwha', 'Novela', 'Fan Comic', 'Dougua'];
-  const topCharacters = getTopCharacters(5);
-  const topPeople = getTopPeople(5);
+async function getTopCharacters() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 9002}`;
+    const res = await fetch(`${baseUrl}/api/characters?top=true&limit=5`, {
+      next: { revalidate: 3600 },
+      cache: 'no-store'
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.characters || [];
+  } catch (error) {
+    console.error('Error al obtener top characters:', error);
+    return [];
+  }
+}
+
+export default async function Home() {
+  const topCharactersData = await getTopCharacters();
+  
+  // Transformar data para que coincida con el formato esperado
+  const topCharacters = topCharactersData.map((c: any) => ({
+    id: c.id,
+    name: c.name,
+    imageUrl: c.image,
+    slug: c.slug,
+    role: 'Main',
+    voiceActors: {
+      japanese: { name: '', imageUrl: '', slug: '' },
+      spanish: { name: '', imageUrl: '', slug: '' }
+    }
+  }));
+
+  // Mock data para personas y posts hasta implementar APIs
+  const topPeople: any[] = [];
 
   const latestPosts = [
-    { id: 'post1', title: '¿Qué tan fiel es la adaptación de Honzuki no Gekokujou?', author: 'MangaReader', replies: 45 },
-    { id: 'post2', title: 'Mejor momento del último capítulo de The Boxer', author: 'AnimeWatcher', replies: 102 },
-    { id: 'post3', title: 'Teorías sobre el final de Berserk', author: 'GutsFan', replies: 234 },
+    { id: 'post1', title: '¿Cuál es tu personaje favorito de Jujutsu Kaisen?', author: 'AnimeReviewer', replies: 89 },
+    { id: 'post2', title: 'Reseña: Jujutsu Kaisen 0 Movie', author: 'MovieBuff', replies: 156 },
+    { id: 'post3', title: 'Top 10 peleas del arco de Shibuya', author: 'FightAnalyst', replies: 203 },
   ];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 lg:gap-8 my-8">
       <aside className="hidden lg:block lg:col-span-1 space-y-8">
-        <TopCharactersCard characters={topCharacters} />
-        <TopPeopleCard people={topPeople} />
+        {topCharacters.length > 0 ? (
+          <TopCharactersCard characters={topCharacters} />
+        ) : (
+          <div className="p-4 bg-muted rounded-lg text-center text-muted-foreground text-sm">
+            No hay personajes destacados disponibles
+          </div>
+        )}
+        
+        {topPeople.length > 0 ? (
+          <TopPeopleCard people={topPeople} />
+        ) : (
+          <div className="p-4 bg-muted rounded-lg text-center text-muted-foreground text-sm">
+            No hay personas destacadas disponibles
+          </div>
+        )}
+        
         <LatestPostsCard posts={latestPosts} />
       </aside>
 
-      <div className="lg:col-span-3 space-y-12">
-        {mediaTypes.map(type => {
-          const { topAllTime } = getMediaListPage(type);
-          
-          // Handle multi-word types for path
-          const path = `/${type.toLowerCase().replace(' ', '-')}`;
-
-          return (
-            <TopRankingCarousel
-              key={type}
-              title={`${type} - Top Ranking`}
-              items={topAllTime}
-              viewMoreLink={path}
-            />
-          );
-        })}
+      <div className="lg:col-span-3">
+        <HomePageClient />
       </div>
     </div>
   );

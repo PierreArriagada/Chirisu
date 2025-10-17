@@ -45,7 +45,7 @@ export default function DetailsCard({ details }: { details: AnimeDetails }) {
                 {detailItem('Tipo', details.type)}
                 {detailItem('Episodios', details.episodes)}
                 {detailItem('Estado', details.status)}
-                {detailItem('Fecha', new Date(details.releaseDate).toLocaleDateString())}
+                {detailItem('Fecha', details.releaseDate)}
                 {detailItem('Temporada', details.season)}
             </div>
             <div className="flex flex-col gap-2">
@@ -63,8 +63,8 @@ export default function DetailsCard({ details }: { details: AnimeDetails }) {
         </TabsContent>
         <TabsContent value="alternatives">
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {details.alternativeTitles.map(alt => (
-                  <Card key={alt.lang} className="p-4 flex items-center gap-4">
+        {details.alternativeTitles.map((alt, index) => (
+          <Card key={alt.lang || `${alt.title}-${index}`} className="p-4 flex items-center gap-4">
                     <span className="text-3xl">{alt.flag}</span>
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold">{alt.lang}</span>

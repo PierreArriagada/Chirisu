@@ -1,0 +1,1247 @@
+/*
+===================================================================================================
+Proyecto: Esquema de base de datos para plataforma de Anime/Manga/Novelas (Unificado v1.0)
+Motor: PostgreSQL (recomendado >= 12)
+
+Descripción:
+Este esquema combina los aspectos más completos de dos versiones previas, resultando en una base
+de datos rica y funcional para una plataforma de medios anime/manga/novelas. Incluye:
+- Sistema de usuarios con roles y permisos jerárquicos.
+- Contenido principal (anime, manga, novelas) con identificadores externos y estados.
+- Sistema de metadatos polimórfico (géneros, etiquetas, estudios, staff, personajes, títulos alternativos).
+- Relaciones entre contenidos.
+- Sistema de listas personalizadas por usuario (Favoritos, Siguiendo, etc.).
+- Interacciones sociales (comentarios, reseñas, votos, reacciones).
+- Sistema de puntos, niveles y reputación con triggers automáticos.
+- Flujo de trabajo para contribuciones, reportes y moderación.
+- Auditoría de cambios y seguridad con soft deletes.
+===================================================================================================
+*/
+
+/* ============================
+   EXTENSIONS REQUERIDAS
+   ============================ */
+-- Extensiones útiles: uuid-ossp para generar UUIDs si lo deseas, pgcrypto para hashing, citext si quieres
+-- case-insensitive text. Activa las necesarias.
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- Schema base
+CREATE SCHEMA IF NOT EXISTS app;
+SET search_path = app, public;
+
+-- =============================================================
+-- SECCIÓN 1: SISTEMA DE USUARIOS Y ROLES (Basado en v2)
+-- =============================================================
+
+-- Tabla: roles
+CREATE TABLE IF NOT EXISTS roles (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(50) NOT NULL UNIQUE CHECK (name IN ('admin', 'moderator', 'user')),
+  display_name VARCHAR(100) NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE roles IS 'Roles del sistema (admin, mod, user).';
+COMMENT ON COLUMN roles.name IS 'Nombre del rol, debe ser uno de los valores predefinidos.';
+
+-- Tabla: permissions
+CREATE TABLE IF NOT EXISTS permissions (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  display_name VARCHAR(150) NOT NULL,
+  description TEXT,
+  resource VARCHAR(50), -- Ej: 'media', 'comment', 'review'
+  action VARCHAR(50),   -- Ej: 'create', 'read', 'update', 'delete'
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE permissions IS 'Permisos del sistema, asociados a roles.';
+
+-- Tabla: role_permissions
+CREATE TABLE IF NOT EXISTS role_permissions (
+  role_id INTEGER REFERENCES roles(id) ON DELETE CASCADE,
+  permission_id INTEGER REFERENCES permissions(id) ON DELETE CASCADE,
+  PRIMARY KEY (role_id, permission_id)
+);
+
+COMMENT ON TABLE role_permissions IS 'Relación muchos a muchos entre roles y permisos.';
+
+-- Tabla: users (Mezcla de v1 y v2)
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  uuid UUID NOT NULL DEFAULT uuid_generate_v4(),
+  email VARCHAR(320) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL, -- almacenar hash (bcrypt/argon2) en el backend
+  username VARCHAR(80) UNIQUE NOT NULL,
+  display_name VARCHAR(120),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  -- Perfil (v1)
+  date_of_birth DATE,
+  nationality_code CHAR(2), -- ISO 3166-1 alpha-2 (ej 'CL')
+  nationality_name VARCHAR(100),
+  nationality_flag_url VARCHAR(500),
+  bio VARCHAR(200), -- límite 200 caracteres
+  avatar_url VARCHAR(500),
+  banner_url VARCHAR(500), -- Añadido de v2
+
+  -- Sistema de reputación / nivel (v1)
+  points BIGINT DEFAULT 0 NOT NULL,
+  reputation_score BIGINT DEFAULT 0 NOT NULL,
+  level INTEGER DEFAULT 1 NOT NULL,
+
+  -- Contadores denormalizados para eficiencia (v1 + v2)
+  contributions_count INTEGER DEFAULT 0 NOT NULL,
+  saves_count INTEGER DEFAULT 0 NOT NULL, -- De list_items
+  followers_count INTEGER DEFAULT 0 NOT NULL, -- De v2
+  following_count INTEGER DEFAULT 0 NOT NULL, -- De v2
+
+  -- Roles / permisos (v2)
+  is_active BOOLEAN DEFAULT TRUE,
+
+  -- Preferencias (ejemplo)
+  locale VARCHAR(10) DEFAULT 'es-CL',
+
+  -- Soft Delete (v2)
+  deleted_at TIMESTAMPTZ NULL
+);
+
+COMMENT ON TABLE users IS 'Usuarios de la plataforma. Incluye perfil, sistema de puntos, contadores, roles y soft delete.';
+COMMENT ON COLUMN users.bio IS 'Biografía de usuario, máxima 200 caracteres.';
+COMMENT ON COLUMN users.deleted_at IS 'Marca de tiempo para soft delete.';
+
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_uuid ON users(uuid); -- Para búsquedas rápidas por UUID
+
+-- Tabla: user_roles (v2)
+CREATE TABLE IF NOT EXISTS user_roles (
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  role_id INTEGER REFERENCES roles(id) ON DELETE CASCADE,
+  assigned_by INTEGER REFERENCES users(id),
+  assigned_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (user_id, role_id)
+);
+
+COMMENT ON TABLE user_roles IS 'Asignación de roles a usuarios.';
+
+-- Trigger para actualizar updated_at
+CREATE OR REPLACE FUNCTION fn_update_updated_at() RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_users_update_time BEFORE UPDATE ON users
+FOR EACH ROW EXECUTE FUNCTION fn_update_updated_at();
+
+-- =============================================================
+-- SECCIÓN 2: ESTADOS DE MEDIOS (De v1)
+-- =============================================================
+
+CREATE TABLE IF NOT EXISTS media_statuses (
+  id SERIAL PRIMARY KEY,
+  code VARCHAR(50) NOT NULL UNIQUE,   -- código canonical, ej: 'finished', 'publishing', 'ongoing', 'on_hiatus'
+  label_es VARCHAR(100) NOT NULL,     -- etiqueta en español: 'Finalizado', 'En publicación', 'En emisión'
+  label_en VARCHAR(100) NOT NULL,     -- etiqueta en inglés
+  description TEXT
+);
+
+COMMENT ON TABLE media_statuses IS 'Estados canónicos para medios (anime/manga/novel).';
+COMMENT ON COLUMN media_statuses.code IS 'Código canonical (usar en la lógica del backend).';
+
+-- Datos iniciales de ejemplo (puedes ampliarlos)
+INSERT INTO media_statuses (code, label_es, label_en, description)
+VALUES
+  ('finished', 'Finalizado', 'Finished', 'Finalizado / Concluido'),
+  ('publishing', 'Publicando', 'Publishing', 'En publicación'),
+  ('ongoing', 'En emisión', 'Ongoing', 'Actualmente emitiéndose'),
+  ('not_yet_aired', 'Aún no estrenado', 'Not yet aired', 'Anuncio previo al estreno'),
+  ('on_hiatus', 'En pausa', 'On hiatus', 'Pausado temporalmente'),
+  ('discontinued', 'Descontinuado', 'Discontinued', 'Interrumpido sin concluir')
+ON CONFLICT (code) DO NOTHING;
+
+-- =============================================================
+-- SECCIÓN 3: TABLAS DE CONTENIDO PRINCIPAL (De v1, adaptado con v2)
+-- =============================================================
+
+-- Tabla: anime (De v1, con adaptaciones de v2)
+CREATE TABLE IF NOT EXISTS anime (
+  id BIGSERIAL PRIMARY KEY,
+  created_by INTEGER REFERENCES users(id) ON DELETE SET NULL, -- Adaptado de v2
+  updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL, -- Adaptado de v2
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  -- Identificadores y títulos (v1 + v2)
+  mal_id BIGINT UNIQUE,       -- id en MyAnimeList (si existe)
+  anilist_id BIGINT UNIQUE,   -- id en AniList (si existe)
+  kitsu_id BIGINT UNIQUE,
+  title_native VARCHAR(500),
+  title_romaji VARCHAR(500) NOT NULL, -- v2
+  title_english VARCHAR(500),
+  title_spanish VARCHAR(500), -- v2
+
+  synopsis TEXT,
+  episode_count INTEGER,
+  duration INTEGER, -- Duración por episodio en minutos - v2
+  start_date DATE,
+  end_date DATE,
+
+  cover_image_url VARCHAR(800),
+  banner_image_url VARCHAR(800), -- v2
+  trailer_url VARCHAR(500), -- v2
+
+  status_id INTEGER REFERENCES media_statuses(id), -- De v1, sin DEFAULT para control manual
+  season VARCHAR(20), -- ej 'Spring 2024' - v1
+  season_year INTEGER, -- v2
+  source VARCHAR(100), -- manga, light novel, original - v1
+  type VARCHAR(20) CHECK (type IN ('TV', 'Movie', 'OVA', 'ONA', 'Special', 'Music')), -- v2
+
+  -- Métricas de Popularidad (v2)
+  average_score NUMERIC(3,2) DEFAULT 0,
+  mean_score NUMERIC(4,2), -- v2
+  popularity INTEGER DEFAULT 0, -- v2
+  favourites INTEGER DEFAULT 0, -- v2
+  ratings_count INTEGER DEFAULT 0, -- De v1
+
+  -- Metadatos (v2)
+  country_of_origin VARCHAR(10), -- v2
+  is_nsfw BOOLEAN DEFAULT FALSE, -- v2
+
+  -- Metadatos de importación (v1)
+  external_payload JSONB, -- payload raw de la API
+  preferences JSONB,       -- campo libre para datos adicionales
+
+  -- Moderación (v1)
+  is_approved BOOLEAN DEFAULT FALSE, -- moderación / revisión
+  is_published BOOLEAN DEFAULT TRUE,
+
+  -- Soft Delete (v2)
+  deleted_at TIMESTAMPTZ NULL
+);
+
+COMMENT ON TABLE anime IS 'Registros de series/animes. Combina campos de ambas versiones.';
+CREATE INDEX IF NOT EXISTS idx_anime_mal_id ON anime(mal_id);
+CREATE INDEX IF NOT EXISTS idx_anime_anilist_id ON anime(anilist_id);
+CREATE INDEX IF NOT EXISTS idx_anime_title_search ON anime USING gin(to_tsvector('english', title_english), to_tsvector('simple', title_romaji), to_tsvector('spanish', title_spanish)); -- v2
+CREATE INDEX IF NOT EXISTS idx_anime_status_id ON anime(status_id);
+
+CREATE TRIGGER trg_anime_update_time BEFORE UPDATE ON anime
+FOR EACH ROW EXECUTE FUNCTION fn_update_updated_at();
+
+-- Tabla: manga (De v1, con adaptaciones de v2)
+CREATE TABLE IF NOT EXISTS manga (
+  id BIGSERIAL PRIMARY KEY,
+  created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  mal_id BIGINT UNIQUE,
+  anilist_id BIGINT UNIQUE,
+  kitsu_id BIGINT UNIQUE,
+
+  title_native VARCHAR(500),
+  title_romaji VARCHAR(500) NOT NULL, -- v2
+  title_english VARCHAR(500),
+  title_spanish VARCHAR(500), -- v2
+
+  synopsis TEXT,
+  volumes INTEGER,
+  chapters INTEGER,
+
+  cover_image_url VARCHAR(800),
+  banner_image_url VARCHAR(800), -- v2
+
+  status_id INTEGER REFERENCES media_statuses(id), -- De v1, sin DEFAULT
+  source VARCHAR(100), -- v1
+  type VARCHAR(20) CHECK (type IN ('Manga', 'Manhwa', 'Manhua', 'One-shot')), -- v2
+
+  -- Métricas (v2)
+  average_score NUMERIC(3,2) DEFAULT 0,
+  mean_score NUMERIC(4,2), -- v2
+  popularity INTEGER DEFAULT 0, -- v2
+  favourites INTEGER DEFAULT 0, -- v2
+  ratings_count INTEGER DEFAULT 0, -- De v1
+
+  -- Metadatos (v2)
+  start_date DATE, -- v2
+  end_date DATE, -- v2
+  country_of_origin VARCHAR(10), -- v2
+  is_nsfw BOOLEAN DEFAULT FALSE, -- v2
+
+  external_payload JSONB,
+  is_approved BOOLEAN DEFAULT FALSE,
+
+  -- Soft Delete (v2)
+  deleted_at TIMESTAMPTZ NULL
+);
+
+COMMENT ON TABLE manga IS 'Registros de mangas. Similar a anime pero con volúmenes/capitulos.';
+CREATE INDEX IF NOT EXISTS idx_manga_mal_id ON manga(mal_id);
+CREATE INDEX IF NOT EXISTS idx_manga_anilist_id ON manga(anilist_id);
+CREATE INDEX IF NOT EXISTS idx_manga_title_search ON manga USING gin(to_tsvector('english', title_english), to_tsvector('simple', title_romaji), to_tsvector('spanish', title_spanish)); -- v2
+CREATE INDEX IF NOT EXISTS idx_manga_status_id ON manga(status_id);
+
+CREATE TRIGGER trg_manga_update_time BEFORE UPDATE ON manga
+FOR EACH ROW EXECUTE FUNCTION fn_update_updated_at();
+
+-- Tabla: novels (De v1, con adaptaciones de v2)
+CREATE TABLE IF NOT EXISTS novels (
+  id BIGSERIAL PRIMARY KEY,
+  created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  mal_id BIGINT UNIQUE,
+  anilist_id BIGINT UNIQUE,
+  kitsu_id BIGINT UNIQUE,
+
+  title_native VARCHAR(500),
+  title_romaji VARCHAR(500) NOT NULL, -- v2
+  title_english VARCHAR(500),
+  title_spanish VARCHAR(500), -- v2
+
+  synopsis TEXT,
+  volumes INTEGER,
+  chapters INTEGER,
+
+  cover_image_url VARCHAR(800),
+  banner_image_url VARCHAR(800), -- v2
+
+  status_id INTEGER REFERENCES media_statuses(id), -- De v1, sin DEFAULT
+  source VARCHAR(100), -- v1
+  type VARCHAR(20) CHECK (type IN ('Light_Novel', 'Web_Novel', 'Novel')), -- v2
+
+  -- Métricas (v2)
+  average_score NUMERIC(3,2) DEFAULT 0,
+  mean_score NUMERIC(4,2), -- v2
+  popularity INTEGER DEFAULT 0, -- v2
+  favourites INTEGER DEFAULT 0, -- v2
+  ratings_count INTEGER DEFAULT 0, -- De v1
+
+  -- Metadatos (v2)
+  start_date DATE, -- v2
+  end_date DATE, -- v2
+  country_of_origin VARCHAR(10), -- v2
+  is_nsfw BOOLEAN DEFAULT FALSE, -- v2
+
+  external_payload JSONB,
+  is_approved BOOLEAN DEFAULT FALSE,
+
+  -- Soft Delete (v2)
+  deleted_at TIMESTAMPTZ NULL
+);
+
+COMMENT ON TABLE novels IS 'Registros de novelas (light novels y novelas web).';
+CREATE INDEX IF NOT EXISTS idx_novels_mal_id ON novels(mal_id);
+CREATE INDEX IF NOT EXISTS idx_novels_anilist_id ON novels(anilist_id);
+CREATE INDEX IF NOT EXISTS idx_novels_title_search ON novels USING gin(to_tsvector('english', title_english), to_tsvector('simple', title_romaji), to_tsvector('spanish', title_spanish)); -- v2
+CREATE INDEX IF NOT EXISTS idx_novels_status_id ON novels(status_id);
+
+CREATE TRIGGER trg_novels_update_time BEFORE UPDATE ON novels
+FOR EACH ROW EXECUTE FUNCTION fn_update_updated_at();
+
+-- =============================================================
+-- TRIGGERS PARA ASIGNAR ESTADO POR DEFECTO A LOS MEDIOS (De v1)
+-- =============================================================
+
+-- Función y Trigger para el estado por defecto de ANIME ('not_yet_aired')
+CREATE OR REPLACE FUNCTION fn_set_default_anime_status() RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status_id IS NULL THEN
+        NEW.status_id := (SELECT id FROM app.media_statuses WHERE code = 'not_yet_aired' LIMIT 1);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_set_anime_status_default
+BEFORE INSERT ON anime
+FOR EACH ROW EXECUTE FUNCTION fn_set_default_anime_status();
+
+-- Función y Triggers para el estado por defecto de MANGA y NOVELS ('publishing')
+CREATE OR REPLACE FUNCTION fn_set_default_publishing_status() RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status_id IS NULL THEN
+        NEW.status_id := (SELECT id FROM app.media_statuses WHERE code = 'publishing' LIMIT 1);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_set_manga_status_default
+BEFORE INSERT ON manga
+FOR EACH ROW EXECUTE FUNCTION fn_set_default_publishing_status();
+
+CREATE TRIGGER trg_set_novel_status_default
+BEFORE INSERT ON novels
+FOR EACH ROW EXECUTE FUNCTION fn_set_default_publishing_status();
+
+-- =============================================================
+-- SECCIÓN 4: SISTEMA DE TÍTULOS HÍBRIDO (De v2)
+-- =============================================================
+
+CREATE TABLE IF NOT EXISTS alternative_titles (
+    id SERIAL PRIMARY KEY,
+    titleable_type VARCHAR(20) NOT NULL,
+    titleable_id INTEGER NOT NULL,
+    language VARCHAR(10) NOT NULL, -- ej: 'ja-native', 'fr', 'de', 'synonym'
+    text VARCHAR(255) NOT NULL,
+    UNIQUE (titleable_type, titleable_id, language, text)
+);
+
+COMMENT ON TABLE alternative_titles IS 'Títulos alternativos polimórficos para medios.';
+CREATE INDEX IF NOT EXISTS idx_titles_polymorphic ON alternative_titles(titleable_type, titleable_id);
+
+-- =============================================================
+-- SECCIÓN 5: TABLAS DE SOPORTE Y METADATOS (De v2)
+-- =============================================================
+
+-- Tabla: genres (Optimizada)
+CREATE TABLE IF NOT EXISTS genres (
+  id SERIAL PRIMARY KEY,
+  code VARCHAR(100) UNIQUE NOT NULL, -- Código canónico para lógica de backend
+  name_es VARCHAR(100) NOT NULL,     -- Nombre en español
+  name_en VARCHAR(100) NOT NULL,     -- Nombre en inglés
+  name_ja VARCHAR(100),              -- Nombre en japonés (opcional)
+  description_es TEXT,               -- Descripción en español
+  description_en TEXT,               -- Descripción en inglés
+  is_active BOOLEAN DEFAULT TRUE     -- Para desactivar géneros obsoletos
+);
+
+COMMENT ON TABLE genres IS 'Géneros canónicos para medios con soporte multilenguaje.';
+INSERT INTO genres (code, name_es, name_en, name_ja) VALUES
+  ('action', 'Acción', 'Action', 'アクション'),
+  ('adventure', 'Aventura', 'Adventure', '冒険'),
+  ('comedy', 'Comedia', 'Comedy', 'コメディ'),
+  ('drama', 'Drama', 'Drama', 'ドラマ'),
+  ('fantasy', 'Fantasía', 'Fantasy', 'ファンタジー'),
+  ('horror', 'Horror', 'Horror', 'ホラー'),
+  ('mecha', 'Mecha', 'Mecha', 'メカ'),
+  ('music', 'Música', 'Music', '音楽'),
+  ('mystery', 'Misterio', 'Mystery', 'ミステリー'),
+  ('psychological', 'Psicológico', 'Psychological', '心理'),
+  ('romance', 'Romance', 'Romance', '恋愛'),
+  ('sci-fi', 'Ciencia Ficción', 'Sci-Fi', 'SF'),
+  ('slice_of_life', 'Slice of Life', 'Slice of Life', '日常'),
+  ('sports', 'Deportes', 'Sports', 'スポーツ'),
+  ('supernatural', 'Sobrenatural', 'Supernatural', '超自然'),
+  ('thriller', 'Thriller', 'Thriller', 'スリラー')
+ON CONFLICT (code) DO NOTHING;
+
+-- Tabla pivot: media_genres (polimórfico por titleable_type)
+CREATE TABLE IF NOT EXISTS media_genres (
+  id BIGSERIAL PRIMARY KEY,
+  titleable_type VARCHAR(20) NOT NULL, -- 'anime','manga','novel'
+  titleable_id INTEGER NOT NULL,
+  genre_id INTEGER NOT NULL REFERENCES genres(id) ON DELETE CASCADE,
+  UNIQUE(titleable_type, titleable_id, genre_id)
+);
+
+COMMENT ON TABLE media_genres IS 'Asociación polimórfica entre medios y géneros.';
+
+-- Tabla: tags (De v2)
+CREATE TABLE IF NOT EXISTS tags (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT
+);
+
+COMMENT ON TABLE tags IS 'Etiquetas para medios.';
+
+CREATE TABLE IF NOT EXISTS taggable_tags (
+    tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE,
+    taggable_type VARCHAR(20) NOT NULL,
+    taggable_id INTEGER NOT NULL,
+    is_spoiler BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (tag_id, taggable_type, taggable_id)
+);
+
+COMMENT ON TABLE taggable_tags IS 'Asociación polimórfica entre medios y etiquetas.';
+
+-- Tabla: studios (De v2)
+CREATE TABLE IF NOT EXISTS studios (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+COMMENT ON TABLE studios IS 'Estudios de animación o publicación.';
+
+CREATE TABLE IF NOT EXISTS studiable_studios (
+    studio_id INTEGER REFERENCES studios(id) ON DELETE CASCADE,
+    studiable_type VARCHAR(20) NOT NULL,
+    studiable_id INTEGER NOT NULL,
+    is_main_studio BOOLEAN DEFAULT TRUE,
+    PRIMARY KEY (studio_id, studiable_type, studiable_id)
+);
+
+COMMENT ON TABLE studiable_studios IS 'Asociación polimórfica entre medios y estudios.';
+
+-- Tabla: staff (De v2)
+CREATE TABLE IF NOT EXISTS staff (
+    id SERIAL PRIMARY KEY,
+    name_romaji VARCHAR(255),
+    name_native VARCHAR(255),
+    image_url VARCHAR(500)
+);
+
+COMMENT ON TABLE staff IS 'Personal (directores, autores, etc.).';
+
+CREATE TABLE IF NOT EXISTS staffable_staff (
+    staff_id INTEGER REFERENCES staff(id) ON DELETE CASCADE,
+    staffable_type VARCHAR(20) NOT NULL,
+    staffable_id INTEGER NOT NULL,
+    role VARCHAR(100) NOT NULL, -- Ej: 'Director', 'Original Creator'
+    PRIMARY KEY (staff_id, staffable_type, staffable_id, role)
+);
+
+COMMENT ON TABLE staffable_staff IS 'Asociación polimórfica entre medios y personal.';
+
+-- Tabla: characters (De v2)
+CREATE TABLE IF NOT EXISTS characters (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+COMMENT ON TABLE characters IS 'Personajes.';
+
+CREATE TABLE IF NOT EXISTS characterable_characters (
+    character_id INTEGER REFERENCES characters(id) ON DELETE CASCADE,
+    characterable_type VARCHAR(20) NOT NULL,
+    characterable_id INTEGER NOT NULL,
+    role VARCHAR(50) DEFAULT 'supporting' CHECK (role IN ('main', 'supporting')),
+    PRIMARY KEY (character_id, characterable_type, characterable_id)
+);
+
+COMMENT ON TABLE characterable_characters IS 'Asociación polimórfica entre medios y personajes.';
+
+-- Tabla: external_links (De v1, adaptada)
+CREATE TABLE IF NOT EXISTS external_links (
+  id BIGSERIAL PRIMARY KEY,
+  linkable_type VARCHAR(20) NOT NULL, -- 'anime','manga','novel'
+  linkable_id INTEGER NOT NULL,
+  site_name VARCHAR(100) NOT NULL,      -- 'myanimelist','anilist','wikipedia'
+  url TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE external_links IS 'Enlaces externos para medios (MyAnimeList, AniList, Wikipedia, etc.).';
+
+-- INDEX para búsquedas rápidas
+CREATE INDEX IF NOT EXISTS idx_external_links_media ON external_links(linkable_type, linkable_id);
+
+-- Tabla: media_relations (De v2)
+CREATE TABLE IF NOT EXISTS media_relations (
+    id SERIAL PRIMARY KEY,
+    source_type VARCHAR(20) NOT NULL,
+    source_id INTEGER NOT NULL,
+    target_type VARCHAR(20) NOT NULL,
+    target_id INTEGER NOT NULL,
+    relation_type VARCHAR(30) NOT NULL CHECK (relation_type IN ('sequel', 'prequel', 'adaptation', 'side_story', 'spin_off'))
+);
+
+COMMENT ON TABLE media_relations IS 'Relaciones entre diferentes medios (secuelas, adaptaciones, etc.).';
+CREATE INDEX IF NOT EXISTS idx_media_relations_source ON media_relations(source_type, source_id);
+CREATE INDEX IF NOT EXISTS idx_media_relations_target ON media_relations(target_type, target_id);
+
+-- =============================================================
+-- SECCIÓN 6: SISTEMA DE LISTAS (De v1)
+-- =============================================================
+
+CREATE TABLE IF NOT EXISTS lists (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(150) NOT NULL,
+  slug VARCHAR(150) NOT NULL,
+  description TEXT,
+  is_public BOOLEAN DEFAULT FALSE,
+  is_default BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, slug)
+);
+
+COMMENT ON TABLE lists IS 'Listas de usuarios para agrupar medios. is_default marca listas creadas automáticamente al registrar usuario.';
+
+CREATE INDEX IF NOT EXISTS idx_lists_userid ON lists(user_id);
+
+CREATE TRIGGER trg_lists_update_time BEFORE UPDATE ON lists
+FOR EACH ROW EXECUTE FUNCTION fn_update_updated_at();
+
+-- Tabla: list_items (De v1)
+CREATE TABLE IF NOT EXISTS list_items (
+  id BIGSERIAL PRIMARY KEY,
+  list_id BIGINT NOT NULL REFERENCES lists(id) ON DELETE CASCADE,
+  listable_type VARCHAR(20) NOT NULL, -- 'anime','manga','novel'
+  listable_id BIGINT NOT NULL,        -- id en la tabla correspondiente
+  status VARCHAR(50),                 -- por ejemplo: 'watching','plan_to_watch','completed','on_hold'
+  progress INTEGER DEFAULT 0,         -- episodios o capitulos completados
+  score INTEGER CHECK (score IS NULL OR (score >= 1 AND score <= 10)),
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (list_id, listable_type, listable_id)
+);
+
+COMMENT ON TABLE list_items IS 'Elementos dentro de las listas de usuario. listable_type/listable_id implementan polimorfismo sencillo.';
+
+CREATE INDEX IF NOT EXISTS idx_list_items_listid ON list_items(list_id);
+CREATE INDEX IF NOT EXISTS idx_user_lists_user_status ON app.list_items(listable_type, listable_id); -- Para contar guardados
+
+-- =============================================================
+-- SECCIÓN 7: SISTEMA SOCIAL Y FLUJO DE TRABAJO (Mezcla v1 y v2)
+-- =============================================================
+
+-- Tabla: user_follows (De v2)
+CREATE TABLE IF NOT EXISTS user_follows (
+    follower_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    following_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, following_id)
+);
+
+COMMENT ON TABLE user_follows IS 'Relación de seguimiento entre usuarios.';
+CREATE INDEX IF NOT EXISTS idx_user_follows_follower ON user_follows(follower_id);
+CREATE INDEX IF NOT EXISTS idx_user_follows_following ON user_follows(following_id);
+
+-- Tabla: comments (De v2)
+CREATE TABLE IF NOT EXISTS comments (
+    id BIGSERIAL PRIMARY KEY,
+    commentable_type VARCHAR(20) NOT NULL,
+    commentable_id BIGINT NOT NULL,
+    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    parent_id BIGINT REFERENCES comments(id) ON DELETE CASCADE, -- Para respuestas
+    content TEXT NOT NULL,
+    is_spoiler BOOLEAN DEFAULT FALSE,
+    likes_count INTEGER DEFAULT 0,
+    replies_count INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ NULL -- Soft delete
+);
+
+COMMENT ON TABLE comments IS 'Comentarios polimórficos.';
+CREATE INDEX IF NOT EXISTS idx_comments_polymorphic ON comments(commentable_type, commentable_id);
+CREATE INDEX IF NOT EXISTS idx_comments_user ON comments(user_id);
+CREATE TRIGGER trg_comments_update_time BEFORE UPDATE ON comments
+FOR EACH ROW EXECUTE FUNCTION fn_update_updated_at();
+
+-- Tabla: comment_reactions (De v2)
+CREATE TABLE IF NOT EXISTS comment_reactions (
+    comment_id BIGINT REFERENCES comments(id) ON DELETE CASCADE,
+    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    reaction_type VARCHAR(10) CHECK (reaction_type IN ('like')),
+    PRIMARY KEY (comment_id, user_id)
+);
+
+COMMENT ON TABLE comment_reactions IS 'Reacciones a comentarios.';
+
+-- Tabla: reviews (De v2)
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reviewable_type VARCHAR(20) NOT NULL,
+    reviewable_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    overall_score INTEGER CHECK (overall_score >= 1 AND overall_score <= 10),
+    helpful_votes INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ NULL -- Soft delete
+);
+
+COMMENT ON TABLE reviews IS 'Reseñas polimórficas.';
+CREATE INDEX IF NOT EXISTS idx_reviews_polymorphic ON reviews(reviewable_type, reviewable_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_user ON reviews(user_id);
+CREATE UNIQUE INDEX idx_reviews_user_unique ON reviews (user_id, reviewable_type, reviewable_id); -- Un usuario solo puede reseñar un item una vez
+CREATE TRIGGER trg_reviews_update_time BEFORE UPDATE ON reviews
+FOR EACH ROW EXECUTE FUNCTION fn_update_updated_at();
+
+-- Tabla: review_votes (De v2)
+CREATE TABLE IF NOT EXISTS review_votes (
+    review_id BIGINT REFERENCES reviews(id) ON DELETE CASCADE,
+    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    vote_type VARCHAR(10) CHECK (vote_type IN ('helpful', 'not_helpful')),
+    PRIMARY KEY (review_id, user_id)
+);
+
+COMMENT ON TABLE review_votes IS 'Votos para reseñas (útiles/no útiles).';
+
+-- Tabla: notifications (De v2)
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGSERIAL PRIMARY KEY,
+    recipient_user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    actor_user_id BIGINT REFERENCES users(id), -- Quien generó la notificación
+    action_type VARCHAR(50) NOT NULL, -- 'comment', 'follow', 'review'
+    notifiable_type VARCHAR(20) NOT NULL, -- 'comment', 'user', 'review'
+    notifiable_id BIGINT NOT NULL,
+    read_at TIMESTAMPTZ NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE notifications IS 'Notificaciones para usuarios.';
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipient_user_id, read_at);
+
+-- Tabla: content_reports (De v2)
+CREATE TABLE IF NOT EXISTS content_reports (
+    id BIGSERIAL PRIMARY KEY,
+    reportable_type VARCHAR(20) NOT NULL, -- 'anime', 'comment', 'user'
+    reportable_id BIGINT NOT NULL,
+    reported_by BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    report_reason TEXT NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'in_review', 'resolved', 'dismissed')),
+    reviewed_by BIGINT REFERENCES users(id),
+    moderator_notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE content_reports IS 'Reportes de contenido o usuarios.';
+CREATE INDEX IF NOT EXISTS idx_content_reports_status ON content_reports(status);
+CREATE INDEX IF NOT EXISTS idx_content_reports_reported_by ON content_reports(reported_by);
+
+-- Tabla: user_contributions (Mezcla v1 y v2)
+CREATE TABLE IF NOT EXISTS user_contributions (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  contributable_type VARCHAR(20) NOT NULL, -- 'anime','manga','novel' o 'metadata','image' etc.
+  contributable_id BIGINT, -- id del medio si aplica (null si es creación pendiente)
+  contribution_data JSONB NOT NULL, -- contenido propuesto
+  status VARCHAR(20) DEFAULT 'pending', -- 'pending','approved','rejected'
+  is_visible_in_profile BOOLEAN DEFAULT TRUE, -- si se muestra en perfil tras aprobación
+  awarded_points INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  reviewed_by BIGINT, -- id de moderador que revisó
+  reviewed_at TIMESTAMPTZ,
+  rejection_reason TEXT -- De v2
+);
+
+COMMENT ON TABLE user_contributions IS 'Registro de contribuciones de usuarios (creaciones y ediciones).';
+
+CREATE INDEX IF NOT EXISTS idx_user_contrib_userid ON user_contributions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_contrib_status ON user_contributions(status) WHERE status = 'pending'; -- Para cola de moderación
+
+-- =============================================================
+-- SECCIÓN 8: SISTEMA DE PUNTOS Y NIVELES (De v1)
+-- =============================================================
+
+-- Tabla: action_points (De v1)
+CREATE TABLE IF NOT EXISTS action_points (
+  action VARCHAR(64) PRIMARY KEY,
+  points INTEGER NOT NULL
+);
+
+COMMENT ON TABLE action_points IS 'Tabla de configuración para asignar puntos por acción del usuario.';
+
+-- Valores por defecto de ejemplo
+INSERT INTO action_points (action, points)
+VALUES
+  ('create_media', 50),
+  ('approve_contribution', 100),
+  ('add_to_list', 2),
+  ('rate_media', 5),
+  ('upload_image', 10),
+  ('write_review', 15),
+  ('helpful_review', 3),
+  ('comment_on_media', 1)
+ON CONFLICT (action) DO NOTHING;
+
+-- =============================================================
+-- SECCIÓN 9: AUDITORÍA (Mezcla v1 y v2)
+-- =============================================================
+
+-- Tabla: audit_log (Mezcla)
+CREATE TABLE IF NOT EXISTS audit_log (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT, -- Quien realizó la acción
+  action VARCHAR(100) NOT NULL, -- 'INSERT', 'UPDATE', 'DELETE', 'CUSTOM_ACTION'
+  resource_type VARCHAR(50), -- Tipo de recurso afectado (e.g., 'anime', 'user')
+  resource_id BIGINT, -- ID del recurso afectado
+  old_values JSONB, -- Valores antes del cambio (para UPDATE/DELETE)
+  new_values JSONB, -- Valores nuevos (para INSERT/UPDATE)
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE audit_log IS 'Registro de auditoria para acciones críticas y cambios en recursos.';
+
+-- =============================================================
+-- SECCIÓN 10: FUNCIONES Y TRIGGERS: Recalcular level y actualizar contadores
+-- =============================================================
+
+-- Funcion para recalcular level a partir de points (ejemplo: level = floor(points / 1000) + 1)
+CREATE OR REPLACE FUNCTION fn_recalc_level(points_value BIGINT) RETURNS INTEGER AS $$
+BEGIN
+  RETURN GREATEST(1, floor(points_value::numeric / 1000)::integer + 1);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger para actualizar level antes de UPDATE en users si cambian points
+CREATE OR REPLACE FUNCTION trg_users_recalc_level() RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.points IS DISTINCT FROM OLD.points THEN
+    NEW.level := fn_recalc_level(NEW.points);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_recalc_level ON users;
+CREATE TRIGGER trg_recalc_level BEFORE UPDATE ON users
+FOR EACH ROW EXECUTE FUNCTION trg_users_recalc_level();
+
+-- Función auxiliar para otorgar puntos a usuario y registrar en audit_log
+CREATE OR REPLACE FUNCTION fn_award_points(p_user_id BIGINT, p_points INTEGER, p_action VARCHAR, p_resource_type VARCHAR DEFAULT NULL, p_resource_id BIGINT DEFAULT NULL) RETURNS VOID AS $$
+BEGIN
+  IF p_user_id IS NULL OR p_points = 0 THEN RETURN; END IF;
+
+  UPDATE users SET points = points + p_points, reputation_score = reputation_score + p_points WHERE id = p_user_id;
+  INSERT INTO audit_log (user_id, action, resource_type, resource_id, new_values) VALUES (p_user_id, p_action, p_resource_type, p_resource_id, jsonb_build_object('points_awarded', p_points, 'timestamp', now()));
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: cuando contribution pasa a 'approved' -> incrementar contributions_count y award points
+CREATE OR REPLACE FUNCTION trg_contribution_approved() RETURNS TRIGGER AS $$
+DECLARE
+  pts INTEGER := 0;
+BEGIN
+  -- Solo actuar en la transición a 'approved'
+  IF TG_OP = 'UPDATE' AND NEW.status = 'approved' AND OLD.status IS DISTINCT FROM 'approved' THEN
+    -- incrementar contador en users
+    UPDATE users SET contributions_count = contributions_count + 1 WHERE id = NEW.user_id;
+
+    -- calcular puntos desde action_points
+    SELECT points INTO pts FROM action_points WHERE action = 'approve_contribution';
+    IF pts IS NULL THEN pts := 0; END IF;
+
+    -- otorgar puntos y registrar awarded_points
+    PERFORM fn_award_points(NEW.user_id, pts, 'approve_contribution', NEW.contributable_type, NEW.contributable_id);
+    UPDATE user_contributions SET awarded_points = pts WHERE id = NEW.id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_user_contrib_approved ON user_contributions;
+CREATE TRIGGER trg_user_contrib_approved AFTER UPDATE ON user_contributions
+FOR EACH ROW EXECUTE FUNCTION trg_contribution_approved();
+
+-- Trigger: cuando se inserta un list_item -> incrementar saves_count y dar puntos
+CREATE OR REPLACE FUNCTION trg_list_item_insert() RETURNS TRIGGER AS $$
+DECLARE
+  lst_owner BIGINT;
+  pts INTEGER := 0;
+BEGIN
+  SELECT user_id INTO lst_owner FROM lists WHERE id = NEW.list_id;
+  IF lst_owner IS NULL THEN RETURN NEW; END IF;
+
+  -- incrementar counter saves_count
+  UPDATE users SET saves_count = saves_count + 1 WHERE id = lst_owner;
+
+  -- obtener puntos configurados
+  SELECT points INTO pts FROM action_points WHERE action = 'add_to_list';
+  IF pts IS NULL THEN pts := 0; END IF;
+
+  PERFORM fn_award_points(lst_owner, pts, 'add_to_list', NEW.listable_type, NEW.listable_id);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_insert_list_item ON list_items;
+CREATE TRIGGER trg_insert_list_item AFTER INSERT ON list_items
+FOR EACH ROW EXECUTE FUNCTION trg_list_item_insert();
+
+-- Trigger: cuando se inserta una reseña -> otorgar puntos
+CREATE OR REPLACE FUNCTION trg_review_insert() RETURNS TRIGGER AS $$
+DECLARE
+  pts INTEGER := 0;
+BEGIN
+  -- obtener puntos configurados
+  SELECT points INTO pts FROM action_points WHERE action = 'write_review';
+  IF pts IS NULL THEN pts := 0; END IF;
+
+  PERFORM fn_award_points(NEW.user_id, pts, 'write_review', NEW.reviewable_type, NEW.reviewable_id);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_insert_review AFTER INSERT ON reviews
+FOR EACH ROW EXECUTE FUNCTION trg_review_insert();
+
+-- Trigger: cuando se inserta un comentario -> otorgar puntos (si es directamente en un medio)
+CREATE OR REPLACE FUNCTION trg_comment_insert() RETURNS TRIGGER AS $$
+DECLARE
+  pts INTEGER := 0;
+BEGIN
+  -- Solo otorgar puntos si es un comentario directo en un medio (no una respuesta)
+  IF NEW.parent_id IS NULL THEN
+    SELECT points INTO pts FROM action_points WHERE action = 'comment_on_media';
+    IF pts IS NULL THEN pts := 0; END IF;
+
+    PERFORM fn_award_points(NEW.user_id, pts, 'comment_on_media', NEW.commentable_type, NEW.commentable_id);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_insert_comment AFTER INSERT ON comments
+FOR EACH ROW EXECUTE FUNCTION trg_comment_insert();
+
+-- =============================================================
+-- SECCIÓN 11: FUNCIONES DE APOYO / UTILIDADES (De v1)
+-- =============================================================
+
+-- Función: crear listas por defecto para un usuario
+CREATE OR REPLACE FUNCTION fn_create_default_lists(p_user_id BIGINT) RETURNS VOID AS $$
+BEGIN
+  IF p_user_id IS NULL THEN RETURN; END IF;
+
+  INSERT INTO lists (user_id, name, slug, is_public, is_default)
+  VALUES
+    (p_user_id, 'Favoritos', 'favoritos', FALSE, TRUE),
+    (p_user_id, 'Siguiendo', 'siguiendo', FALSE, TRUE),
+    (p_user_id, 'Completado', 'completado', FALSE, TRUE),
+    (p_user_id, 'Por ver', 'por-ver', FALSE, TRUE)
+  ON CONFLICT (user_id, slug) DO NOTHING;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Ejemplo: función upsert para anime desde payload externo (simplificada)
+CREATE OR REPLACE FUNCTION fn_upsert_anime_from_external(
+  p_mal_id BIGINT,
+  p_anilist_id BIGINT,
+  p_title_native TEXT,
+  p_title_romaji TEXT,
+  p_title_english TEXT,
+  p_synopsis TEXT,
+  p_cover_url TEXT,
+  p_payload JSONB,
+  p_created_by INTEGER
+) RETURNS BIGINT AS $$
+DECLARE
+  rec_id BIGINT;
+BEGIN
+  -- Intenta emparejar por MAL id -> luego AniList -> luego título similar
+  IF p_mal_id IS NOT NULL THEN
+    SELECT id INTO rec_id FROM anime WHERE mal_id = p_mal_id LIMIT 1;
+  END IF;
+
+  IF rec_id IS NULL AND p_anilist_id IS NOT NULL THEN
+    SELECT id INTO rec_id FROM anime WHERE anilist_id = p_anilist_id LIMIT 1;
+  END IF;
+
+  IF rec_id IS NULL THEN
+    -- Intentar upsert por título (simple)
+    SELECT id INTO rec_id FROM anime WHERE coalesce(title_romaji,'') = coalesce(p_title_romaji,'') LIMIT 1;
+  END IF;
+
+  IF rec_id IS NOT NULL THEN
+    -- actualizar campos relevantes
+    UPDATE anime SET
+      anilist_id = COALESCE(anilist_id, p_anilist_id),
+      mal_id = COALESCE(mal_id, p_mal_id),
+      title_native = COALESCE(title_native, p_title_native),
+      title_romaji = COALESCE(title_romaji, p_title_romaji),
+      title_english = COALESCE(title_english, p_title_english),
+      synopsis = COALESCE(synopsis, p_synopsis),
+      cover_image_url = COALESCE(cover_image_url, p_cover_url),
+      external_payload = COALESCE(external_payload, p_payload),
+      updated_at = now(),
+      updated_by = p_created_by
+    WHERE id = rec_id;
+    RETURN rec_id;
+  ELSE
+    INSERT INTO anime (created_by, updated_by, mal_id, anilist_id, title_native, title_romaji, title_english, synopsis, cover_image_url, external_payload, is_approved)
+    VALUES (p_created_by, p_created_by, p_mal_id, p_anilist_id, p_title_native, p_title_romaji, p_title_english, p_synopsis, p_cover_url, p_payload, TRUE)
+    RETURNING id INTO rec_id;
+    RETURN rec_id;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- =============================================================
+-- SECCIÓN 12: VISTAS ÚTILES (De v1)
+-- =============================================================
+
+-- Vista: user_public_profile (para mostrar en front-end)
+CREATE OR REPLACE VIEW v_user_public_profile AS
+SELECT
+  u.id,
+  u.username,
+  u.display_name,
+  u.avatar_url,
+  u.banner_url, -- Añadido
+  u.bio,
+  u.nationality_code,
+  u.nationality_name,
+  u.nationality_flag_url,
+  u.level,
+  u.points,
+  u.reputation_score,
+  u.contributions_count,
+  u.saves_count,
+  u.followers_count, -- Añadido
+  u.following_count, -- Añadido
+  u.created_at
+FROM users u;
+
+COMMENT ON VIEW v_user_public_profile IS 'Vista pública simplificada del perfil de usuario.';
+
+-- FIN DEL SCRIPT
+
+-- ============================================
+-- Script para agregar columna SLUG a las tablas de media de la base unificada
+-- ============================================
+-- Asegúrate de que estás conectado al schema correcto (app)
+SET search_path = app, public;
+-- ============================================
+
+-- 1. Agregar columna slug a tabla anime
+ALTER TABLE app.anime 
+ADD COLUMN IF NOT EXISTS slug VARCHAR(255) UNIQUE;
+
+-- 2. Agregar columna slug a tabla manga
+ALTER TABLE app.manga 
+ADD COLUMN IF NOT EXISTS slug VARCHAR(255) UNIQUE;
+
+-- 3. Agregar columna slug a tabla novels
+ALTER TABLE app.novels 
+ADD COLUMN IF NOT EXISTS slug VARCHAR(255) UNIQUE;
+
+-- ============================================
+-- GENERAR SLUGS AUTOMÁTICAMENTE PARA REGISTROS EXISTENTES
+-- ============================================
+
+-- Función para generar slug desde un título (adaptada para BIGSERIAL)
+CREATE OR REPLACE FUNCTION app.generate_slug(title TEXT, id BIGINT) 
+RETURNS VARCHAR(255) AS $$
+DECLARE
+  base_slug VARCHAR(255);
+BEGIN
+  -- Convertir a minúsculas, quitar acentos, reemplazar espacios por guiones
+  base_slug := lower(
+    regexp_replace(
+      regexp_replace(
+        translate(
+          title,
+          'áéíóúñÁÉÍÓÚÑ',
+          'aeiounAEIOUN'
+        ),
+        '[^a-zA-Z0-9\s-]', '', 'g'  -- Quitar caracteres especiales
+      ),
+      '\s+', '-', 'g'  -- Reemplazar espacios por guiones
+    )
+  );
+  
+  -- Limitar a 200 caracteres y agregar ID al final
+  base_slug := substring(base_slug from 1 for 200) || '-' || id::text;
+  
+  RETURN base_slug;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================
+-- Generar slugs para anime (usando title_romaji como prioridad)
+-- ============================================
+UPDATE app.anime
+SET slug = app.generate_slug(
+  COALESCE(title_romaji, title_english, title_native),
+  id
+)
+WHERE slug IS NULL;
+
+-- ============================================
+-- Generar slugs para manga
+-- ============================================
+UPDATE app.manga
+SET slug = app.generate_slug(
+  COALESCE(title_romaji, title_english, title_native),
+  id
+)
+WHERE slug IS NULL;
+
+-- ============================================
+-- Generar slugs para novels
+-- ============================================
+UPDATE app.novels
+SET slug = app.generate_slug(
+  COALESCE(title_romaji, title_english, title_native),
+  id
+)
+WHERE slug IS NULL;
+
+-- ============================================
+-- TRIGGER para generar slug automáticamente en nuevos registros
+-- ============================================
+
+-- Función de trigger (adaptada para BIGSERIAL)
+CREATE OR REPLACE FUNCTION app.auto_generate_slug()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Solo generar slug si es nulo y es un INSERT (para evitar problemas con updates si no es intencional)
+  IF TG_OP = 'INSERT' AND NEW.slug IS NULL THEN
+    -- Necesitamos manejar el ID antes de que se inserte realmente.
+    -- Usamos un truco: generamos el slug con un ID temporal (0) y lo actualizamos después de la inserción.
+    -- Una mejor opción es usar BEFORE INSERT para asignar el slug *antes* de la inserción real.
+    -- Sin embargo, en BEFORE INSERT, NEW.id aún no existe si es SERIAL/BIGSERIAL.
+    -- La estrategia más común es usar BEFORE INSERT/UPDATE y asumir que NEW.id será el correcto.
+    -- Esto puede fallar si NEW.id se asigna manualmente. La estrategia de UPDATE después es más robusta.
+    -- Pero para BEFORE, podemos intentar usar la secuencia si NEW.id es NULL.
+    -- La forma más limpia es usar BEFORE INSERT y permitir que el trigger maneje la generación solo si NEW.id ya está disponible o se puede inferir.
+    -- Dado que NEW.id es BIGSERIAL, no se asigna hasta después del INSERT.
+    -- Por lo tanto, la estrategia de UPDATE después es la más segura, o usar un trigger BEFORE INSERT que maneje la secuencia manualmente.
+    -- Otra opción es que NEW.id se genere antes si se usa una secuencia explícita.
+    -- La estrategia más común y segura para slugs basados en ID autoincremental es usar un trigger AFTER INSERT.
+    -- Sin embargo, el ejemplo original usa BEFORE INSERT/UPDATE, lo cual implica que NEW.id ya está disponible, lo cual no es cierto para SERIAL/BIGSERIAL en BEFORE INSERT.
+    -- Vamos a usar BEFORE UPDATE OR INSERT para el caso de que se pase un ID manual, o AFTER INSERT para el caso autoincremental.
+    -- La mejor práctica es usar AFTER INSERT para asignar el slug con el ID recién generado.
+    -- Vamos a definir un trigger AFTER INSERT para manejar la generación del slug.
+    -- El trigger BEFORE solo se usará si el slug es nulo y se proporciona un ID manualmente.
+    -- Pero para el caso común de ID autoincremental, AFTER es el camino.
+    -- Por lo tanto, modificamos la lógica: si es INSERT y slug es nulo, no hacer nada aquí. El trigger AFTER se encargará.
+    -- Si es UPDATE y slug es nulo, intentar generar (solo si ID no es nulo).
+    -- Pero si es INSERT y NEW.id es nulo, no se puede generar slug aún.
+    -- Entonces, la lógica aquí es:
+    -- Si es UPDATE y slug es nulo y NEW.id no es nulo, generar slug.
+    -- Si es INSERT, este trigger no lo usamos para generar el slug. Usamos AFTER INSERT.
+    -- Por lo tanto, este trigger BEFORE solo cubre el caso de UPDATE o INSERT con ID manual.
+    IF TG_OP = 'UPDATE' AND NEW.slug IS NULL AND NEW.id IS NOT NULL THEN
+        NEW.slug := app.generate_slug(
+            COALESCE(NEW.title_romaji, NEW.title_english, NEW.title_native),
+            NEW.id
+        );
+    END IF;
+    -- Para INSERT, si NEW.id es nulo, no se puede generar slug aún.
+    -- Se manejará en el trigger AFTER.
+    RETURN NEW;
+END IF;
+  -- Si no es INSERT o slug no es nulo, o NEW.id es nulo en INSERT, solo retornar NEW.
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función de trigger AFTER INSERT para asignar slug con ID recién generado
+CREATE OR REPLACE FUNCTION app.auto_generate_slug_after_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Si se insertó un registro y el slug es nulo, generarlo ahora que NEW.id está disponible
+  IF NEW.slug IS NULL THEN
+    -- Actualizar el registro recién insertado con el slug generado
+    UPDATE app.anime SET slug = app.generate_slug(COALESCE(NEW.title_romaji, NEW.title_english, NEW.title_native), NEW.id) WHERE id = NEW.id AND tableoid = 'app.anime'::regclass;
+    UPDATE app.manga SET slug = app.generate_slug(COALESCE(NEW.title_romaji, NEW.title_english, NEW.title_native), NEW.id) WHERE id = NEW.id AND tableoid = 'app.manga'::regclass;
+    UPDATE app.novels SET slug = app.generate_slug(COALESCE(NEW.title_romaji, NEW.title_english, NEW.title_native), NEW.id) WHERE id = NEW.id AND tableoid = 'app.novels'::regclass;
+    -- Opcional: si NEW.slug se usa en memoria después del INSERT, se puede asignar aquí también, pero UPDATE en la tabla es más común.
+    -- NEW.slug := app.generate_slug(COALESCE(NEW.title_romaji, NEW.title_english, NEW.title_native), NEW.id); -- Esto puede no reflejar el valor en la BD si no se retorna NEW.
+    -- Es más seguro hacer UPDATE directo.
+    -- No retornamos NEW aquí porque es AFTER y el registro ya está en la BD.
+  END IF;
+  RETURN NULL; -- AFTER triggers no retornan NEW/OLD para INSERT/UPDATE/DELETE
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Crear triggers AFTER INSERT para cada tabla
+DROP TRIGGER IF EXISTS anime_slug_after_insert_trigger ON app.anime;
+CREATE TRIGGER anime_slug_after_insert_trigger
+  AFTER INSERT ON app.anime
+  FOR EACH ROW
+  EXECUTE FUNCTION app.auto_generate_slug_after_insert();
+
+DROP TRIGGER IF EXISTS manga_slug_after_insert_trigger ON app.manga;
+CREATE TRIGGER manga_slug_after_insert_trigger
+  AFTER INSERT ON app.manga
+  FOR EACH ROW
+  EXECUTE FUNCTION app.auto_generate_slug_after_insert();
+
+DROP TRIGGER IF EXISTS novels_slug_after_insert_trigger ON app.novels;
+CREATE TRIGGER novels_slug_after_insert_trigger
+  AFTER INSERT ON app.novels
+  FOR EACH ROW
+  EXECUTE FUNCTION app.auto_generate_slug_after_insert();
+
+-- Opcional: Trigger BEFORE UPDATE para regenerar slug si cambia el título principal (romaji)
+CREATE OR REPLACE FUNCTION app.regenerate_slug_if_title_changes()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Regenerar slug solo si title_romaji, title_english o title_native cambian
+  IF (NEW.title_romaji IS DISTINCT FROM OLD.title_romaji OR
+      NEW.title_english IS DISTINCT FROM OLD.title_english OR
+      NEW.title_native IS DISTINCT FROM OLD.title_native) THEN
+    -- Si el slug fue modificado manualmente previamente (y no es el generado por defecto basado en el viejo título + ID),
+    -- quizás no se quiera sobrescribir. Para simplificar, siempre lo regeneramos si cambia el título.
+    -- Si se quiere ser más conservador, se podría verificar si el slug actual coincide con el generado a partir del OLD title.
+    NEW.slug := app.generate_slug(COALESCE(NEW.title_romaji, NEW.title_english, NEW.title_native), NEW.id);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS anime_slug_update_trigger ON app.anime;
+CREATE TRIGGER anime_slug_update_trigger
+  BEFORE UPDATE ON app.anime
+  FOR EACH ROW
+  EXECUTE FUNCTION app.regenerate_slug_if_title_changes();
+
+DROP TRIGGER IF EXISTS manga_slug_update_trigger ON app.manga;
+CREATE TRIGGER manga_slug_update_trigger
+  BEFORE UPDATE ON app.manga
+  FOR EACH ROW
+  EXECUTE FUNCTION app.regenerate_slug_if_title_changes();
+
+DROP TRIGGER IF EXISTS novels_slug_update_trigger ON app.novels;
+CREATE TRIGGER novels_slug_update_trigger
+  BEFORE UPDATE ON app.novels
+  FOR EACH ROW
+  EXECUTE FUNCTION app.regenerate_slug_if_title_changes();
+
+-- ============================================
+-- VERIFICACIÓN
+-- ============================================
+
+-- Ver algunos slugs generados para anime
+SELECT id, title_romaji, title_english, slug 
+FROM app.anime 
+LIMIT 5;
+
+-- Ver algunos slugs generados para manga
+SELECT id, title_romaji, title_english, slug 
+FROM app.manga 
+LIMIT 5;
+
+-- Ver algunos slugs generados para novels
+SELECT id, title_romaji, title_english, slug 
+FROM app.novels 
+LIMIT 5;
+
+-- ============================================
+-- FIN DEL SCRIPT
+-- ============================================
+
+/*
+NOTAS IMPORTANTES sobre el script adaptado:
+
+1.  **Schema:** Asegura que el schema `app` esté en el `search_path`.
+2.  **BIGSERIAL:** La función `generate_slug` ahora acepta `BIGINT` como ID.
+3.  **Triggers:** Se usa un trigger `AFTER INSERT` para manejar la generación del slug con el ID recién asignado por la base de datos. Esto es crucial para campos `SERIAL` o `BIGSERIAL`.
+4.  **Triggers BEFORE UPDATE:** Se añadieron para regenerar el slug si el título principal cambia.
+5.  **Triggers BEFORE INSERT:** El trigger BEFORE no se usa para generar slug en INSERT *autoincremental*, ya que el ID no está disponible. Se deja la lógica de BEFORE por si se inserta con un ID manual.
+6.  **Funciones:** Las funciones `generate_slug` y `auto_generate_slug_after_insert` están definidas dentro del schema `app`.
+7.  **Unicidad:** La columna `slug` es `UNIQUE`.
+8.  **Formato:** El slug sigue el formato "titulo-en-kebab-case-id".
+
+EJEMPLOS de slugs generados:
+- "jujutsu-kaisen-1"
+- "one-piece-42"
+- "chainsaw-man-156"
+
+Para ejecutar este script:
+1.  Conéctate a tu base de datos PostgreSQL.
+2.  Asegúrate de estar trabajando en el schema `app`.
+3.  Copia y pega este script completo.
+4.  Ejecútalo.
+5.  Verifica los resultados con las queries SELECT al final.
+*/

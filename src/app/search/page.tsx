@@ -12,35 +12,69 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { searchTitles, getMediaPageData } from '@/lib/db';
 import type { TitleInfo, MediaType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Suspense, useState, useMemo } from 'react';
+import { Suspense, useState, useMemo, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye } from 'lucide-react';
+import { Eye, Loader2 } from 'lucide-react';
 
 const mediaTypes: MediaType[] = ['Anime', 'Manga', 'Manhua', 'Manwha', 'Novela', 'Fan Comic', 'Dougua'];
 
 function SearchResults() {
     const searchParams = useSearchParams();
     const query = searchParams.get('q');
-    const initialResults: TitleInfo[] = query ? searchTitles(query) : [];
+    const [initialResults, setInitialResults] = useState<TitleInfo[]>([]);
+    const [loading, setLoading] = useState(false);
 
     const [selectedType, setSelectedType] = useState<MediaType | 'all'>('all');
     const [selectedGenre, setSelectedGenre] = useState<string>('all');
-    const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
+    const [sortBy, setSortBy] = useState<'rating' | 'newest'>('rating');
+
+    useEffect(() => {
+        if (query && query.trim().length >= 2) {
+            searchMedia(query);
+        }
+    }, [query]);
+
+    const searchMedia = async (searchQuery: string) => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&type=all&limit=50`);
+            const data = await response.json();
+            
+            if (data.success && data.results) {
+                const results: TitleInfo[] = data.results.map((item: any) => ({
+                    id: item.id,
+                    title: item.title,
+                    image: item.imageUrl || 'https://placehold.co/400x600?text=No+Image',
+                    rating: item.rating || 0,
+                    type: mapTypeToMediaType(item.type),
+                }));
+                setInitialResults(results);
+            }
+        } catch (error) {
+            console.error('Error searching media:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const mapTypeToMediaType = (apiType: string): MediaType => {
+        const typeMap: Record<string, MediaType> = {
+            'anime': 'Anime',
+            'manga': 'Manga',
+            'novel': 'Novela',
+        };
+        return typeMap[apiType] || 'Anime';
+    };
 
     const allGenres = useMemo(() => {
-        const genreSet = new Set<string>();
-        initialResults.forEach(item => {
-            const mediaData = getMediaPageData(item.id, item.type);
-            mediaData?.details.genres.forEach(genre => genreSet.add(genre));
-        });
-        return ['all', ...Array.from(genreSet).sort()];
+        // TODO: Obtener géneros desde la API
+        return ['all'];
     }, [initialResults]);
 
     const filteredAndSortedResults = useMemo(() => {
@@ -51,20 +85,15 @@ function SearchResults() {
         }
 
         if (selectedGenre !== 'all') {
-            results = results.filter(item => {
-                const mediaData = getMediaPageData(item.id, item.type);
-                return mediaData?.details.genres.includes(selectedGenre);
-            });
+            // TODO: Filtrar por género cuando esté disponible en la API
         }
         
         results.sort((a, b) => {
-            const dateA = getMediaPageData(a.id, a.type)?.details.releaseDate || '0';
-            const dateB = getMediaPageData(b.id, b.type)?.details.releaseDate || '0';
-            
-            if (sortBy === 'newest') {
-                return new Date(dateB).getTime() - new Date(dateA).getTime();
+            if (sortBy === 'rating') {
+                return (b.rating || 0) - (a.rating || 0);
             } else {
-                return new Date(dateA).getTime() - new Date(dateB).getTime();
+                // Ordenar por nuevo (por ahora usar rating como fallback)
+                return (b.rating || 0) - (a.rating || 0);
             }
         });
 
@@ -118,12 +147,18 @@ function SearchResults() {
                     </div>
                     <div className="flex items-center gap-2">
                          <span className="font-semibold text-sm">Ordenar por:</span>
-                        <Button variant={sortBy === 'newest' ? 'default' : 'outline'} size="sm" onClick={() => setSortBy('newest')}>Más reciente</Button>
-                        <Button variant={sortBy === 'oldest' ? 'default' : 'outline'} size="sm" onClick={() => setSortBy('oldest')}>Más antiguo</Button>
+                        <Button variant={sortBy === 'rating' ? 'default' : 'outline'} size="sm" onClick={() => setSortBy('rating')}>Mejor valorados</Button>
+                        <Button variant={sortBy === 'newest' ? 'default' : 'outline'} size="sm" onClick={() => setSortBy('newest')}>Más recientes</Button>
                     </div>
                 </CardContent>
             </Card>
-            <Card>
+            
+            {loading ? (
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            ) : (
+                <Card>
                 <CardHeader>
                     <CardTitle>Resultados para "{query}"</CardTitle>
                 </CardHeader>
@@ -162,6 +197,7 @@ function SearchResults() {
                     )}
                 </CardContent>
             </Card>
+            )}
         </>
     );
 }

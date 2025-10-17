@@ -96,12 +96,14 @@ export default function TopRankingCarousel({ title, items, viewMoreLink }: TopRa
                             </span>
                           </div>
                           
-                          <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
-                            <div className="flex items-center gap-0.5 bg-black/70 backdrop-blur-sm text-white px-1 py-0.5 rounded">
-                              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-yellow-400 text-yellow-400"/>
-                              <span className="text-[10px] sm:text-xs font-semibold">{item.rating.toFixed(1)}</span>
+                          {item.rating > 0 && (
+                            <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
+                              <div className="flex items-center gap-0.5 bg-black/70 backdrop-blur-sm text-white px-1 py-0.5 rounded">
+                                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-yellow-400 text-yellow-400"/>
+                                <span className="text-[10px] sm:text-xs font-semibold">{item.rating.toFixed(1)}</span>
+                              </div>
                             </div>
-                          </div>
+                          )}
                           
                           <div className="absolute bottom-1 left-1 right-1 sm:bottom-2 sm:left-2 sm:right-2">
                             <div className="flex items-center justify-between bg-black/50 backdrop-blur-sm rounded px-1.5 py-0.5">

@@ -9,7 +9,7 @@
  * - Muestra una tarjeta con información del anime al que pertenece el episodio.
  */
 
-import { getEpisodeById, getMediaPageData } from "@/lib/db";
+// import { getEpisodeById, getMediaPageData } from "@/lib/db";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 import Image from 'next/image';
@@ -21,11 +21,12 @@ import Link from "next/link";
 
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const episode = getEpisodeById(params.id);
+    const { id } = await params;
+    const episode = getEpisodeById(id);
     if (!episode) {
         return { title: 'Episode not found' }
     }
@@ -50,8 +51,9 @@ function WatchLink({ icon, text, href }: { icon: React.ReactNode, text: string, 
 }
 
 
-export default function EpisodePage({ params }: Props) {
-    const episode = getEpisodeById(params.id);
+export default async function EpisodePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const episode = getEpisodeById(id);
 
     if (!episode) {
         notFound();

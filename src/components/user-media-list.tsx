@@ -27,7 +27,29 @@ interface MediaItemProps {
 }
 
 function MediaItem({ item, onRemove }: MediaItemProps) {
-    const url = `/${item.type.toLowerCase().replace(' ', '-')}/${item.slug}`;
+    // Mapear el tipo de media a la ruta correcta
+    const getMediaRoute = (type: string) => {
+        const typeMap: Record<string, string> = {
+            'anime': 'anime',
+            'Anime': 'anime',
+            'manga': 'manga',
+            'Manga': 'manga',
+            'novel': 'novela',
+            'Novel': 'novela',
+            'Novela': 'novela',
+            'manhua': 'manhua',
+            'Manhua': 'manhua',
+            'manwha': 'manwha',
+            'Manwha': 'manwha',
+            'dougua': 'dougua',
+            'Dougua': 'dougua',
+            'fan comic': 'fan-comic',
+            'Fan Comic': 'fan-comic',
+        };
+        return typeMap[type] || type.toLowerCase().replace(' ', '-');
+    };
+    
+    const url = `/${getMediaRoute(item.type)}/${item.slug}`;
     return (
         <Card className="relative group/item flex items-center gap-4 p-3 overflow-hidden transition-all duration-200 hover:bg-accent/50 hover:shadow-md">
              {onRemove && (
@@ -35,7 +57,7 @@ function MediaItem({ item, onRemove }: MediaItemProps) {
                     <DeleteItemButton onRemove={onRemove} />
                 </div>
             )}
-            <Link href={url} className="flex items-center gap-4 w-full group">
+            <Link href={url} className="flex items-center gap-4 w-full group">`
                 <div className="flex-shrink-0">
                     <Image
                         src={item.imageUrl}
@@ -50,10 +72,12 @@ function MediaItem({ item, onRemove }: MediaItemProps) {
                     <h4 className="font-semibold leading-tight truncate group-hover:text-accent-foreground">{item.title}</h4>
                     <div className="flex items-center gap-4">
                         <Badge variant="secondary" className='capitalize w-min'>{item.type}</Badge>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Star size={14} className="text-yellow-400 fill-yellow-400" />
-                            <span>{item.rating.toFixed(1)}</span>
-                        </div>
+                        {item.rating && typeof item.rating === 'number' && item.rating > 0 && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                                <span>{item.rating.toFixed(1)}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Link>

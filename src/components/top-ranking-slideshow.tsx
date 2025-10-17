@@ -105,10 +105,12 @@ export default function TopRankingSlideshow({ items }: TopRankingSlideshowProps)
                                         
                                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm mt-2">
                                             <Badge variant="secondary" className='text-xs sm:text-sm capitalize'>{item.type}</Badge>
-                                            <div className="flex items-center gap-1">
-                                                <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-400 fill-yellow-400" />
-                                                <span>{item.rating.toFixed(1)}</span>
-                                            </div>
+                                            {item.rating > 0 && (
+                                                <div className="flex items-center gap-1">
+                                                    <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-400 fill-yellow-400" />
+                                                    <span>{item.rating.toFixed(1)}</span>
+                                                </div>
+                                            )}
                                             <div className="flex items-center gap-1">
                                                 <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                                                 <span>{item.listsCount.toLocaleString()}</span>

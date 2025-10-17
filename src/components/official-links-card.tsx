@@ -25,7 +25,11 @@ const LinkItem = ({ name, url }: OfficialLink) => (
   </a>
 );
 
-export default function OfficialLinksCard({ links }: { links: OfficialLinks }) {
+export default function OfficialLinksCard({ links }: { links: OfficialLinks | undefined }) {
+  const officialSites = links?.officialSites ?? [];
+  const streamingPlatforms = links?.streamingPlatforms ?? [];
+  const fanTranslations = links?.fanTranslations ?? [];
+
   return (
     <Card>
       <CardHeader>
@@ -35,19 +39,25 @@ export default function OfficialLinksCard({ links }: { links: OfficialLinks }) {
         <div className="flex flex-col gap-3">
           <h4 className="font-semibold text-foreground">Sitios Oficiales</h4>
           <div className="flex flex-col gap-2">
-            {links.officialSites.map(link => <LinkItem key={link.name} {...link} />)}
+            {officialSites.length > 0 ? officialSites.map(link => <LinkItem key={link.name} {...link} />) : (
+              <span className="text-sm text-muted-foreground">Sin enlaces</span>
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-3">
           <h4 className="font-semibold text-foreground">Plataformas de Streaming</h4>
           <div className="flex flex-col gap-2">
-            {links.streamingPlatforms.map(link => <LinkItem key={link.name} {...link} />)}
+            {streamingPlatforms.length > 0 ? streamingPlatforms.map(link => <LinkItem key={link.name} {...link} />) : (
+              <span className="text-sm text-muted-foreground">Sin enlaces</span>
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-3">
           <h4 className="font-semibold text-foreground">Traducciones de Fans</h4>
           <div className="flex flex-col gap-2">
-            {links.fanTranslations.map(link => <LinkItem key={link.name} {...link} />)}
+            {fanTranslations.length > 0 ? fanTranslations.map(link => <LinkItem key={link.name} {...link} />) : (
+              <span className="text-sm text-muted-foreground">Sin enlaces</span>
+            )}
           </div>
         </div>
       </CardContent>
