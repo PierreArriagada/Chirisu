@@ -180,6 +180,47 @@ export async function getCurrentUser(): Promise<JwtPayload | null> {
   return verifyToken(token);
 }
 
+/**
+ * Obtiene el usuario de la sesión actual desde el request
+ */
+export async function getSessionUser(request: Request): Promise<SessionUser | null> {
+  try {
+    // Intentar obtener cookie desde headers
+    const cookieHeader = request.headers.get('cookie');
+    if (!cookieHeader) return null;
+
+    // Parsear cookies manualmente
+    const cookies = cookieHeader.split(';').map(c => c.trim());
+    const sessionCookie = cookies.find(c => c.startsWith(`${SESSION_COOKIE_NAME}=`));
+    
+    if (!sessionCookie) return null;
+
+    const token = sessionCookie.split('=')[1];
+    if (!token) return null;
+
+    // Verificar token y extraer payload
+    const payload = verifyToken(token);
+    if (!payload) return null;
+
+    // Convertir JwtPayload a SessionUser
+    return {
+      id: payload.userId,
+      email: payload.email,
+      username: payload.username,
+      displayName: payload.username, // Temporal, se puede mejorar
+      avatarUrl: null,
+      isAdmin: payload.isAdmin,
+      isModerator: payload.isModerator,
+      roles: payload.roles,
+      level: 1, // Valores por defecto
+      points: 0,
+    };
+  } catch (error) {
+    console.error('Error obteniendo usuario de sesión:', error);
+    return null;
+  }
+}
+
 // ============================================
 // HELPERS DE VALIDACIÓN
 // ============================================

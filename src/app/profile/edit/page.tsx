@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
-import { ChangePasswordDialog } from '@/components/change-password-dialog';
+import { ChangePasswordDialog } from '@/components/auth';
 
 interface UserProfile {
   username: string;

@@ -17,10 +17,11 @@ export async function GET(request: Request) {
     const sort = searchParams.get('sort') || 'created_at'; // created_at, average_score, title_romaji
     const order = searchParams.get('order') || 'DESC'; // ASC, DESC
 
-    // Validaciones
-    if (!['anime', 'manga', 'novel'].includes(type)) {
+    // Validaciones - Ahora incluye todos los 7 tipos de media
+    const validTypes = ['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'];
+    if (!validTypes.includes(type)) {
       return NextResponse.json(
-        { error: 'Tipo de medio inválido. Use: anime, manga, novel' },
+        { error: 'Tipo de medio inválido. Use: anime, manga, novel, donghua, manhua, manhwa, fan_comic' },
         { status: 400 }
       );
     }
@@ -35,30 +36,42 @@ export async function GET(request: Request) {
     const offset = (page - 1) * limit;
 
     // Determinar tabla según tipo
-    const tableName = type === 'novel' ? 'novels' : type;
+    const tableMap: Record<string, string> = {
+      'anime': 'anime',
+      'manga': 'manga',
+      'novel': 'novels',
+      'donghua': 'donghua',
+      'manhua': 'manhua',
+      'manhwa': 'manhwa',
+      'fan_comic': 'fan_comics'
+    };
+    const tableName = tableMap[type];
 
     // Determinar columna de visibilidad según tipo
-    // anime usa is_published, manga/novels usan is_approved
-    const visibilityColumn = type === 'anime' ? 'is_published' : 'is_approved';
+    // anime/donghua usan is_published, los demás usan is_approved
+    const visibilityColumn = (type === 'anime' || type === 'donghua') ? 'is_published' : 'is_approved';
 
     console.log(`📡 API /media - Type: ${type}, Table: ${tableName}, Visibility: ${visibilityColumn}`);
     console.log(`📡 API /media - Sort: ${sort} ${order}, Limit: ${limit}, Offset: ${offset}`);
+
+    // Fan Comics usa 'title' en lugar de 'title_romaji'
+    const titleColumn = type === 'fan_comic' ? 'title' : 'title_romaji';
 
     // Query para obtener medios
     const mediaQuery = `
       SELECT 
         id,
         slug,
-        title_native,
-        title_romaji,
+        ${type === 'fan_comic' ? '' : 'title_native,'}
+        ${titleColumn} as title_romaji,
         title_english,
         synopsis,
         cover_image_url,
         banner_image_url,
         average_score,
         ratings_count,
-        ${type === 'anime' ? 'episode_count, season, source,' : ''}
-        ${type !== 'anime' ? 'volumes, chapters,' : ''}
+        ${type === 'anime' || type === 'donghua' ? 'episode_count, season, source,' : ''}
+        ${type !== 'anime' && type !== 'donghua' ? 'volumes, chapters,' : ''}
         status_id,
         created_at,
         updated_at

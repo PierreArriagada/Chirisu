@@ -34,9 +34,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
 
     // Validación de parámetros
-    if (!type || !['anime', 'manga', 'novel'].includes(type)) {
+    const VALID_TYPES = ['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'];
+    if (!type || !VALID_TYPES.includes(type)) {
       return NextResponse.json(
-        { error: 'Parámetro "type" requerido: anime, manga, o novel' },
+        { error: 'Parámetro "type" requerido: anime, manga, novel, donghua, manhua, manhwa, o fan_comic' },
         { status: 400 }
       );
     }
@@ -58,72 +59,326 @@ export async function GET(request: NextRequest) {
     let rankings: any[] = [];
 
     // ============================================
-    // Seleccionar función optimizada según el período
-    // Usa vistas materializadas para performance ultra-rápida
+    // CONSULTAS SIMPLIFICADAS (sin vistas materializadas)
+    // TODO: Crear vistas materializadas para optimizar performance
     // ============================================
+    
+    const tableMap: Record<string, string> = {
+      'anime': 'app.anime',
+      'manga': 'app.manga',
+      'novel': 'app.novels',
+      'donghua': 'app.donghua',
+      'manhua': 'app.manhua',
+      'manhwa': 'app.manhwa',
+      'fan_comic': 'app.fan_comics'
+    };
+
+    // Columna de visibilidad varía según el tipo
+    const visibilityColumnMap: Record<string, string> = {
+      'anime': 'is_published',
+      'manga': 'is_approved',
+      'novel': 'is_approved',
+      'donghua': 'is_published',
+      'manhua': 'is_approved',
+      'manhwa': 'is_approved',
+      'fan_comic': 'is_approved'
+    };
+
+    const table = tableMap[type];
+    const visibilityColumn = visibilityColumnMap[type];
+    
+    if (!table || !visibilityColumn) {
+      return NextResponse.json(
+        { error: 'Tipo de media inválido' },
+        { status: 400 }
+      );
+    }
+
+    // Fan Comics usa 'title' en lugar de 'title_romaji'
+    const titleColumn = type === 'fan_comic' ? 'title' : 'title_romaji';
+
     switch (period) {
       case 'daily':
-        // Top Daily: Basado en actividad de las últimas 24 horas
-        const dailyResult = await pool.query(
-          'SELECT * FROM app.get_cached_daily_ranking($1, $2)',
-          [type, limit]
-        );
-        rankings = dailyResult.rows.map((row, index) => ({
-          id: row.media_id,
-          slug: row.slug,
-          title: row.title,
-          coverImage: row.cover_image_url,
-          averageScore: parseFloat(row.average_score) || 0,
-          score: parseFloat(row.daily_score) || 0,
-          ranking: row.rank_position || (index + 1), // Usa rank_position de la vista
-          period: 'daily'
-        }));
-        break;
-
       case 'weekly':
-        // Top Weekly: Basado en actividad de los últimos 7 días
-        const weeklyResult = await pool.query(
-          'SELECT * FROM app.get_cached_weekly_ranking($1, $2)',
-          [type, limit]
+        // Top Daily/Weekly: Medios con puntuación primero, luego recién agregados
+        const recentResult = await pool.query(
+          `SELECT 
+            id as media_id,
+            slug,
+            ${titleColumn} as title,
+            cover_image_url,
+            average_score,
+            ratings_count,
+            created_at,
+            ROW_NUMBER() OVER (
+              ORDER BY 
+                CASE WHEN ratings_count > 0 THEN average_score ELSE 0 END DESC,
+                created_at DESC
+            ) as rank_position
+          FROM ${table}
+          WHERE ${visibilityColumn} = TRUE 
+            AND deleted_at IS NULL
+          ORDER BY 
+            CASE WHEN ratings_count > 0 THEN average_score ELSE 0 END DESC,
+            created_at DESC
+          LIMIT $1`,
+          [limit]
         );
-        rankings = weeklyResult.rows.map((row, index) => ({
+        
+        // Obtener counts de comentarios y listas para cada item
+        const ids = recentResult.rows.map(row => row.media_id);
+        
+        let commentsMap: Record<string, number> = {};
+        let listsMap: Record<string, number> = {};
+        
+        if (ids.length > 0) {
+          // Contar comentarios
+          const commentsResult = await pool.query(
+            `SELECT commentable_id, COUNT(*)::int as count
+             FROM app.comments
+             WHERE commentable_type = $1
+               AND commentable_id = ANY($2)
+               AND deleted_at IS NULL
+             GROUP BY commentable_id`,
+            [type, ids]
+          );
+          commentsResult.rows.forEach(row => {
+            commentsMap[row.commentable_id] = row.count;
+          });
+          
+          // Contar favoritos
+          const favoritesResult = await pool.query(
+            `SELECT favorable_id, COUNT(*)::int as count
+             FROM app.user_favorites
+             WHERE favorable_type = $1
+               AND favorable_id = ANY($2)
+             GROUP BY favorable_id`,
+            [type, ids]
+          );
+          const favoritesMap: Record<number, number> = {};
+          favoritesResult.rows.forEach(row => {
+            favoritesMap[row.favorable_id] = row.count;
+          });
+          
+          // Contar items en listas
+          const listsResult = await pool.query(
+            `SELECT listable_id, COUNT(*)::int as count
+             FROM app.list_items
+             WHERE listable_type = $1
+               AND listable_id = ANY($2)
+             GROUP BY listable_id`,
+            [type, ids]
+          );
+          listsResult.rows.forEach(row => {
+            // Sumar favoritos + listas en listsMap
+            listsMap[row.listable_id] = (favoritesMap[row.listable_id] || 0) + row.count;
+          });
+          
+          // Agregar favoritos para items que solo tienen favoritos pero no listas
+          Object.keys(favoritesMap).forEach(id => {
+            const numId = parseInt(id);
+            if (!listsMap[numId]) {
+              listsMap[numId] = favoritesMap[numId];
+            }
+          });
+        }
+        
+        rankings = recentResult.rows.map((row, index) => ({
           id: row.media_id,
           slug: row.slug,
           title: row.title,
           coverImage: row.cover_image_url,
           averageScore: parseFloat(row.average_score) || 0,
-          score: parseFloat(row.weekly_score) || 0,
-          ranking: row.rank_position || (index + 1), // Usa rank_position de la vista
-          period: 'weekly'
+          score: parseFloat(row.average_score) || 0,
+          ranking: row.rank_position || (index + 1),
+          commentsCount: commentsMap[row.media_id] || 0,
+          listsCount: listsMap[row.media_id] || 0,
+          period: period
         }));
         break;
 
       case 'monthly':
-        // Top Monthly: Usa weekly con mayor peso en popularidad
-        // Nota: Por ahora usa la misma lógica que weekly
-        // TODO: Crear vista materializada específica para monthly si es necesario
+        // Top Monthly: Medios con puntuación primero, luego recién agregados
         const monthlyResult = await pool.query(
-          'SELECT * FROM app.get_cached_weekly_ranking($1, $2)',
-          [type, limit]
+          `SELECT 
+            id as media_id,
+            slug,
+            ${titleColumn} as title,
+            cover_image_url,
+            average_score,
+            ratings_count,
+            created_at,
+            ROW_NUMBER() OVER (
+              ORDER BY 
+                CASE WHEN ratings_count > 0 THEN average_score ELSE 0 END DESC,
+                created_at DESC
+            ) as rank_position
+          FROM ${table}
+          WHERE ${visibilityColumn} = TRUE 
+            AND deleted_at IS NULL
+          ORDER BY 
+            CASE WHEN ratings_count > 0 THEN average_score ELSE 0 END DESC,
+            created_at DESC
+          LIMIT $1`,
+          [limit]
         );
+        
+        // Obtener counts de comentarios y listas para cada item
+        const monthlyIds = monthlyResult.rows.map(row => row.media_id);
+        
+        let monthlyCommentsMap: Record<string, number> = {};
+        let monthlyListsMap: Record<string, number> = {};
+        
+        if (monthlyIds.length > 0) {
+          // Contar comentarios
+          const commentsResult = await pool.query(
+            `SELECT commentable_id, COUNT(*)::int as count
+             FROM app.comments
+             WHERE commentable_type = $1
+               AND commentable_id = ANY($2)
+               AND deleted_at IS NULL
+             GROUP BY commentable_id`,
+            [type, monthlyIds]
+          );
+          commentsResult.rows.forEach(row => {
+            monthlyCommentsMap[row.commentable_id] = row.count;
+          });
+          
+          // Contar favoritos
+          const favoritesResult = await pool.query(
+            `SELECT favorable_id, COUNT(*)::int as count
+             FROM app.user_favorites
+             WHERE favorable_type = $1
+               AND favorable_id = ANY($2)
+             GROUP BY favorable_id`,
+            [type, monthlyIds]
+          );
+          const favoritesMap: Record<number, number> = {};
+          favoritesResult.rows.forEach(row => {
+            favoritesMap[row.favorable_id] = row.count;
+          });
+          
+          // Contar items en listas
+          const listsResult = await pool.query(
+            `SELECT listable_id, COUNT(*)::int as count
+             FROM app.list_items
+             WHERE listable_type = $1
+               AND listable_id = ANY($2)
+             GROUP BY listable_id`,
+            [type, monthlyIds]
+          );
+          listsResult.rows.forEach(row => {
+            // Sumar favoritos + listas
+            monthlyListsMap[row.listable_id] = (favoritesMap[row.listable_id] || 0) + row.count;
+          });
+          
+          // Agregar favoritos para items que solo tienen favoritos pero no listas
+          Object.keys(favoritesMap).forEach(id => {
+            const numId = parseInt(id);
+            if (!monthlyListsMap[numId]) {
+              monthlyListsMap[numId] = favoritesMap[numId];
+            }
+          });
+        }
+        
         rankings = monthlyResult.rows.map((row, index) => ({
           id: row.media_id,
           slug: row.slug,
           title: row.title,
           coverImage: row.cover_image_url,
           averageScore: parseFloat(row.average_score) || 0,
-          score: parseFloat(row.weekly_score) || 0,
-          ranking: row.rank_position || (index + 1), // Usa rank_position de la vista
+          score: parseFloat(row.average_score) || 0,
+          ranking: row.rank_position || (index + 1),
+          commentsCount: monthlyCommentsMap[row.media_id] || 0,
+          listsCount: monthlyListsMap[row.media_id] || 0,
           period: 'monthly'
         }));
         break;
 
       case 'all_time':
-        // Top All-Time: Ranking histórico con Bayesian average
+        // Top All-Time: Medios con puntuación primero, luego recién agregados
         const allTimeResult = await pool.query(
-          'SELECT * FROM app.get_cached_alltime_ranking($1, $2)',
-          [type, limit]
+          `SELECT 
+            id as media_id,
+            slug,
+            ${titleColumn} as title,
+            cover_image_url,
+            average_score,
+            ratings_count,
+            created_at,
+            ROW_NUMBER() OVER (
+              ORDER BY 
+                CASE WHEN ratings_count > 0 THEN average_score ELSE 0 END DESC,
+                created_at DESC
+            ) as rank_position
+          FROM ${table}
+          WHERE ${visibilityColumn} = TRUE 
+            AND deleted_at IS NULL
+          ORDER BY 
+            CASE WHEN ratings_count > 0 THEN average_score ELSE 0 END DESC,
+            created_at DESC
+          LIMIT $1`,
+          [limit]
         );
+        
+        // Obtener counts de comentarios y listas para cada item
+        const allTimeIds = allTimeResult.rows.map(row => row.media_id);
+        
+        let allTimeCommentsMap: Record<string, number> = {};
+        let allTimeListsMap: Record<string, number> = {};
+        
+        if (allTimeIds.length > 0) {
+          // Contar comentarios
+          const commentsResult = await pool.query(
+            `SELECT commentable_id, COUNT(*)::int as count
+             FROM app.comments
+             WHERE commentable_type = $1
+               AND commentable_id = ANY($2)
+               AND deleted_at IS NULL
+             GROUP BY commentable_id`,
+            [type, allTimeIds]
+          );
+          commentsResult.rows.forEach(row => {
+            allTimeCommentsMap[row.commentable_id] = row.count;
+          });
+          
+          // Contar favoritos
+          const favoritesResult = await pool.query(
+            `SELECT favorable_id, COUNT(*)::int as count
+             FROM app.user_favorites
+             WHERE favorable_type = $1
+               AND favorable_id = ANY($2)
+             GROUP BY favorable_id`,
+            [type, allTimeIds]
+          );
+          const favoritesMap: Record<number, number> = {};
+          favoritesResult.rows.forEach(row => {
+            favoritesMap[row.favorable_id] = row.count;
+          });
+          
+          // Contar items en listas
+          const listsResult = await pool.query(
+            `SELECT listable_id, COUNT(*)::int as count
+             FROM app.list_items
+             WHERE listable_type = $1
+               AND listable_id = ANY($2)
+             GROUP BY listable_id`,
+            [type, allTimeIds]
+          );
+          listsResult.rows.forEach(row => {
+            // Sumar favoritos + listas
+            allTimeListsMap[row.listable_id] = (favoritesMap[row.listable_id] || 0) + row.count;
+          });
+          
+          // Agregar favoritos para items que solo tienen favoritos pero no listas
+          Object.keys(favoritesMap).forEach(id => {
+            const numId = parseInt(id);
+            if (!allTimeListsMap[numId]) {
+              allTimeListsMap[numId] = favoritesMap[numId];
+            }
+          });
+        }
+        
         rankings = allTimeResult.rows.map((row, index) => ({
           id: row.media_id,
           slug: row.slug,
@@ -131,8 +386,10 @@ export async function GET(request: NextRequest) {
           coverImage: row.cover_image_url,
           averageScore: parseFloat(row.average_score) || 0,
           ratingsCount: row.ratings_count || 0,
-          bayesianScore: parseFloat(row.bayesian_score) || 0,
-          ranking: row.rank_position || (index + 1), // Usa rank_position de la vista
+          bayesianScore: parseFloat(row.average_score) || 0,
+          ranking: row.rank_position || (index + 1),
+          commentsCount: allTimeCommentsMap[row.media_id] || 0,
+          listsCount: allTimeListsMap[row.media_id] || 0,
           period: 'all_time'
         }));
         break;

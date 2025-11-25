@@ -44,7 +44,7 @@ export default function AddContributionPage() {
 
     return (
         <main className="container mx-auto p-4">
-            <Card className="bg-card/50">
+            <Card>
                 <CardHeader>
                     <CardTitle className="text-3xl font-bold font-headline">Añadir Nuevo Contenido</CardTitle>
                     <CardDescription className="text-lg text-muted-foreground">

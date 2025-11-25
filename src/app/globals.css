@@ -9,9 +9,10 @@ body {
 
 @layer base {
   :root {
+    color-scheme: light;
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;
-    --card: var(--background);
+    --card: 0 0% 98%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
@@ -37,9 +38,10 @@ body {
   }
 
   .dark {
+    color-scheme: dark;
     --background: 224 71.4% 4.1%;
     --foreground: 0 0% 100%;
-    --card: var(--background);
+    --card: 224 71.4% 8%;
     --card-foreground: 210 20% 98%;
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
@@ -79,5 +81,14 @@ body {
 }
 
 .hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }

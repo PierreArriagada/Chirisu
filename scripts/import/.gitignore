@@ -1,0 +1,12 @@
+# Checkpoints (progreso de importación)
+checkpoints/
+
+# Logs
+logs/
+
+# Configuración local con credenciales
+config.local.ts
+
+# Archivos de prueba
+test-*.ts
+*.test.ts

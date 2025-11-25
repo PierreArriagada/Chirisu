@@ -16,7 +16,8 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User, Clapperboard } from 'lucide-react';
-import { FavoriteButton } from '@/components/favorite-button';
+import { FavoriteButton } from '@/components/shared';
+import { CommentsSection } from '@/components/comments';
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -333,6 +334,12 @@ export default async function CharacterPage({ params }: Props) {
               </CardContent>
             </Card>
           )}
+          
+          {/* Sistema de comentarios */}
+          <CommentsSection 
+            commentableType="character"
+            commentableId={character.id.toString()}
+          />
         </div>
       </div>
     </div>

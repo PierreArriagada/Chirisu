@@ -1,7 +1,7 @@
 /**
  * @fileoverview Página de detalles para un episodio específico.
  * 
- * Muestra información detallada sobre un episodio de anime o dougua.
+ * Muestra información detallada sobre un episodio de anime o donghua.
  * - Incluye un "reproductor" de video simulado.
  * - Muestra detalles del episodio como fecha de lanzamiento y duración.
  * - Proporciona enlaces a plataformas de visualización.

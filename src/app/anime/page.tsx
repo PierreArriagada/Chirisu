@@ -5,10 +5,10 @@
  * Muestra diferentes secciones de rankings y recomendaciones con datos reales de la API.
  */
 
-import AnimePageClient from "@/components/anime-page-client";
-import LatestPostsCard from "@/components/latest-posts-card";
-import RecommendationsCard from "@/components/recommendations-card";
-import TopCharactersCard from "@/components/top-characters-card";
+import { AnimePageClient, RecommendationsCard } from "@/components/media";
+import { AllMediaCatalog } from '@/components/catalog';
+import { LatestPostsCard, Recommendations } from "@/components/shared";
+import { TopCharactersCard } from "@/components/rankings";
 
 async function getTopCharacters() {
   try {
@@ -60,6 +60,9 @@ export default async function AnimePage() {
     <div className="grid grid-cols-1 lg:grid-cols-4 lg:gap-8 my-8">
       <div className="lg:col-span-3">
         <AnimePageClient mediaType="Anime" />
+        
+        {/* Nueva sección: Catálogo completo de anime */}
+        <AllMediaCatalog mediaType="anime" title="Todos los Anime" />
       </div>
       <aside className="hidden lg:block lg:col-span-1 space-y-8">
         {recommendations.length > 0 ? (

@@ -1,0 +1,70 @@
+# 🔥 FIX DEFINITIVO - EJECUTAR AHORA
+
+## 🎯 Este script hace limpieza TOTAL y recrea todo correctamente
+
+### ✅ Ejecuta en PowerShell (nueva terminal):
+
+```powershell
+cd "C:\Users\boris\OneDrive\Documentos\Chirisu"
+chcp 65001
+psql -U postgres -d bd_chirisu -f "docs\FIX-DEFINITIVO-SLUG.sql"
+```
+
+### 📋 O en pgAdmin:
+
+1. Abrir pgAdmin
+2. Conectar a bd_chirisu
+3. Query Tool
+4. Abrir: `docs\FIX-DEFINITIVO-SLUG.sql`
+5. F5 (Execute)
+
+---
+
+## 🔍 Qué hace diferente este script:
+
+1. **Muestra diagnóstico completo** - Ver qué funciones existen
+2. **Elimina TODO** - Triggers, funciones, cache
+3. **Nombres diferentes** - `trg_anime_generate_slug()` (evita conflictos)
+4. **Variables explícitas** - `v_slug`, `p_title` (sin confusión)
+5. **Sin mencionar ID** - Ni en código ni en variables
+6. **Pruebas al final** - Ver que funciona
+
+---
+
+## ✅ Resultado esperado:
+
+```
+CHECK: Funcion generate_slug | 1 parametro | p_title text
+CHECK: Triggers activos | anime | trg_generate_slug | trg_anime_generate_slug
+
+TEST 1 | jujutsu-kaisen | PASS
+TEST 2 | pokemon-the-movie | PASS
+TEST 3 | one-piece-friends | PASS
+```
+
+---
+
+## 🚀 Después de ejecutar:
+
+**NO necesitas reiniciar el servidor Next.js**
+
+Solo ve a: http://localhost:9002/dashboard/moderator/contributions/1
+
+Y aprueba la contribución. Debería funcionar.
+
+---
+
+## 📝 Si aún falla:
+
+Ejecuta en psql:
+
+```sql
+-- Ver si hay cache
+SELECT pg_stat_reset();
+
+-- Ver triggers actuales
+\df app.*slug*
+\d app.anime
+```
+
+Copia el output y muéstramelo.

@@ -14,7 +14,8 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User, Briefcase, MapPin } from 'lucide-react';
-import { FavoriteButton } from '@/components/favorite-button';
+import { FavoriteButton } from '@/components/shared';
+import { CommentsSection } from '@/components/comments';
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -268,6 +269,12 @@ export default async function StaffPage({ params }: Props) {
               </CardContent>
             </Card>
           )}
+          
+          {/* Sistema de comentarios */}
+          <CommentsSection 
+            commentableType="staff"
+            commentableId={staff.id.toString()}
+          />
         </div>
       </div>
     </div>

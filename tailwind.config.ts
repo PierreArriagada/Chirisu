@@ -10,6 +10,7 @@ export default {
   theme: {
     extend: {
       screens: {
+        'xs': '480px',
         'ss': '340px',
       },
       fontFamily: {

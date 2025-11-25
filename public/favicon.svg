@@ -1,0 +1,21 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo del Portapapeles (La Lista) -->
+  <rect x="12" y="10" width="40" height="48" rx="4" fill="#FFFFFF" stroke="#333333" stroke-width="3"/>
+  
+  <!-- Clip del Portapapeles -->
+  <path d="M24 10V6C24 4.89543 24.8954 4 26 4H38C39.1046 4 40 4.89543 40 6V10" stroke="#333333" stroke-width="3" fill="#EEEEEE"/>
+  <rect x="28" y="4" width="8" height="3" rx="1.5" fill="#333333"/>
+  
+  <!-- Item 1: Anime (Icono de Play) -->
+  <path d="M20 20L20 28L26 24Z" fill="#00A8F3"/>
+  <path d="M30 24H44" stroke="#888888" stroke-width="2.5" stroke-linecap="round"/>
+  
+  <!-- Item 2: Manga/Cómic (Icono de Libro) -->
+  <path d="M20 32H26V40H20V32Z" fill="#F3A000"/>
+  <path d="M26 32L27 33V41L26 40" fill="#D48800"/>
+  <path d="M30 36H44" stroke="#888888" stroke-width="2.5" stroke-linecap="round"/>
+  
+  <!-- Item 3: Tarea General (Checkbox) -->
+  <rect x="20" y="44" width="6" height="6" rx="1" fill="#FFFFFF" stroke="#555555" stroke-width="2"/>
+  <path d="M30 48H44" stroke="#888888" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

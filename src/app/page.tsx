@@ -4,21 +4,21 @@
  * Esta página es la entrada principal al sitio. Muestra una vista agregada
  * de los rankings más importantes de cada tipo de medio (Anime, Manga, etc.)
  * en un carrusel. En la versión de escritorio, también presenta una barra
- * lateral con rankings de personajes, personas y las últimas publicaciones
- * del foro para fomentar la interacción del usuario.
+ * lateral con rankings de:
+ * - Personajes más populares (basado en favoritos)
+ * - Usuarios más activos (basado en contribuciones, listas y reviews)
+ * - Últimas publicaciones del foro
  */
 
-import TopCharactersCard from '@/components/top-characters-card';
-import TopPeopleCard from '@/components/top-people-card';
-import LatestPostsCard from '@/components/latest-posts-card';
-import HomePageClient from '@/components/home-page-client';
+import { TopCharactersCard, TopActiveUsersCard } from '@/components/rankings';
+import { LatestPostsCard } from '@/components/shared';
+import { HomePageClient } from '@/components/media';
 
 async function getTopCharacters() {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 9002}`;
     const res = await fetch(`${baseUrl}/api/characters?top=true&limit=5`, {
-      next: { revalidate: 3600 },
-      cache: 'no-store'
+      next: { revalidate: 3600 }, // Cache por 1 hora
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -29,8 +29,26 @@ async function getTopCharacters() {
   }
 }
 
+async function getTopActiveUsers() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 9002}`;
+    const res = await fetch(`${baseUrl}/api/users/top-active?limit=5`, {
+      next: { revalidate: 3600 }, // Cache por 1 hora
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.users || [];
+  } catch (error) {
+    console.error('Error al obtener usuarios activos:', error);
+    return [];
+  }
+}
+
 export default async function Home() {
-  const topCharactersData = await getTopCharacters();
+  const [topCharactersData, topActiveUsers] = await Promise.all([
+    getTopCharacters(),
+    getTopActiveUsers()
+  ]);
   
   // Transformar data para que coincida con el formato esperado
   const topCharacters = topCharactersData.map((c: any) => ({
@@ -45,9 +63,7 @@ export default async function Home() {
     }
   }));
 
-  // Mock data para personas y posts hasta implementar APIs
-  const topPeople: any[] = [];
-
+  // Mock data para posts hasta implementar APIs
   const latestPosts = [
     { id: 'post1', title: '¿Cuál es tu personaje favorito de Jujutsu Kaisen?', author: 'AnimeReviewer', replies: 89 },
     { id: 'post2', title: 'Reseña: Jujutsu Kaisen 0 Movie', author: 'MovieBuff', replies: 156 },
@@ -65,11 +81,11 @@ export default async function Home() {
           </div>
         )}
         
-        {topPeople.length > 0 ? (
-          <TopPeopleCard people={topPeople} />
+        {topActiveUsers.length > 0 ? (
+          <TopActiveUsersCard users={topActiveUsers} />
         ) : (
           <div className="p-4 bg-muted rounded-lg text-center text-muted-foreground text-sm">
-            No hay personas destacadas disponibles
+            No hay usuarios activos disponibles
           </div>
         )}
         

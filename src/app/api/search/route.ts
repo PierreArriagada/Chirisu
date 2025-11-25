@@ -3,8 +3,11 @@ import { db } from '@/lib/database';
 
 // ============================================
 // ENDPOINT: GET /api/search
-// Búsqueda de medios
-// Query params: q (query), type (all, anime, manga, novel), limit
+// Búsqueda avanzada de medios con búsqueda en tiempo real
+// Query params: 
+//   - q (query): término de búsqueda (mínimo 1 carácter)
+//   - type (all, anime, manga, novel, etc.)
+//   - limit: número de resultados
 // ============================================
 
 export async function GET(request: Request) {
@@ -12,91 +15,125 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     
     const query = searchParams.get('q') || '';
-    const type = searchParams.get('type') || 'all'; // all, anime, manga, novel
+    const type = searchParams.get('type') || 'all';
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    // Validaciones
-    if (!query || query.trim().length < 2) {
+    // Validación mínima: aceptar búsquedas desde 1 carácter
+    if (!query || query.trim().length < 1) {
+      return NextResponse.json({
+        success: true,
+        query: '',
+        type: type,
+        results: [],
+        count: 0,
+      });
+    }
+
+    const VALID_TYPES = ['all', 'anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'];
+    if (!VALID_TYPES.includes(type)) {
       return NextResponse.json(
-        { error: 'La búsqueda debe tener al menos 2 caracteres' },
+        { error: 'Tipo de búsqueda inválido' },
         { status: 400 }
       );
     }
 
-    if (!['all', 'anime', 'manga', 'novel'].includes(type)) {
-      return NextResponse.json(
-        { error: 'Tipo de búsqueda inválido. Use: all, anime, manga, novel' },
-        { status: 400 }
-      );
-    }
+    // Preparar términos de búsqueda
+    const searchTerm = query.trim().toLowerCase();
+    const searchWords = searchTerm.split(/\s+/).filter(w => w.length > 0); // Separar por palabras
+    const searchPattern = `%${searchTerm}%`;
+    const startPattern = `${searchTerm}%`;
 
-    const searchTerm = `%${query.trim().toLowerCase()}%`;
     const results: any[] = [];
 
-    // Función auxiliar para buscar en una tabla
+    // Función auxiliar simplificada para búsqueda avanzada
     const searchInTable = async (tableName: string, mediaType: string) => {
-      const searchQuery = `
-        SELECT 
-          id,
-          title_native,
-          title_romaji,
-          title_english,
-          synopsis,
-          cover_image_url,
-          average_score,
-          ratings_count,
-          ${mediaType === 'anime' ? 'episode_count, season,' : ''}
-          ${mediaType !== 'anime' ? 'volumes, chapters,' : ''}
-          status_id,
-          created_at
-        FROM app.${tableName}
-        WHERE 
-          ${mediaType === 'anime' ? 'is_published' : 'is_approved'} = TRUE
-          AND deleted_at IS NULL
-          AND (
-            LOWER(title_romaji) LIKE $1 
-            OR LOWER(title_english) LIKE $1 
-            OR LOWER(title_native) LIKE $1
-            OR LOWER(synopsis) LIKE $1
-          )
-        ORDER BY 
-          CASE 
-            WHEN LOWER(title_romaji) LIKE $2 THEN 1
-            WHEN LOWER(title_english) LIKE $2 THEN 2
-            WHEN LOWER(title_native) LIKE $2 THEN 3
-            ELSE 4
-          END,
-          average_score DESC NULLS LAST
-        LIMIT $3
-      `;
+      try {
+        // fan_comics tiene estructura diferente
+        const isFanComic = tableName === 'fan_comics';
+        const titleColumn = isFanComic ? 'title' : 'title_romaji';
+        const isAnimeType = mediaType === 'anime' || mediaType === 'donghua';
+        
+        const searchQuery = `
+          SELECT 
+            id,
+            slug,
+            ${isFanComic ? 'NULL as title_native,' : 'title_native,'}
+            ${titleColumn} as title_romaji,
+            title_english,
+            title_spanish,
+            synopsis,
+            cover_image_url,
+            average_score,
+            ratings_count,
+            ${isAnimeType ? 'episode_count, season,' : ''}
+            ${!isAnimeType && !isFanComic ? 'volumes,' : ''}
+            ${!isAnimeType ? 'chapters,' : ''}
+            status_id,
+            created_at,
+            -- Calcular relevancia
+            CASE 
+              -- Coincidencia exacta tiene máxima prioridad
+              WHEN LOWER(${titleColumn}) = LOWER($1) THEN 1
+              WHEN LOWER(title_english) = LOWER($1) THEN 1
+              ${!isFanComic ? 'WHEN LOWER(title_native) = LOWER($1) THEN 1' : ''}
+              WHEN LOWER(title_spanish) = LOWER($1) THEN 1
+              -- Coincidencia al inicio
+              WHEN LOWER(${titleColumn}) LIKE LOWER($1) || '%' THEN 2
+              WHEN LOWER(title_english) LIKE LOWER($1) || '%' THEN 2
+              ${!isFanComic ? 'WHEN LOWER(title_native) LIKE LOWER($1) || \'%\' THEN 2' : ''}
+              WHEN LOWER(title_spanish) LIKE LOWER($1) || '%' THEN 2
+              -- Coincidencia en cualquier parte
+              ELSE 3
+            END as relevance_score
+          FROM app.${tableName}
+          WHERE 
+            ${(mediaType === 'anime' || mediaType === 'donghua') ? 'is_published' : 'is_approved'} = TRUE
+            AND deleted_at IS NULL
+            AND (
+              LOWER(${titleColumn}) LIKE '%' || LOWER($1) || '%'
+              OR LOWER(title_english) LIKE '%' || LOWER($1) || '%'
+              ${!isFanComic ? 'OR LOWER(title_native) LIKE \'%\' || LOWER($1) || \'%\'' : ''}
+              OR LOWER(title_spanish) LIKE '%' || LOWER($1) || '%'
+            )
+          ORDER BY 
+            relevance_score ASC,
+            average_score DESC NULLS LAST,
+            ratings_count DESC NULLS LAST
+          LIMIT $2
+        `;
 
-      const result = await db.query(searchQuery, [
-        searchTerm, 
-        `${query.trim().toLowerCase()}%`, // Para priorizar coincidencias al inicio
-        limit
-      ]);
+        const result = await db.query(searchQuery, [searchTerm, limit]);
 
-      return result.rows.map((row: any) => ({
-        id: row.id.toString(),
-        title: row.title_romaji || row.title_english || row.title_native,
-        titleNative: row.title_native,
-        titleRomaji: row.title_romaji,
-        titleEnglish: row.title_english,
-        synopsis: row.synopsis?.substring(0, 200) + (row.synopsis?.length > 200 ? '...' : ''),
-        imageUrl: row.cover_image_url,
-        rating: parseFloat(row.average_score) || 0,
-        ratingsCount: row.ratings_count || 0,
-        type: mediaType,
-        ...(mediaType === 'anime' && {
-          episodes: row.episode_count,
-          season: row.season,
-        }),
-        ...(mediaType !== 'anime' && {
-          volumes: row.volumes,
-          chapters: row.chapters,
-        }),
-        createdAt: row.created_at,
-      }));
+        return result.rows.map((row: any) => ({
+          id: row.id.toString(),
+          slug: row.slug,
+          title: row.title_romaji || row.title_english || row.title_native,
+          titleNative: row.title_native,
+          titleRomaji: row.title_romaji,
+          titleEnglish: row.title_english,
+          titleSpanish: row.title_spanish || null,
+          synopsis: row.synopsis?.substring(0, 200) + (row.synopsis?.length > 200 ? '...' : ''),
+          imageUrl: row.cover_image_url,
+          rating: parseFloat(row.average_score) || 0,
+          ratingsCount: row.ratings_count || 0,
+          type: mediaType,
+          relevance: row.relevance_score,
+          ...((isAnimeType) && {
+            episodes: row.episode_count,
+            season: row.season,
+          }),
+          ...(!isAnimeType && !isFanComic && {
+            volumes: row.volumes,
+          }),
+          ...(!isAnimeType && {
+            chapters: row.chapters,
+          }),
+          createdAt: row.created_at,
+        }));
+      } catch (error) {
+        console.error(`❌ Error buscando en ${tableName}:`, error);
+        return [];
+      }
     };
 
     // Buscar según el tipo especificado
@@ -115,20 +152,39 @@ export async function GET(request: Request) {
       results.push(...novelResults);
     }
 
-    // Si es búsqueda 'all', ordenar por relevancia y rating
+    if (type === 'all' || type === 'donghua') {
+      const donghuaResults = await searchInTable('donghua', 'donghua');
+      results.push(...donghuaResults);
+    }
+
+    if (type === 'all' || type === 'manhua') {
+      const manhuaResults = await searchInTable('manhua', 'manhua');
+      results.push(...manhuaResults);
+    }
+
+    if (type === 'all' || type === 'manhwa') {
+      const manhwaResults = await searchInTable('manhwa', 'manhwa');
+      results.push(...manhwaResults);
+    }
+
+    if (type === 'all' || type === 'fan_comic') {
+      const fanComicResults = await searchInTable('fan_comics', 'fan_comic');
+      results.push(...fanComicResults);
+    }
+
+    // Si es búsqueda 'all', ordenar por relevancia global
     if (type === 'all') {
       results.sort((a, b) => {
-        // Priorizar coincidencias exactas en el título
-        const aExactMatch = a.titleRomaji?.toLowerCase() === query.toLowerCase() ||
-                           a.titleEnglish?.toLowerCase() === query.toLowerCase();
-        const bExactMatch = b.titleRomaji?.toLowerCase() === query.toLowerCase() ||
-                           b.titleEnglish?.toLowerCase() === query.toLowerCase();
-        
-        if (aExactMatch && !bExactMatch) return -1;
-        if (!aExactMatch && bExactMatch) return 1;
-        
+        // Primero por relevancia
+        if (a.relevance !== b.relevance) {
+          return a.relevance - b.relevance;
+        }
         // Luego por rating
-        return b.rating - a.rating;
+        if (b.rating !== a.rating) {
+          return b.rating - a.rating;
+        }
+        // Finalmente por popularidad
+        return b.ratingsCount - a.ratingsCount;
       });
 
       // Limitar resultados totales

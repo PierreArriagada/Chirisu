@@ -57,26 +57,46 @@ export async function GET(request: NextRequest) {
           WHEN li.listable_type = 'anime' THEN a.title_romaji
           WHEN li.listable_type = 'manga' THEN m.title_romaji
           WHEN li.listable_type = 'novel' THEN n.title_romaji
+          WHEN li.listable_type = 'donghua' THEN d.title_romaji
+          WHEN li.listable_type = 'manhua' THEN mh.title_romaji
+          WHEN li.listable_type = 'manhwa' THEN mw.title_romaji
+          WHEN li.listable_type = 'fan_comic' THEN fc.title
         END as title,
         CASE 
           WHEN li.listable_type = 'anime' THEN a.cover_image_url
           WHEN li.listable_type = 'manga' THEN m.cover_image_url
           WHEN li.listable_type = 'novel' THEN n.cover_image_url
+          WHEN li.listable_type = 'donghua' THEN d.cover_image_url
+          WHEN li.listable_type = 'manhua' THEN mh.cover_image_url
+          WHEN li.listable_type = 'manhwa' THEN mw.cover_image_url
+          WHEN li.listable_type = 'fan_comic' THEN fc.cover_image_url
         END as cover_image,
         CASE 
           WHEN li.listable_type = 'anime' THEN a.average_score
           WHEN li.listable_type = 'manga' THEN m.average_score
           WHEN li.listable_type = 'novel' THEN n.average_score
+          WHEN li.listable_type = 'donghua' THEN d.average_score
+          WHEN li.listable_type = 'manhua' THEN mh.average_score
+          WHEN li.listable_type = 'manhwa' THEN mw.average_score
+          WHEN li.listable_type = 'fan_comic' THEN fc.average_score
         END as average_score,
         CASE 
           WHEN li.listable_type = 'anime' THEN a.slug
           WHEN li.listable_type = 'manga' THEN m.slug
           WHEN li.listable_type = 'novel' THEN n.slug
+          WHEN li.listable_type = 'donghua' THEN d.slug
+          WHEN li.listable_type = 'manhua' THEN mh.slug
+          WHEN li.listable_type = 'manhwa' THEN mw.slug
+          WHEN li.listable_type = 'fan_comic' THEN fc.slug
         END as slug
       FROM app.list_items li
       LEFT JOIN app.anime a ON li.listable_type = 'anime' AND li.listable_id = a.id
       LEFT JOIN app.manga m ON li.listable_type = 'manga' AND li.listable_id = m.id
       LEFT JOIN app.novels n ON li.listable_type = 'novel' AND li.listable_id = n.id
+      LEFT JOIN app.donghua d ON li.listable_type = 'donghua' AND li.listable_id = d.id
+      LEFT JOIN app.manhua mh ON li.listable_type = 'manhua' AND li.listable_id = mh.id
+      LEFT JOIN app.manhwa mw ON li.listable_type = 'manhwa' AND li.listable_id = mw.id
+      LEFT JOIN app.fan_comics fc ON li.listable_type = 'fan_comic' AND li.listable_id = fc.id
       WHERE li.list_id = $1
       ORDER BY li.created_at DESC
     `, [listId]);
@@ -119,10 +139,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar itemType
-    if (!['anime', 'manga', 'novel'].includes(itemType.toLowerCase())) {
+    // Validar itemType - Ahora incluye todos los 7 tipos
+    const validTypes = ['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'];
+    if (!validTypes.includes(itemType.toLowerCase())) {
       return NextResponse.json(
-        { error: 'itemType debe ser anime, manga o novel' },
+        { error: 'itemType debe ser anime, manga, novel, donghua, manhua, manhwa o fan_comic' },
         { status: 400 }
       );
     }

@@ -16,10 +16,11 @@ export async function GET(
     const type = searchParams.get('type') || 'anime';
     const { id } = await params;
 
-    // Validaciones
-    if (!['anime', 'manga', 'novel'].includes(type)) {
+    // Validaciones - Ahora incluye todos los 7 tipos de media
+    const validTypes = ['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'];
+    if (!validTypes.includes(type)) {
       return NextResponse.json(
-        { error: 'Tipo de medio inválido. Use: anime, manga, novel' },
+        { error: 'Tipo de medio inválido. Use: anime, manga, novel, donghua, manhua, manhwa, fan_comic' },
         { status: 400 }
       );
     }
@@ -31,13 +32,25 @@ export async function GET(
       );
     }
 
-    const tableName = type === 'novel' ? 'novels' : type;
+    // Mapeo de tipos a tablas
+    const tableMap: Record<string, string> = {
+      'anime': 'anime',
+      'manga': 'manga',
+      'novel': 'novels',
+      'donghua': 'donghua',
+      'manhua': 'manhua',
+      'manhwa': 'manhwa',
+      'fan_comic': 'fan_comics'
+    };
+    const tableName = tableMap[type];
 
     // Determinar columna de visibilidad según tipo
-    const visibilityColumn = type === 'anime' ? 'is_published' : 'is_approved';
+    // anime/donghua usan is_published, los demás usan is_approved
+    const visibilityColumn = (type === 'anime' || type === 'donghua') ? 'is_published' : 'is_approved';
 
     // Determinar si es un ID numérico o un slug
-    const isNumericId = !isNaN(parseInt(id));
+    // Solo es numérico si TODO el string son dígitos
+    const isNumericId = /^\d+$/.test(id);
     const whereClause = isNumericId 
       ? `m.id = $1` 
       : `m.slug = $1`;
@@ -192,6 +205,40 @@ export async function GET(
     
     console.log(`📊 Stats para ${type} ${mediaId}:`, statsResult.rows[0]);
 
+    // 11. OBTENER RANKING
+    // Primero intenta usar el ranking de la columna (actualizado por triggers)
+    // Si no existe o es 0, calcula dinámicamente
+    let currentRanking = media.ranking && media.ranking > 0 ? media.ranking : undefined;
+    
+    // Si no hay ranking en la columna, calcular dinámicamente
+    if (!currentRanking) {
+      const rankingQuery = `
+        WITH ranked AS (
+          SELECT 
+            id,
+            ROW_NUMBER() OVER (
+              ORDER BY 
+                CASE 
+                  WHEN average_score IS NULL OR average_score = 0 THEN 1 
+                  ELSE 0 
+                END,
+                average_score DESC NULLS LAST, 
+                ratings_count DESC,
+                id ASC
+            ) as rank
+            FROM app.${tableName}
+            WHERE ${visibilityColumn} = TRUE AND deleted_at IS NULL
+        )
+        SELECT rank FROM ranked WHERE id = $1
+      `;
+      const rankingResult = await db.query(rankingQuery, [mediaId]);
+      if (rankingResult.rows.length > 0) {
+        currentRanking = parseInt(rankingResult.rows[0].rank);
+      }
+    }
+    
+    console.log(`🏆 Ranking para ${type} ${mediaId}: ${currentRanking} (desde ${media.ranking > 0 ? 'columna' : 'cálculo dinámico'})`);
+
     // 5. CONSTRUIR RESPUESTA
     const response = {
       id: media.id.toString(),
@@ -202,11 +249,13 @@ export async function GET(
       synopsis: media.synopsis,
       imageUrl: media.cover_image_url,
       bannerUrl: media.banner_image_url,
+      dominantColor: media.dominant_color, // Color dominante para tema dinámico
       rating: parseFloat(media.average_score) || 0,
       ratingsCount: media.ratings_count || 0,
-      ranking: media.ranking || 0,
+      ranking: currentRanking, // ← Usar el ranking calculado
       popularity: media.popularity || 0,
-      type: type,
+      type: media.type || type, // ← Usar media.type de la BD (Movie, TV, Manhwa, etc.), fallback al parámetro URL
+      mediaCategory: type, // ← Nuevo campo para distinguir: anime, manga, manhwa, etc.
       status: media.status_label || 'Desconocido',
       statusCode: media.status_code || 'unknown',
       slug: media.slug,

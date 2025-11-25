@@ -1,24 +1,36 @@
 /**
  * ========================================
- * API ROUTE: LOGIN
+ * API ROUTE: LOGIN CON A2F OBLIGATORIO
  * POST /api/auth/login
  * ========================================
  * 
- * FLUJO:
+ * FLUJO ACTUALIZADO:
  * 1. Recibe email y password del cliente
- * 2. Busca usuario en PostgreSQL
+ * 2. Busca usuario en PostgreSQL (schema: app)
  * 3. Verifica password con bcrypt
- * 4. Genera token JWT
- * 5. Establece cookie HTTP-only
- * 6. Retorna datos del usuario
+ * 4. **NUEVO**: Verifica si tiene A2F configurado
+ * 5. Si tiene A2F:
+ *    - NO genera sesión JWT completa
+ *    - Retorna { requires2FA: true, userId }
+ *    - Frontend muestra TwoFactorVerifyDialog
+ * 6. Si NO tiene A2F (usuarios antiguos):
+ *    - Forzar configuración de A2F
+ *    - Retornar { requiresSetup2FA: true }
+ * 7. Después de verificar A2F en otro endpoint:
+ *    - Genera token JWT
+ *    - Establece cookie HTTP-only
+ *    - Retorna datos del usuario
+ * 
+ * CONEXIONES:
+ * - BD: app.users, app.user_2fa, app.user_roles, app.roles
+ * - Siguiente paso: POST /api/auth/2fa/verify
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/database';
+import { pool } from '@/lib/database';
 import { 
   verifyPassword, 
   generateToken, 
-  setSessionCookie,
   isValidEmail 
 } from '@/lib/auth';
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
@@ -41,6 +53,7 @@ interface UserRow {
   display_name: string | null;
   avatar_url: string | null;
   is_active: boolean;
+  has_2fa_setup: boolean; // ✅ NUEVO: Indica si tiene A2F configurado
   roles: any; // JSON de roles
   level: number;
   points: number;
@@ -100,8 +113,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. BUSCAR USUARIO EN LA BASE DE DATOS CON SUS ROLES
-    const result = await db.query<UserRow>(
+    // 2. BUSCAR USUARIO EN LA BASE DE DATOS CON SUS ROLES (schema: app)
+    const result = await pool.query<UserRow>(
       `SELECT 
         u.id, 
         u.email, 
@@ -112,6 +125,7 @@ export async function POST(request: NextRequest) {
         u.is_active,
         u.level,
         u.points,
+        u.has_2fa_setup,
         COALESCE(json_agg(
           json_build_object(
             'id', r.id,
@@ -165,45 +179,89 @@ export async function POST(request: NextRequest) {
     const isAdmin = roles.some(r => r.name === 'admin');
     const isModerator = roles.some(r => r.name === 'moderator');
 
-    // 5. GENERAR TOKEN JWT
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      username: user.username,
-      isAdmin,
-      isModerator,
-      roles: roles.map(r => r.name),
-    });
+    // ============================================
+    // 5. VERIFICAR A2F (OBLIGATORIO)
+    // ============================================
 
-    // 6. ESTABLECER COOKIE DE SESIÓN
-    await setSessionCookie(token);
+    // Si el usuario NO tiene A2F configurado pero lo intentó configurar
+    if (!user.has_2fa_setup) {
+      // Verificar si existe configuración de 2FA pendiente
+      const pendingTwoFactorResult = await pool.query(
+        'SELECT id FROM app.user_2fa WHERE user_id = $1',
+        [user.id]
+      );
 
-    // 7. PREPARAR RESPUESTA (SIN PASSWORD)
-    const sessionUser: SessionUser = {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      displayName: user.display_name || user.username,
-      avatarUrl: user.avatar_url,
-      isAdmin,
-      isModerator,
-      roles: roles.map(r => r.name),
-      level: user.level,
-      points: user.points,
-    };
+      // Si existe configuración pendiente, necesita completar el setup
+      if (pendingTwoFactorResult.rows.length > 0) {
+        return NextResponse.json({
+          requiresSetup2FA: true,
+          userId: user.id,
+          username: user.username,
+          email: user.email,
+          hasPendingSetup: true,
+          message: 'Debes completar la configuración de 2FA para continuar. Redirigiendo...',
+        }, { status: 200 });
+      }
 
-    // 8. REGISTRAR EN AUDIT LOG (opcional pero recomendado)
-    await db.query(
-      `INSERT INTO app.audit_log (user_id, action, resource_type)
-       VALUES ($1, 'login', 'auth')`,
-      [user.id]
-    );
+      // Si NO existe configuración, crear una nueva para usuario antiguo
+      const speakeasy = require('speakeasy');
+      const QRCode = require('qrcode');
+      const crypto = require('crypto');
 
-    // 9. RETORNAR RESPUESTA EXITOSA
+      // Generar secret para 2FA
+      const secret = speakeasy.generateSecret({
+        name: `Chirisu (${user.username})`,
+        issuer: 'Chirisu',
+        length: 32,
+      });
+
+      // Generar código de recuperación (texto plano para mostrar al usuario)
+      const recoveryCodePlain = Math.random().toString(36).substring(2, 15) + 
+                               Math.random().toString(36).substring(2, 15);
+      
+      // Hashear para guardar en recovery_codes
+      const recoveryCodeHashed = crypto.createHash('sha256').update(recoveryCodePlain).digest('hex');
+
+      // Guardar en BD (sin activar - enabled = false)
+      // Guardamos el recovery code en texto plano en backup_codes[0] temporalmente
+      await pool.query(
+        `INSERT INTO app.user_2fa (user_id, secret, backup_codes, enabled)
+         VALUES ($1, $2, $3, false)`,
+        [user.id, secret.base32, [recoveryCodePlain]]
+      );
+
+      // Guardar recovery code hasheado en tabla separada
+      await pool.query(
+        `INSERT INTO app.recovery_codes (user_id, code)
+         VALUES ($1, $2)
+         ON CONFLICT (user_id) DO UPDATE SET code = $2, last_regenerated = CURRENT_TIMESTAMP`,
+        [user.id, recoveryCodeHashed]
+      );
+
+      console.log(`✅ Configuración 2FA creada para usuario antiguo: ${user.username}`);
+
+      return NextResponse.json({
+        requiresSetup2FA: true,
+        userId: user.id,
+        username: user.username,
+        email: user.email,
+        hasPendingSetup: true,
+        message: 'Debes configurar la autenticación de 2 factores. Redirigiendo...',
+      }, { status: 200 });
+    }
+
+    // Si el usuario TIENE A2F configurado
+    // NO generar sesión JWT todavía
+    // El frontend debe mostrar el diálogo de verificación A2F
     return NextResponse.json({
-      success: true,
-      user: sessionUser,
-    });
+      requires2FA: true,
+      userId: user.id,
+      username: user.username,
+      message: 'Ingresa el código de tu app de autenticación',
+    }, { status: 200 });
+
+    // NOTA: La sesión JWT se genera en /api/auth/2fa/verify
+    // después de verificar el código correctamente
 
   } catch (error) {
     console.error('❌ Error en POST /api/auth/login:', error);

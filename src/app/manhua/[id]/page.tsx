@@ -1,4 +1,4 @@
-import MediaPageClient from "@/components/media-page-client";
+import { MediaPageClient } from "@/components/media";
 import type { Metadata } from 'next';
 
 type Props = {

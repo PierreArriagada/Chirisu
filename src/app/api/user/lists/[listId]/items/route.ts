@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/database';
+import { getCurrentUser } from '@/lib/auth';
 
 /**
  * API de Items de Lista
@@ -37,26 +38,46 @@ export async function GET(
           WHEN li.listable_type = 'anime' THEN a.title_romaji
           WHEN li.listable_type = 'manga' THEN m.title_romaji
           WHEN li.listable_type = 'novel' THEN n.title_romaji
+          WHEN li.listable_type = 'donghua' THEN d.title_romaji
+          WHEN li.listable_type = 'manhua' THEN mh.title_romaji
+          WHEN li.listable_type = 'manhwa' THEN mw.title_romaji
+          WHEN li.listable_type = 'fan_comic' THEN fc.title
         END as title,
         CASE 
           WHEN li.listable_type = 'anime' THEN a.cover_image_url
           WHEN li.listable_type = 'manga' THEN m.cover_image_url
           WHEN li.listable_type = 'novel' THEN n.cover_image_url
+          WHEN li.listable_type = 'donghua' THEN d.cover_image_url
+          WHEN li.listable_type = 'manhua' THEN mh.cover_image_url
+          WHEN li.listable_type = 'manhwa' THEN mw.cover_image_url
+          WHEN li.listable_type = 'fan_comic' THEN fc.cover_image_url
         END as cover_image,
         CASE 
           WHEN li.listable_type = 'anime' THEN a.average_score
           WHEN li.listable_type = 'manga' THEN m.average_score
           WHEN li.listable_type = 'novel' THEN n.average_score
+          WHEN li.listable_type = 'donghua' THEN d.average_score
+          WHEN li.listable_type = 'manhua' THEN mh.average_score
+          WHEN li.listable_type = 'manhwa' THEN mw.average_score
+          WHEN li.listable_type = 'fan_comic' THEN fc.average_score
         END as average_score,
         CASE 
           WHEN li.listable_type = 'anime' THEN a.slug
           WHEN li.listable_type = 'manga' THEN m.slug
           WHEN li.listable_type = 'novel' THEN n.slug
+          WHEN li.listable_type = 'donghua' THEN d.slug
+          WHEN li.listable_type = 'manhua' THEN mh.slug
+          WHEN li.listable_type = 'manhwa' THEN mw.slug
+          WHEN li.listable_type = 'fan_comic' THEN fc.slug
         END as slug
       FROM app.list_items li
       LEFT JOIN app.anime a ON li.listable_type = 'anime' AND li.listable_id = a.id
       LEFT JOIN app.manga m ON li.listable_type = 'manga' AND li.listable_id = m.id
       LEFT JOIN app.novels n ON li.listable_type = 'novel' AND li.listable_id = n.id
+      LEFT JOIN app.donghua d ON li.listable_type = 'donghua' AND li.listable_id = d.id
+      LEFT JOIN app.manhua mh ON li.listable_type = 'manhua' AND li.listable_id = mh.id
+      LEFT JOIN app.manhwa mw ON li.listable_type = 'manhwa' AND li.listable_id = mw.id
+      LEFT JOIN app.fan_comics fc ON li.listable_type = 'fan_comic' AND li.listable_id = fc.id
       WHERE li.list_id = $1
       ORDER BY li.created_at DESC
     `, [listId]);
@@ -94,9 +115,22 @@ export async function POST(
   { params }: { params: Promise<{ listId: string }> }
 ) {
   try {
+    // Autenticación
+    const currentUser = await getCurrentUser();
+    
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'No autenticado. Inicia sesión primero.' },
+        { status: 401 }
+      );
+    }
+
+    const userId = currentUser.userId;
     const { listId } = await params;
     const body = await request.json();
     const { itemType, itemId, status = 'pendiente', score, progress } = body;
+
+    console.log(`🔍 POST add to list: listId=${listId}, itemType=${itemType}, itemId=${itemId}, userId=${userId}`);
 
     if (!itemType || !itemId) {
       return NextResponse.json(
@@ -105,13 +139,26 @@ export async function POST(
       );
     }
 
-    // Validar itemType
-    const validTypes = ['anime', 'manga', 'novel'];
+    // Verificar que la lista pertenece al usuario
+    const listCheck = await pool.query(`
+      SELECT id FROM app.lists
+      WHERE id = $1 AND user_id = $2
+    `, [parseInt(listId), userId]);
+
+    if (listCheck.rows.length === 0) {
+      return NextResponse.json(
+        { error: 'Lista no encontrada o sin permisos' },
+        { status: 404 }
+      );
+    }
+
+    // Validar itemType - Ahora incluye todos los 7 tipos
+    const validTypes = ['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'];
     const normalizedType = itemType.toLowerCase();
     
     if (!validTypes.includes(normalizedType)) {
       return NextResponse.json(
-        { error: 'itemType debe ser anime, manga o novel' },
+        { error: 'itemType debe ser anime, manga, novel, donghua, manhua, manhwa o fan_comic' },
         { status: 400 }
       );
     }
@@ -141,7 +188,18 @@ export async function POST(
 
     const newItem = insertResult.rows[0];
 
-    console.log(`✅ Item añadido a lista ${listId}: ${normalizedType} ${itemId}`);
+    // TODO: Incrementar contador lists_count si la columna existe
+    // const tableMap: Record<string, string> = {
+    //   'anime': 'anime',
+    //   'manga': 'manga',
+    //   'novel': 'novels',
+    // };
+    // const tableName = tableMap[normalizedType];
+    // if (tableName) {
+    //   await pool.query(`UPDATE app.${tableName} SET lists_count = lists_count + 1 WHERE id = $1`, [itemId]);
+    // }
+
+    console.log(`✅ Item añadido a lista ${listId}: ${normalizedType} ${itemId} (usuario ${userId})`);
 
     return NextResponse.json({
       success: true,
@@ -166,57 +224,5 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ listId: string }> }
-) {
-  try {
-    const { listId } = await params;
-    const body = await request.json();
-    const { itemType, itemId } = body;
-
-    if (!itemType || !itemId) {
-      return NextResponse.json(
-        { error: 'itemType y itemId son requeridos' },
-        { status: 400 }
-      );
-    }
-
-    const normalizedType = itemType.toLowerCase();
-
-    // Verificar que el item existe
-    const existsResult = await pool.query(
-      `SELECT id FROM app.list_items 
-       WHERE list_id = $1 AND listable_type = $2 AND listable_id = $3`,
-      [listId, normalizedType, itemId]
-    );
-
-    if (existsResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'Item no encontrado en esta lista' },
-        { status: 404 }
-      );
-    }
-
-    // Eliminar el item
-    await pool.query(
-      `DELETE FROM app.list_items 
-       WHERE list_id = $1 AND listable_type = $2 AND listable_id = $3`,
-      [listId, normalizedType, itemId]
-    );
-
-    console.log(`✅ Item eliminado de lista ${listId}: ${normalizedType} ${itemId}`);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Item eliminado de la lista',
-    });
-
-  } catch (error: any) {
-    console.error('❌ Error en DELETE /api/user/lists/[listId]/items:', error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
-  }
-}
+// DELETE eliminado - Usar /api/user/lists/[listId]/items/[itemId] en su lugar
+// El DELETE con body causaba conflictos con el endpoint de URL params

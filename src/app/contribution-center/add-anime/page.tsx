@@ -1,6 +1,6 @@
 'use client';
-import ContributionForm from "@/components/contribution-form";
+import { AnimeContributionForm } from "@/components/contributions";
 
 export default function AddAnimePage() {
-    return <ContributionForm mediaType="Anime" />;
+    return <AnimeContributionForm />;
 }

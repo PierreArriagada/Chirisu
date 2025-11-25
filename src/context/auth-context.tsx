@@ -31,8 +31,9 @@ function normalizeMediaType(type: string): MediaType {
     'manga': 'Manga',
     'novel': 'Novela',
     'manhua': 'Manhua',
-    'manwha': 'Manwha',
-    'dougua': 'Dougua',
+    'manhwa': 'Manhwa',
+    'donghua': 'Donghua',
+    'fan_comic': 'Fan Comic',
   };
   return typeMap[type.toLowerCase()] || 'Anime';
 }
@@ -46,11 +47,29 @@ function denormalizeMediaType(type: MediaType): string {
     'Manga': 'manga',
     'Novela': 'novel',
     'Manhua': 'manhua',
-    'Manwha': 'manwha',
-    'Dougua': 'dougua',
-    'Fan Comic': 'fan-comic',
+    'Manhwa': 'manhwa',
+    'Donghua': 'donghua',
+    'Fan Comic': 'fan_comic',
   };
   return typeMap[type] || 'anime';
+}
+
+/**
+ * Enriquece el objeto User con campos alias para compatibilidad
+ */
+function enrichUser(user: any): User {
+  const role: 'admin' | 'moderator' | 'user' = user.isAdmin 
+    ? 'admin' 
+    : user.isModerator 
+    ? 'moderator' 
+    : 'user';
+
+  return {
+    ...user,
+    name: user.displayName,
+    image: user.avatarUrl,
+    role,
+  };
 }
 
 // ============================================
@@ -66,6 +85,10 @@ export interface User {
   avatarUrl: string | null;
   isAdmin: boolean;
   isModerator: boolean;
+  // Aliases para compatibilidad
+  name?: string;  // Alias de displayName
+  image?: string | null;  // Alias de avatarUrl
+  role?: 'admin' | 'moderator' | 'user';  // Rol derivado de isAdmin/isModerator
   // Listas de usuario
   lists?: {
     pending: TitleInfo[];
@@ -92,6 +115,7 @@ interface AuthContextType {
   addToList: (title: TitleInfo, listName: string, isCustom: boolean) => Promise<void>;  // Ahora es async
   removeFromList: (title: TitleInfo, listName: string, isCustom: boolean) => void;
   createCustomList: (name: string) => Promise<void>;  // Ahora es async
+  refreshUserLists: () => Promise<void>;  // NUEVO: recargar listas del usuario
 }
 
 // 2. Crea el contexto con un valor inicial nulo
@@ -191,12 +215,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   }));
 
                   // Mapear según el slug de la lista
-                  if (list.slug === 'pendiente' || list.name.toLowerCase().includes('pendiente')) {
+                  if (list.slug === 'por-ver') {
                     defaultListsMap.pending = items;
-                  } else if (list.slug === 'siguiendo' || list.name.toLowerCase().includes('siguiendo')) {
+                  } else if (list.slug === 'siguiendo') {
                     defaultListsMap.following = items;
-                  } else if (list.slug === 'completado' || list.name.toLowerCase().includes('completado') || list.name.toLowerCase().includes('visto')) {
+                  } else if (list.slug === 'completado') {
                     defaultListsMap.watched = items;
+                  } else if (list.slug === 'favoritos') {
+                    // Favoritos ya se cargó arriba con la API específica
+                    // pero actualizamos por si acaso
+                    if (items.length > 0) {
+                      defaultListsMap.favorites = items;
+                    }
                   }
                 }
               }
@@ -235,13 +265,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 })
               );
 
-              setUser({
+              setUser(enrichUser({
                 ...data.user,
                 lists: defaultListsMap,
                 customLists: customListsWithItems,
-              });
+              }));
             } else {
-              setUser(data.user);
+              setUser(enrichUser(data.user));
             }
           }
         }
@@ -278,7 +308,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // 3. Login exitoso: guardar usuario en el estado
-      setUser(data.user);
+      setUser(enrichUser(data.user));
       
       // 4. Mostrar notificación de éxito (opcional)
       toast({
@@ -295,7 +325,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateUser = (updatedUser: User) => {
     // PSQL: Esta función haría una llamada a la API para actualizar los datos del usuario.
     // `UPDATE users SET ... WHERE id = $1`
-    // O `UPDATE user_lists SET ... WHERE user_id = $1`
+    // O `UPDATE lists SET ... WHERE user_id = $1`
     setUser(updatedUser);
   };
   
@@ -313,6 +343,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
     }
 
+<<<<<<< HEAD
     if (!user.lists) {
       user.lists = {
         pending: [],
@@ -320,6 +351,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         watched: [],
         favorites: [],
       };
+=======
+    const isAlreadyFavorite = user.lists.favorites.some(fav => fav.id === title.id);
+    let updatedFavorites: TitleInfo[];
+
+    if (isAlreadyFavorite) {
+        // PSQL: `DELETE FROM list_items WHERE list_id = (SELECT id FROM lists WHERE user_id = $1 AND slug = 'favoritos') AND listable_id = $2 AND listable_type = $3;`
+        updatedFavorites = user.lists.favorites.filter(fav => fav.id !== title.id);
+         toast({
+            title: "Eliminado de favoritos",
+            description: `${title.title} ha sido eliminado de tu lista de favoritos.`,
+        });
+    } else {
+        // PSQL: `INSERT INTO list_items (list_id, listable_type, listable_id) VALUES ((SELECT id FROM lists WHERE user_id = $1 AND slug = 'favoritos'), $2, $3);`
+        updatedFavorites = [...user.lists.favorites, title];
+        toast({
+            title: "¡Añadido a favoritos!",
+            description: `${title.title} ha sido añadido a tu lista de favoritos.`,
+        });
+>>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
     }
 
     const isAlreadyFavorite = user.lists.favorites.some(fav => fav.id === title.id);
@@ -431,25 +481,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (listIndex === -1) return;
 
         const list = user.customLists[listIndex];
-        const isInList = list.items.some(item => item.id === title.id);
+        // Verificar usando mediaId si existe, sino usar id
+        const isInList = list.items.some((item: any) => 
+          item.mediaId === title.id.toString() || item.id === title.id.toString()
+        );
 
         if (isInList) {
-          // Quitar de la lista
-          const response = await fetch(`/api/user/lists/${listName}/items`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
+          // Quitar de la lista - Buscar el list_item por listable_id
+          const itemsResponse = await fetch(`/api/user/lists/${listName}/items`, {
             credentials: 'include',
-            body: JSON.stringify({
-              itemType: denormalizeMediaType(title.type),
-              itemId: title.id,
-            }),
+          });
+
+          if (!itemsResponse.ok) {
+            throw new Error('Error al obtener items de la lista');
+          }
+
+          const itemsData = await itemsResponse.json();
+          const normalizedType = denormalizeMediaType(title.type);
+          
+          // Buscar el item por listable_type y listable_id
+          const itemToDelete = itemsData.items?.find((item: any) => 
+            item.type === normalizedType && item.itemId === title.id.toString()
+          );
+
+          if (!itemToDelete) {
+            throw new Error('Item no encontrado en la lista');
+          }
+
+          const response = await fetch(`/api/user/lists/${listName}/items/${itemToDelete.id}`, {
+            method: 'DELETE',
+            credentials: 'include',
           });
 
           if (!response.ok) {
-            throw new Error('Error al eliminar de la lista');
+            const errorData = await response.json();
+            console.error('❌ Error del servidor al eliminar:', errorData);
+            throw new Error(errorData.error || 'Error al eliminar de la lista');
           }
 
-          user.customLists[listIndex].items = list.items.filter(item => item.id !== title.id);
+          // Filtrar del estado local
+          user.customLists[listIndex].items = list.items.filter((item: any) => {
+            const itemMediaId = item.mediaId || item.id;
+            return itemMediaId !== title.id.toString() && itemMediaId.toString() !== title.id.toString();
+          });
+          
           toast({
             title: 'Eliminado de la lista',
             description: `"${title.title}" eliminado de "${list.name}"`,
@@ -484,11 +559,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const listKey = listName as keyof typeof user.lists;
         if (!user.lists[listKey]) return;
 
-        const isInList = user.lists[listKey].some(item => item.id === title.id);
+        // Verificar si el item ya está en la lista usando mediaId
+        console.log(`🔍 Verificando si ${title.title} (id=${title.id}) está en ${listName}`);
+        console.log(`   user.lists[${listKey}]:`, user.lists[listKey]);
+        
+        const isInList = user.lists[listKey].some((item: any) => {
+          const match = item.mediaId === title.id.toString() || item.id === title.id.toString();
+          if (match) {
+            console.log(`   ✅ Encontrado en estado local: item.mediaId=${item.mediaId}, item.id=${item.id}`);
+          }
+          return match;
+        });
+        
+        console.log(`   isInList=${isInList}`);
 
         // Mapear el nombre de la lista del frontend al slug de la BD
         const listSlugMap: Record<string, string> = {
-          'pending': 'pendiente',
+          'pending': 'por-ver',
           'following': 'siguiendo',
           'watched': 'completado',
           'favorites': 'favoritos',
@@ -517,22 +604,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (isInList) {
-          // Quitar de la lista
-          const response = await fetch(`/api/user/lists/${defaultList.id}/items`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
+          // Quitar de la lista - Buscar el list_item por listable_id
+          // Ya no usamos el estado local porque puede estar desactualizado
+          
+          // Primero, obtener todos los items de la lista para encontrar el list_item_id correcto
+          const itemsResponse = await fetch(`/api/user/lists/${defaultList.id}/items`, {
             credentials: 'include',
-            body: JSON.stringify({
-              itemType: denormalizeMediaType(title.type),
-              itemId: title.id,
-            }),
+          });
+
+          if (!itemsResponse.ok) {
+            throw new Error('Error al obtener items de la lista');
+          }
+
+          const itemsData = await itemsResponse.json();
+          const normalizedType = denormalizeMediaType(title.type);
+          
+          // Buscar el item por listable_type y listable_id
+          const itemToDelete = itemsData.items?.find((item: any) => 
+            item.type === normalizedType && item.itemId === title.id.toString()
+          );
+
+          if (!itemToDelete) {
+            throw new Error('Item no encontrado en la lista');
+          }
+
+          // Ahora eliminar usando el list_item_id correcto
+          const response = await fetch(`/api/user/lists/${defaultList.id}/items/${itemToDelete.id}`, {
+            method: 'DELETE',
+            credentials: 'include',
           });
 
           if (!response.ok) {
-            throw new Error('Error al eliminar de la lista');
+            const errorData = await response.json();
+            console.error('❌ Error del servidor al eliminar:', errorData);
+            throw new Error(errorData.error || 'Error al eliminar de la lista');
           }
 
-          user.lists[listKey] = user.lists[listKey].filter(item => item.id !== title.id);
+          // Filtrar del estado local
+          user.lists[listKey] = user.lists[listKey].filter((item: any) => {
+            // Intentar comparar por mediaId si existe, sino por id
+            const itemMediaId = item.mediaId || item.id;
+            return itemMediaId !== title.id.toString() && itemMediaId.toString() !== title.id.toString();
+          });
+          
           toast({
             title: 'Eliminado de la lista',
           });
@@ -550,10 +664,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
 
           if (!response.ok) {
-            throw new Error('Error al añadir a la lista');
+            const errorData = await response.json();
+            console.error('❌ Error del servidor al añadir:', errorData);
+            throw new Error(errorData.error || 'Error al añadir a la lista');
           }
 
-          user.lists[listKey] = [...user.lists[listKey], title];
+          const result = await response.json();
+          
+          // Crear item con estructura correcta incluyendo mediaId
+          const newItem = {
+            ...title,
+            id: result.item.id,        // list_item_id
+            mediaId: title.id.toString() // media_id
+          };
+
+          user.lists[listKey] = [...user.lists[listKey], newItem];
           toast({
             title: 'Añadido a la lista',
           });
@@ -694,6 +819,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // ==========================================
+  // REFRESH USER LISTS: Recargar listas del perfil
+  // ==========================================
+  const refreshUserLists = async (): Promise<void> => {
+    if (!user) return;
+    
+    try {
+      console.log('🔄 Refrescando listas del usuario...');
+      const response = await fetch('/api/user/profile', {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📦 Datos recibidos del profile:', data);
+        
+        // El API devuelve { success: true, profile: {...} }
+        const profileData = data.profile || data;
+        
+        console.log('   lists:', profileData.lists);
+        console.log('   customLists:', profileData.customLists);
+        
+        // Actualizar solo las listas del usuario
+        setUser({
+          ...user,
+          lists: profileData.lists || {
+            pending: [],
+            following: [],
+            watched: [],
+            favorites: [],
+          },
+          customLists: profileData.customLists || [],
+        });
+        
+        console.log('✅ Usuario actualizado con nuevas listas');
+      } else {
+        console.error('❌ Error response:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Error al recargar listas:', error);
+    }
+  };
+
   const value = {
     user,
     loading,  // NUEVO: exponer el estado de carga
@@ -704,6 +872,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     addToList,
     removeFromList,
     createCustomList,
+    refreshUserLists,  // NUEVO
   };
 
   // Mostrar spinner mientras carga la sesión inicial

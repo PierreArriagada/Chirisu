@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Search, ChevronLeft, ChevronRight, Heart, Mic } from 'lucide-react';
-import { FavoriteButton } from '@/components/favorite-button';
+import { FavoriteButton } from '@/components/shared';
 
 interface VoiceActor {
   id: number;

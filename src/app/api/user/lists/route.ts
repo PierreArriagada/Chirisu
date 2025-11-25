@@ -31,6 +31,34 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Verificar si el usuario tiene listas predeterminadas
+    const checkDefaultsResult = await pool.query(`
+      SELECT COUNT(*) as count
+      FROM app.lists
+      WHERE user_id = $1 AND is_default = true
+    `, [userId]);
+
+    const hasDefaults = parseInt(checkDefaultsResult.rows[0].count) > 0;
+
+    // Si no tiene listas predeterminadas, crearlas
+    if (!hasDefaults) {
+      const defaultLists = [
+        { name: 'Por Ver', slug: 'por-ver', description: 'Títulos que planeo ver' },
+        { name: 'Siguiendo', slug: 'siguiendo', description: 'Títulos que estoy viendo' },
+        { name: 'Completado', slug: 'completado', description: 'Títulos que he completado' },
+        { name: 'Favoritos', slug: 'favoritos', description: 'Mis títulos favoritos' },
+      ];
+
+      for (const list of defaultLists) {
+        await pool.query(
+          `INSERT INTO app.lists (user_id, name, slug, description, is_default, is_public, created_at)
+           VALUES ($1, $2, $3, $4, true, true, NOW())
+           ON CONFLICT (user_id, slug) DO NOTHING`,
+          [userId, list.name, list.slug, list.description]
+        );
+      }
+    }
+
     // Obtener todas las listas del usuario
     const listsResult = await pool.query(`
       SELECT 

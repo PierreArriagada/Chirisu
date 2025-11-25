@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Eye, Loader2 } from 'lucide-react';
 
-const mediaTypes: MediaType[] = ['Anime', 'Manga', 'Manhua', 'Manwha', 'Novela', 'Fan Comic', 'Dougua'];
+const mediaTypes: MediaType[] = ['Anime', 'Manga', 'Manhua', 'Manhwa', 'Novela', 'Fan Comic', 'Donghua'];
 
 function SearchResults() {
     const searchParams = useSearchParams();
@@ -49,10 +49,17 @@ function SearchResults() {
             if (data.success && data.results) {
                 const results: TitleInfo[] = data.results.map((item: any) => ({
                     id: item.id,
+                    slug: item.slug,
                     title: item.title,
                     image: item.imageUrl || 'https://placehold.co/400x600?text=No+Image',
+                    imageUrl: item.imageUrl || 'https://placehold.co/400x600?text=No+Image',
+                    imageHint: item.title,
                     rating: item.rating || 0,
                     type: mapTypeToMediaType(item.type),
+                    description: item.synopsis || '',
+                    ranking: 0,
+                    commentsCount: 0,
+                    listsCount: item.ratingsCount || 0, // Usar ratingsCount como proxy de popularidad
                 }));
                 setInitialResults(results);
             }
@@ -68,6 +75,10 @@ function SearchResults() {
             'anime': 'Anime',
             'manga': 'Manga',
             'novel': 'Novela',
+            'donghua': 'Donghua',
+            'manhua': 'Manhua',
+            'manhwa': 'Manhwa',
+            'fan_comic': 'Fan Comic',
         };
         return typeMap[apiType] || 'Anime';
     };

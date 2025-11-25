@@ -1,6 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/database';
 
+// Mapeo de géneros español → inglés (para búsqueda en BD)
+const GENRE_MAP_ES_TO_EN: Record<string, string> = {
+  'Acción': 'Action',
+  'Aventura': 'Adventure',
+  'Comedia': 'Comedy',
+  'Drama': 'Drama',
+  'Fantasía': 'Fantasy',
+  'Horror': 'Horror',
+  'Misterio': 'Mystery',
+  'Romance': 'Romance',
+  'Sci-Fi': 'Sci-Fi',
+  'Seinen': 'Seinen',
+  'Shounen': 'Shounen',
+  'Shoujo': 'Shoujo',
+  'Josei': 'Josei',
+  'Sobrenatural': 'Supernatural',
+  'Deportes': 'Sports',
+  'Psicológico': 'Psychological',
+  'Histórico': 'Historical',
+  'Artes Marciales': 'Martial Arts',
+  'Isekai': 'Isekai',
+  'Superhéroes': 'Super Power',
+  'Ecchi': 'Ecchi',
+  'Hentai': 'Hentai',
+  'Mecha': 'Mecha',
+  'Música': 'Music',
+  'Slice of Life': 'Slice of Life',
+  'Thriller': 'Thriller',
+  'Magia': 'Magic',
+  'Escolar': 'School',
+  'Vampiros': 'Vampire',
+  'Militar': 'Military',
+  'Parodia': 'Parody',
+  'Samurai': 'Samurai',
+  'Demonio': 'Demons',
+  'Juegos': 'Game',
+  'Espacio': 'Space',
+  'Policial': 'Police',
+  'Mahou Shoujo': 'Mahou Shoujo',
+};
+
 /**
  * GET /api/media-by-genre
  * 
@@ -30,21 +71,43 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!mediaType || !['anime', 'manga', 'novel'].includes(mediaType)) {
+    const validTypes = ['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'];
+    if (!mediaType || !validTypes.includes(mediaType)) {
       return NextResponse.json(
-        { error: 'Parámetro "mediaType" requerido: anime, manga, o novel' },
+        { error: 'Parámetro "mediaType" requerido: anime, manga, novel, donghua, manhua, manhwa, o fan_comic' },
         { status: 400 }
       );
     }
 
-    const table = mediaType === 'novel' ? 'novels' : mediaType;
+    // Mapeo de tipos a tablas
+    const tableMap: Record<string, string> = {
+      'anime': 'anime',
+      'manga': 'manga',
+      'novel': 'novels',
+      'donghua': 'donghua',
+      'manhua': 'manhua',
+      'manhwa': 'manhwa',
+      'fan_comic': 'fan_comics'
+    };
+    const table = tableMap[mediaType];
+    
+    // Columna de visibilidad varía según el tipo
+    const visibilityColumn = (mediaType === 'anime' || mediaType === 'donghua') ? 'is_published' : 'is_approved';
+
+    // Fan Comics usa 'title' en lugar de 'title_romaji'
+    const titleColumn = mediaType === 'fan_comic' ? 'title' : 'title_romaji';
+
+    // Convertir género de español a inglés para búsqueda
+    const genreNameEn = GENRE_MAP_ES_TO_EN[genreName] || genreName;
+    
+    console.log(`🔍 [/api/media-by-genre] Buscando género: "${genreName}" (EN: "${genreNameEn}") en ${mediaType}`);
 
     // Query para obtener medios por género
     // Filtra por género y ordena por popularidad/score
     const result = await pool.query(`
       SELECT 
         m.id,
-        COALESCE(m.title_spanish, m.title_romaji, m.title_english) as title,
+        COALESCE(m.title_spanish, m.${titleColumn}, m.title_english) as title,
         m.cover_image_url,
         m.average_score,
         m.popularity,
@@ -54,16 +117,19 @@ export async function GET(request: NextRequest) {
       FROM app.${table} m
       INNER JOIN app.media_genres mg ON mg.titleable_type = $1 AND mg.titleable_id = m.id
       INNER JOIN app.genres g ON mg.genre_id = g.id
-      WHERE g.name_es = $2
-        AND m.is_approved = true
-        AND m.is_published = true
+      WHERE (
+        g.name_en ILIKE $2 OR
+        g.name_es ILIKE $2 OR
+        g.code ILIKE $2
+      )
+        AND m.${visibilityColumn} = true
         AND m.deleted_at IS NULL
       ORDER BY 
-        m.popularity DESC,
-        m.average_score DESC NULLS LAST,
-        m.favourites DESC
+        CASE WHEN m.ratings_count > 0 THEN m.average_score ELSE 0 END DESC,
+        m.created_at DESC,
+        m.popularity DESC
       LIMIT $3
-    `, [mediaType, genreName, limit]);
+    `, [mediaType, genreNameEn, limit]);
 
     const media = result.rows.map(row => ({
       id: row.id.toString(),

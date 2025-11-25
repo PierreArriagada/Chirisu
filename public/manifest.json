@@ -1,0 +1,19 @@
+{
+  "name": "Chirisu - Tu Lista de Anime y Manga",
+  "short_name": "Chirisu",
+  "description": "Organiza, descubre y comparte tus anime, manga, novelas y más favoritos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#00A8F3",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "lifestyle"],
+  "orientation": "portrait-primary"
+}

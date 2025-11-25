@@ -1,6 +1,6 @@
 import { type RecommendSimilarTitlesOutput } from "@/ai/flows/recommend-similar-titles";
 
-export type MediaType = 'Anime' | 'Manga' | 'Novela' | 'Manhua' | 'Manwha' | 'Dougua' | 'Fan Comic';
+export type MediaType = 'Anime' | 'Manga' | 'Novela' | 'Donghua' | 'Manhua' | 'Manhwa' | 'Fan Comic';
 
 export type UserRole = 'admin' | 'moderator' | 'user';
 
@@ -180,4 +180,35 @@ export type ReportedComment = {
   reporter: string;
   reason: string;
   date: string;
+};
+
+// Comments Types
+export type CommentUser = {
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  level: number;
+};
+
+export type Comment = {
+  id: string;
+  commentableType: string;
+  commentableId: string;
+  userId: string;
+  parentId: string | null;
+  content: string;
+  isSpoiler: boolean;
+  images: string[];
+  likesCount: number;
+  repliesCount: number;
+  createdAt: string;
+  updatedAt: string;
+  user: CommentUser;
+  userLiked: boolean;
+  // Para historial de usuario
+  media?: {
+    title: string;
+    slug: string;
+  };
+  deletedAt?: string | null;
 };

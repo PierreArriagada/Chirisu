@@ -49,22 +49,38 @@ export async function GET(request: NextRequest) {
             WHEN r.reviewable_type = 'anime' THEN a.title_romaji
             WHEN r.reviewable_type = 'manga' THEN m.title_romaji
             WHEN r.reviewable_type = 'novel' THEN n.title_romaji
+            WHEN r.reviewable_type = 'donghua' THEN d.title_romaji
+            WHEN r.reviewable_type = 'manhua' THEN mh.title_romaji
+            WHEN r.reviewable_type = 'manhwa' THEN mw.title_romaji
+            WHEN r.reviewable_type = 'fan_comic' THEN fc.title
           END as media_title,
           CASE 
             WHEN r.reviewable_type = 'anime' THEN a.cover_image_url
             WHEN r.reviewable_type = 'manga' THEN m.cover_image_url
             WHEN r.reviewable_type = 'novel' THEN n.cover_image_url
+            WHEN r.reviewable_type = 'donghua' THEN d.cover_image_url
+            WHEN r.reviewable_type = 'manhua' THEN mh.cover_image_url
+            WHEN r.reviewable_type = 'manhwa' THEN mw.cover_image_url
+            WHEN r.reviewable_type = 'fan_comic' THEN fc.cover_image_url
           END as media_cover,
           CASE 
             WHEN r.reviewable_type = 'anime' THEN a.slug
             WHEN r.reviewable_type = 'manga' THEN m.slug
             WHEN r.reviewable_type = 'novel' THEN n.slug
+            WHEN r.reviewable_type = 'donghua' THEN d.slug
+            WHEN r.reviewable_type = 'manhua' THEN mh.slug
+            WHEN r.reviewable_type = 'manhwa' THEN mw.slug
+            WHEN r.reviewable_type = 'fan_comic' THEN fc.slug
           END as media_slug
         FROM app.reviews r
         LEFT JOIN app.users u ON r.user_id = u.id
         LEFT JOIN app.anime a ON r.reviewable_type = 'anime' AND r.reviewable_id = a.id
         LEFT JOIN app.manga m ON r.reviewable_type = 'manga' AND r.reviewable_id = m.id
         LEFT JOIN app.novels n ON r.reviewable_type = 'novel' AND r.reviewable_id = n.id
+        LEFT JOIN app.donghua d ON r.reviewable_type = 'donghua' AND r.reviewable_id = d.id
+        LEFT JOIN app.manhua mh ON r.reviewable_type = 'manhua' AND r.reviewable_id = mh.id
+        LEFT JOIN app.manhwa mw ON r.reviewable_type = 'manhwa' AND r.reviewable_id = mw.id
+        LEFT JOIN app.fan_comics fc ON r.reviewable_type = 'fan_comic' AND r.reviewable_id = fc.id
         WHERE r.user_id = $1 AND r.deleted_at IS NULL
         ORDER BY r.created_at DESC
       `, [userId]);
@@ -174,12 +190,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validTypes = ['anime', 'manga', 'novel'];
+    const validTypes = ['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'];
     const normalizedType = reviewableType.toLowerCase();
     
     if (!validTypes.includes(normalizedType)) {
       return NextResponse.json(
-        { error: 'reviewableType debe ser anime, manga o novel' },
+        { error: 'reviewableType debe ser anime, manga, novel, donghua, manhua, manhwa o fan_comic' },
         { status: 400 }
       );
     }

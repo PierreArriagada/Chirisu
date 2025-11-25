@@ -11,87 +11,24 @@ const nextConfig: NextConfig = {
   // Configuración para usar módulos de Node.js solo en el servidor
   serverExternalPackages: ['pg', 'pg-pool', 'bcryptjs'],
   images: {
+    // Usar loader externo para cargar cualquier imagen sin restricciones
+    unoptimized: true, // Deshabilitar optimización automática de Next.js
+    // Alternativamente, usar un loader personalizado:
+    // loader: 'custom',
+    // loaderFile: './lib/image-loader.ts',
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
+        hostname: '**', // Permitir CUALQUIER hostname HTTPS
       },
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
+        protocol: 'http',
+        hostname: '**', // Permitir CUALQUIER hostname HTTP (menos seguro, opcional)
       },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**',
-      },
-      // AniList CDN
-      {
-        protocol: 'https',
-        hostname: 's4.anilist.co',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cdn.anilist.co',
-        port: '',
-        pathname: '/**',
-      },
-      // MyAnimeList CDN
-      {
-        protocol: 'https',
-        hostname: 'cdn.myanimelist.net',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api-cdn.myanimelist.net',
-        port: '',
-        pathname: '/**',
-      },
-      // Kitsu CDN
-      {
-        protocol: 'https',
-        hostname: 'media.kitsu.io',
-        port: '',
-        pathname: '/**',
-      },
-      // Imgur (común para fan uploads)
-      {
-        protocol: 'https',
-        hostname: 'i.imgur.com',
-        port: '',
-        pathname: '/**',
-      },
-      // Cloudinary (CDN común)
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        port: '',
-        pathname: '/**',
-      },
-      // YouTube thumbnails
-      {
-        protocol: 'https',
-        hostname: 'img.youtube.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i.ytimg.com',
-        port: '',
-        pathname: '/**',
-      },
+      // Añadir el host de las imágenes de la base de datos si es necesario
     ],
   },
+<<<<<<< HEAD
   // Headers de seguridad
   async headers() {
     return [
@@ -130,6 +67,11 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
+=======
+  // Añadir la variable de entorno para que esté disponible en el cliente
+  env: {
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+>>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
   },
 };
 
