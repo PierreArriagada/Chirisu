@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import pool from '@/lib/db';
-import { verifyToken } from '@/lib/auth';
+import { db } from '@/lib/database';
+import { getCurrentUser } from '@/lib/auth';
 
 /**
  * POST /api/moderation/contributions/[id]/assign
@@ -8,29 +8,23 @@ import { verifyToken } from '@/lib/auth';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
-    if (!token) {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded || typeof decoded === 'string') {
-      return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
-    }
-
-    const userId = (decoded as any).userId;
-    const contributionId = params.id;
+    const { id: contributionId } = await params;
 
     // Verificar que la contribución existe y no está asignada
-    const checkQuery = `
-      SELECT id, assigned_to_user_id, status
-      FROM app.user_contributions
-      WHERE id = $1 AND deleted_at IS NULL
-    `;
-    const checkResult = await pool.query(checkQuery, [contributionId]);
+    const checkResult = await db.query(
+      `SELECT id, assigned_to, status
+       FROM app.user_contributions
+       WHERE id = $1`,
+      [contributionId]
+    );
 
     if (checkResult.rows.length === 0) {
       return NextResponse.json({ error: 'Contribución no encontrada' }, { status: 404 });
@@ -39,7 +33,7 @@ export async function POST(
     const contribution = checkResult.rows[0];
 
     // Si ya está asignada a otro usuario, no permitir
-    if (contribution.assigned_to_user_id && contribution.assigned_to_user_id !== userId) {
+    if (contribution.assigned_to && contribution.assigned_to !== currentUser.userId) {
       return NextResponse.json(
         { error: 'Esta contribución ya está asignada a otro moderador' },
         { status: 400 }
@@ -47,17 +41,14 @@ export async function POST(
     }
 
     // Asignar al usuario actual y cambiar estado a in_review
-    const updateQuery = `
-      UPDATE app.user_contributions
-      SET assigned_to_user_id = $1,
-          assigned_at = NOW(),
-          status = 'in_review',
-          updated_at = NOW()
-      WHERE id = $2
-      RETURNING id
-    `;
-    
-    await pool.query(updateQuery, [userId, contributionId]);
+    await db.query(
+      `UPDATE app.user_contributions
+       SET assigned_to = $1,
+           assigned_at = NOW(),
+           status = 'in_review'
+       WHERE id = $2`,
+      [currentUser.userId, contributionId]
+    );
 
     return NextResponse.json({
       success: true,
@@ -79,29 +70,21 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
-    if (!token) {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded || typeof decoded === 'string') {
-      return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
-    }
+    const { id: contributionId } = await params;
 
-    const userId = (decoded as any).userId;
-    const contributionId = params.id;
-
-    // Verificar que la contribución existe y está asignada al usuario actual
-    const checkQuery = `
-      SELECT id, assigned_to_user_id
-      FROM app.user_contributions
-      WHERE id = $1 AND deleted_at IS NULL
-    `;
-    const checkResult = await pool.query(checkQuery, [contributionId]);
+    // Verificar que la contribución existe
+    const checkResult = await db.query(
+      `SELECT id, assigned_to FROM app.user_contributions WHERE id = $1`,
+      [contributionId]
+    );
 
     if (checkResult.rows.length === 0) {
       return NextResponse.json({ error: 'Contribución no encontrada' }, { status: 404 });
@@ -109,9 +92,17 @@ export async function DELETE(
 
     const contribution = checkResult.rows[0];
 
+    // Verificar roles del usuario
+    const roleCheck = await db.query(
+      `SELECT r.name FROM app.user_roles ur
+       INNER JOIN app.roles r ON ur.role_id = r.id
+       WHERE ur.user_id = $1 AND r.name = 'admin'`,
+      [currentUser.userId]
+    );
+    const isAdmin = roleCheck.rows.length > 0;
+
     // Solo permitir liberar si está asignado al usuario actual o si es admin
-    const isAdmin = (decoded as any).isAdmin;
-    if (contribution.assigned_to_user_id !== userId && !isAdmin) {
+    if (contribution.assigned_to !== currentUser.userId && !isAdmin) {
       return NextResponse.json(
         { error: 'No puedes liberar un caso que no está asignado a ti' },
         { status: 403 }
@@ -119,17 +110,14 @@ export async function DELETE(
     }
 
     // Liberar el caso y volver a pending
-    const updateQuery = `
-      UPDATE app.user_contributions
-      SET assigned_to_user_id = NULL,
-          assigned_at = NULL,
-          status = 'pending',
-          updated_at = NOW()
-      WHERE id = $1
-      RETURNING id
-    `;
-    
-    await pool.query(updateQuery, [contributionId]);
+    await db.query(
+      `UPDATE app.user_contributions
+       SET assigned_to = NULL,
+           assigned_at = NULL,
+           status = 'pending'
+       WHERE id = $1`,
+      [contributionId]
+    );
 
     return NextResponse.json({
       success: true,

@@ -6,6 +6,7 @@ import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { ScanRequestCard } from "@/components/contributions/scan-request-card";
 
 const contributionCategories = [
   {
@@ -70,6 +71,11 @@ export default function ContributionCenterPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">
+                    {/* Card especial para solicitar rol de Scanlator */}
+                    <div className="mb-8">
+                        <ScanRequestCard />
+                    </div>
+
                     {contributionCategories.map((category) => (
                         <div key={category.category}>
                             <div className="mb-4">

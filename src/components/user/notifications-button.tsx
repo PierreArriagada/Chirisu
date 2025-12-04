@@ -34,9 +34,21 @@ interface Notification {
   moderator_notes?: string | null;
 }
 
+// Notificaciones genéricas (scan, etc.)
+interface GenericNotification {
+  id: number;
+  type: string;
+  title: string;
+  message: string | null;
+  data: any;
+  readAt: string | null;
+  createdAt: string;
+}
+
 export default function NotificationsButton() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [genericNotifications, setGenericNotifications] = useState<GenericNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -44,11 +56,20 @@ export default function NotificationsButton() {
   // Cargar notificaciones
   const fetchNotifications = async () => {
     try {
+      // Cargar notificaciones tradicionales
       const response = await fetch('/api/user/notifications');
       if (response.ok) {
         const data = await response.json();
         setNotifications(data.notifications || []);
         setUnreadCount(data.total || 0);
+      }
+
+      // Cargar notificaciones genéricas (scan, etc.)
+      const genericResponse = await fetch('/api/user/generic-notifications');
+      if (genericResponse.ok) {
+        const genericData = await genericResponse.json();
+        setGenericNotifications(genericData.notifications || []);
+        setUnreadCount(prev => prev + (genericData.unreadCount || 0));
       }
     } catch (error) {
       console.error('Error al cargar notificaciones:', error);
@@ -77,6 +98,58 @@ export default function NotificationsButton() {
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error al eliminar notificación:', error);
+    }
+  };
+
+  // Eliminar notificación genérica sin navegar
+  const handleDeleteGenericNotification = async (e: React.MouseEvent, notificationId: number) => {
+    e.stopPropagation();
+    
+    try {
+      await fetch('/api/user/generic-notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationIds: [notificationId] })
+      });
+
+      setGenericNotifications(prev => prev.filter(n => n.id !== notificationId));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error al eliminar notificación genérica:', error);
+    }
+  };
+
+  // Click en notificación genérica
+  const handleGenericNotificationClick = async (notification: GenericNotification) => {
+    try {
+      // Marcar como leída
+      await fetch('/api/user/generic-notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationIds: [notification.id] })
+      });
+
+      setGenericNotifications(prev => prev.filter(n => n.id !== notification.id));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      setOpen(false);
+
+      // Navegar según el tipo
+      switch (notification.type) {
+        case 'scan_link_request':
+          router.push('/profile?tab=scan-requests');
+          break;
+        case 'scan_link_approved':
+        case 'scan_link_rejected':
+          router.push('/profile?tab=translations');
+          break;
+        case 'scan_project_abandoned':
+          router.push('/profile?tab=translations');
+          break;
+        default:
+          router.push('/profile/notifications');
+      }
+    } catch (error) {
+      console.error('Error al marcar notificación genérica:', error);
     }
   };
 
@@ -310,13 +383,57 @@ export default function NotificationsButton() {
         </div>
         
         <ScrollArea className="h-[400px]">
-          {notifications.length === 0 ? (
+          {notifications.length === 0 && genericNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
               <Bell className="h-12 w-12 mb-2 opacity-50" />
               <p className="text-sm">No tienes notificaciones</p>
             </div>
           ) : (
             <div className="divide-y">
+              {/* Notificaciones genéricas (scan, etc.) */}
+              {genericNotifications.map((notification) => (
+                <div
+                  key={`generic-${notification.id}`}
+                  className="group relative hover:bg-accent transition-colors"
+                >
+                  <button
+                    onClick={() => handleGenericNotificationClick(notification)}
+                    className="w-full text-left px-4 py-3 pr-10"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">
+                          {notification.title}
+                        </p>
+                        {notification.message && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {notification.message}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatDistanceToNow(new Date(notification.createdAt), {
+                            addSuffix: true,
+                            locale: es,
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={(e) => handleDeleteGenericNotification(e, notification.id)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all"
+                    title="Eliminar notificación"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Notificaciones tradicionales */}
               {notifications.map((notification) => (
                 <div
                   key={notification.id}

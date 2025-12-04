@@ -210,18 +210,33 @@ import { CommentsSection, CommentForm } from '@/components/comments';
 ### `contributions/` - Sistema de Contribuciones
 Componentes para que usuarios contribuyan con información.
 
-**Componentes:**
-- `contribution-form.tsx` - Formulario de contribución
+**Formularios de Contribución:**
+
+| Componente | Usado por | Descripción |
+|------------|-----------|-------------|
+| `anime-contribution-form.tsx` | Anime, Donghua | Formulario completo con episodios, estudios, personajes con VA, enlaces externos |
+| `contribution-form.tsx` | Manga, Manhwa, Manhua, Novela, Fan Comic | Formulario para medios de lectura con volúmenes, capítulos, editoriales |
+
+**Componentes de Soporte:**
 - `contribution-dialog.tsx` - Diálogo de contribución
-- `entity-contribution-form.tsx` - Formulario de entidad
-- `anime-contribution-form.tsx` - Formulario de anime
-- `character-selector.tsx` - Selector de personajes
-- `staff-selector.tsx` - Selector de staff
+- `entity-contribution-form.tsx` - Formulario de entidad (personaje, staff, etc.)
+- `character-selector.tsx` - Selector de personajes con actores de voz
+- `staff-selector.tsx` - Selector de staff con roles
 - `studio-selector.tsx` - Selector de estudios
+- `staff-search.tsx` - Búsqueda de staff
+- `studio-search.tsx` - Búsqueda de estudios
+- `media-relation-search.tsx` - Búsqueda de relaciones
 
 **Uso:**
 ```tsx
-import { ContributionForm, CharacterSelector } from '@/components/contributions';
+// Para anime/donghua
+import { AnimeContributionForm } from '@/components/contributions';
+<AnimeContributionForm mediaType="anime" />
+<AnimeContributionForm mediaType="donghua" />
+
+// Para manga/manhwa/manhua/novela/fan-comic
+import { ContributionForm } from '@/components/contributions';
+<ContributionForm mediaType="manga" />
 ```
 
 ---

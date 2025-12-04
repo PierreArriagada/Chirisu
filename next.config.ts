@@ -5,9 +5,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   // Configuración para usar módulos de Node.js solo en el servidor
   serverExternalPackages: ['pg', 'pg-pool', 'bcryptjs'],
   images: {
@@ -28,7 +25,10 @@ const nextConfig: NextConfig = {
       // Añadir el host de las imágenes de la base de datos si es necesario
     ],
   },
-<<<<<<< HEAD
+  // Añadir la variable de entorno para que esté disponible en el cliente
+  env: {
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  },
   // Headers de seguridad
   async headers() {
     return [
@@ -67,11 +67,6 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
-=======
-  // Añadir la variable de entorno para que esté disponible en el cliente
-  env: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
->>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
   },
 };
 

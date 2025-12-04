@@ -6,10 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/database';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'tu-secreto-super-seguro-cambialo';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
@@ -17,36 +14,21 @@ export async function POST(
 ) {
   try {
     const { id: reviewId } = await params;
-    const { reason, comments } = await request.json();
-
-    // Obtener usuario autenticado desde el token
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-
-    console.log('🔍 Report Review - Token check:', {
-      hasToken: !!token,
-      cookies: cookieStore.getAll().map(c => c.name)
-    });
-
-    if (!token) {
+    
+    // Verificar autenticación usando el método centralizado
+    const currentUser = await getCurrentUser();
+    
+    if (!currentUser) {
       return NextResponse.json(
         { error: 'Usuario no autenticado' },
         { status: 401 }
       );
     }
 
-    let userId: number;
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
-      userId = decoded.userId;
-      console.log('✅ Report Review - User authenticated:', userId);
-    } catch (error) {
-      console.error('❌ Report Review - Token verification failed:', error);
-      return NextResponse.json(
-        { error: 'Token inválido' },
-        { status: 401 }
-      );
-    }
+    const userId = currentUser.userId;
+    
+    // Parsear el body de la petición
+    const { reason, comments } = await request.json();
 
     // Validaciones
     if (!reason) {

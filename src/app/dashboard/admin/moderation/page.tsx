@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Loader2, Shield, ShieldOff } from 'lucide-react';
+import { Users, Loader2, Shield, ShieldOff, BookOpen, BookX } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ export default function ModerationPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [action, setAction] = useState<'promote' | 'demote' | 'suspend' | 'unsuspend' | 'ban'>('promote');
+  const [action, setAction] = useState<'promote' | 'demote' | 'suspend' | 'unsuspend' | 'ban' | 'promote_scan' | 'demote_scan'>('promote');
   const [suspensionReason, setSuspensionReason] = useState('');
   const { toast } = useToast();
 
@@ -103,7 +103,7 @@ export default function ModerationPage() {
     }
   };
 
-  const openDialog = (user: User, actionType: 'promote' | 'demote' | 'suspend' | 'unsuspend' | 'ban') => {
+  const openDialog = (user: User, actionType: 'promote' | 'demote' | 'suspend' | 'unsuspend' | 'ban' | 'promote_scan' | 'demote_scan') => {
     setSelectedUser(user);
     setAction(actionType);
     setSuspensionReason('');
@@ -148,17 +148,36 @@ export default function ModerationPage() {
 
       // Actualizar la lista de usuarios
       setUsers((prev) =>
-        prev.map((user) =>
-          user.id === selectedUser.id
-            ? { 
-                ...user, 
-                roles: action === 'promote' 
-                  ? [...user.roles, 'moderator']
-                  : user.roles.filter(r => r !== 'moderator'),
-                is_active: action === 'unsuspend' ? true : action === 'suspend' ? false : user.is_active
+        prev.map((user) => {
+          if (user.id !== selectedUser.id) return user;
+          
+          let updatedRoles = [...user.roles];
+          
+          switch (action) {
+            case 'promote':
+              if (!updatedRoles.includes('moderator')) {
+                updatedRoles.push('moderator');
               }
-            : user
-        ).filter(user => action !== 'ban' || user.id !== selectedUser.id) // Remover usuario baneado
+              break;
+            case 'demote':
+              updatedRoles = updatedRoles.filter(r => r !== 'moderator');
+              break;
+            case 'promote_scan':
+              if (!updatedRoles.includes('scan')) {
+                updatedRoles.push('scan');
+              }
+              break;
+            case 'demote_scan':
+              updatedRoles = updatedRoles.filter(r => r !== 'scan');
+              break;
+          }
+          
+          return { 
+            ...user, 
+            roles: updatedRoles,
+            is_active: action === 'unsuspend' ? true : action === 'suspend' ? false : user.is_active
+          };
+        }).filter(user => action !== 'ban' || user.id !== selectedUser.id) // Remover usuario baneado
       );
 
       setDialogOpen(false);
@@ -177,14 +196,24 @@ export default function ModerationPage() {
   const getRoleBadge = (roles: string[]) => {
     const isAdmin = roles.includes('admin');
     const isModerator = roles.includes('moderator');
+    const isScan = roles.includes('scan');
+    
+    const badges = [];
     
     if (isAdmin) {
-      return <Badge variant="destructive">Administrador</Badge>;
+      badges.push(<Badge key="admin" variant="destructive">Administrador</Badge>);
     }
     if (isModerator) {
-      return <Badge variant="default">Moderador</Badge>;
+      badges.push(<Badge key="mod" variant="default">Moderador</Badge>);
     }
-    return <Badge variant="secondary">Usuario</Badge>;
+    if (isScan) {
+      badges.push(<Badge key="scan" variant="secondary" className="bg-purple-500/20 text-purple-700 border-purple-500/30">Scanlator</Badge>);
+    }
+    if (badges.length === 0) {
+      badges.push(<Badge key="user" variant="outline">Usuario</Badge>);
+    }
+    
+    return <div className="flex gap-1 flex-wrap">{badges}</div>;
   };
 
   if (loading) {
@@ -255,6 +284,7 @@ export default function ModerationPage() {
                 {filteredUsers.map((userItem) => {
                   const isAdmin = userItem.roles.includes('admin');
                   const isModerator = userItem.roles.includes('moderator');
+                  const isScan = userItem.roles.includes('scan');
                   const isRegularUser = !isAdmin && !isModerator;
                   
                   return (
@@ -288,6 +318,7 @@ export default function ModerationPage() {
                             {/* Solo admins pueden promover/degradar */}
                             {user?.isAdmin && (
                               <>
+                                {/* Promoción a Moderador */}
                                 {isRegularUser && (
                                   <Button
                                     variant="outline"
@@ -295,7 +326,7 @@ export default function ModerationPage() {
                                     onClick={() => openDialog(userItem, 'promote')}
                                   >
                                     <Shield className="h-4 w-4 mr-1" />
-                                    Promover
+                                    Mod
                                   </Button>
                                 )}
                                 {isModerator && (
@@ -305,7 +336,31 @@ export default function ModerationPage() {
                                     onClick={() => openDialog(userItem, 'demote')}
                                   >
                                     <ShieldOff className="h-4 w-4 mr-1" />
-                                    Degradar
+                                    -Mod
+                                  </Button>
+                                )}
+                                
+                                {/* Rol Scanlator */}
+                                {!isScan && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-purple-500/50 text-purple-700 hover:bg-purple-500/10"
+                                    onClick={() => openDialog(userItem, 'promote_scan')}
+                                  >
+                                    <BookOpen className="h-4 w-4 mr-1" />
+                                    Scan
+                                  </Button>
+                                )}
+                                {isScan && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-purple-500/50 text-purple-700 hover:bg-purple-500/10"
+                                    onClick={() => openDialog(userItem, 'demote_scan')}
+                                  >
+                                    <BookX className="h-4 w-4 mr-1" />
+                                    -Scan
                                   </Button>
                                 )}
                               </>
@@ -366,6 +421,8 @@ export default function ModerationPage() {
               {action === 'suspend' && 'Suspender Usuario'}
               {action === 'unsuspend' && 'Activar Usuario'}
               {action === 'ban' && 'Banear Usuario'}
+              {action === 'promote_scan' && 'Otorgar Rol Scanlator'}
+              {action === 'demote_scan' && 'Remover Rol Scanlator'}
             </DialogTitle>
             <DialogDescription>
               {action === 'promote' && (
@@ -396,6 +453,18 @@ export default function ModerationPage() {
                 <>
                   ¿Estás seguro de que deseas banear permanentemente a <strong>{selectedUser?.username}</strong>? 
                   Esta acción no se puede deshacer y el usuario será eliminado del sistema.
+                </>
+              )}
+              {action === 'promote_scan' && (
+                <>
+                  ¿Estás seguro de que deseas otorgar el rol de <strong>Scanlator</strong> a <strong>{selectedUser?.username}</strong>? 
+                  Podrá gestionar proyectos de traducción y subir capítulos.
+                </>
+              )}
+              {action === 'demote_scan' && (
+                <>
+                  ¿Estás seguro de que deseas remover el rol de <strong>Scanlator</strong> de <strong>{selectedUser?.username}</strong>? 
+                  Perderá acceso a la gestión de proyectos de traducción.
                 </>
               )}
             </DialogDescription>

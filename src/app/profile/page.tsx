@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { UserList, TitleInfo } from '@/lib/types';
-import { UserMediaList, CustomListsCard, ContributionsCard, UserContributionsCard, FavoritesCard } from '@/components/user';
+import { UserMediaList, CustomListsCard, ContributionsCard, UserContributionsCard, FavoritesCard, ScanlatorProjectsCard, ScanLinkRequestsCard } from '@/components/user';
 import { ListPrivacyToggle } from '@/components/lists';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -107,7 +107,6 @@ export default function ProfilePage() {
     }
   }, [user, authLoading, router]);
 
-<<<<<<< HEAD
   async function loadProfile() {
     try {
       setLoading(true);
@@ -130,82 +129,6 @@ export default function ProfilePage() {
     } catch (err: any) {
       console.error('Error al cargar perfil:', err);
       setError(err.message || 'Error al cargar el perfil');
-=======
-  const handleCreateList = (name: string) => {
-    // PSQL: `INSERT INTO lists (user_id, name, is_public) VALUES ($1, $2, false) RETURNING *;`
-    if (user) {
-        const newList: CustomListType = {
-            id: `custom-${Date.now()}`,
-            name,
-            items: [],
-            isPublic: false,
-        };
-        const updatedLists = [...customLists, newList];
-        setCustomLists(updatedLists);
-        updateUser({ ...user, customLists: updatedLists });
-        toast({
-            title: "Lista creada",
-            description: `La lista "${name}" ha sido creada.`,
-        });
-    }
-  };
-
-  const handleEditList = (id: string, newName: string) => {
-    // PSQL: `UPDATE lists SET name = $1 WHERE id = $2 AND user_id = $3;`
-    if (user) {
-        const updatedLists = customLists.map(list =>
-            list.id === id ? { ...list, name: newName } : list
-        );
-        setCustomLists(updatedLists);
-        updateUser({ ...user, customLists: updatedLists });
-        toast({
-            title: "Lista actualizada",
-            description: `La lista ha sido renombrada a "${newName}".`,
-        });
-    }
-  };
-
-  const handleDeleteList = (id: string) => {
-    // PSQL: `DELETE FROM lists WHERE id = $1 AND user_id = $2;`
-    if (user) {
-        const updatedLists = customLists.filter(list => list.id !== id);
-        setCustomLists(updatedLists);
-        updateUser({ ...user, customLists: updatedLists });
-        toast({
-            title: "Lista eliminada",
-            description: "La lista ha sido eliminada correctamente.",
-            variant: "destructive",
-        });
-    }
-  };
-
-  const handleRemoveItemFromList = (listId: string, itemId: string) => {
-    // PSQL: `DELETE FROM list_items WHERE list_id = $1 AND item_id = $2;`
-    if (user) {
-        const updatedLists = customLists.map(list => {
-            if (list.id === listId) {
-                return { ...list, items: list.items.filter(item => item.id !== itemId) };
-            }
-            return list;
-        });
-        setCustomLists(updatedLists);
-        updateUser({ ...user, customLists: updatedLists });
-        toast({
-            title: "Elemento eliminado",
-            description: "El elemento ha sido eliminado de la lista.",
-        });
-    }
-  };
-  
-  const handleCustomListPrivacyChange = (listId: string, isPublic: boolean) => {
-    // PSQL: `UPDATE lists SET is_public = $1 WHERE id = $2 AND user_id = $3;`
-    if (user) {
-      const updatedLists = customLists.map(list =>
-        list.id === listId ? { ...list, isPublic } : list
-      );
-      setCustomLists(updatedLists);
-      updateUser({ ...user, customLists: updatedLists });
->>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -506,12 +429,8 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-<<<<<<< HEAD
       {/* CARD: Información del Usuario */}
       <Card className="max-w-4xl mx-auto">
-=======
-      <Card>
->>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <Avatar className="h-24 w-24">
@@ -541,12 +460,8 @@ export default function ProfilePage() {
         </CardFooter>
       </Card>
 
-<<<<<<< HEAD
       {/* CARD: Listas Predefinidas (Tabs) */}
       <Card className="max-w-4xl mx-auto">
-=======
-      <Card>
->>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
         <Tabs defaultValue="pending" className="w-full">
           <CardHeader>
             <TabsList className="grid w-full grid-cols-3 h-auto">
@@ -588,10 +503,17 @@ export default function ProfilePage() {
         onPrivacyChange={handleCustomListPrivacyChange}
       />
 
-<<<<<<< HEAD
       {/* CARD: Contribuciones */}
       <div className="max-w-4xl mx-auto">
         <UserContributionsCard contributions={profile.contributions} />
+      </div>
+
+      {/* CARD: Proyectos de Scanlation (solo para rol scan) */}
+      <ScanlatorProjectsCard userId={profile.id} isOwnProfile={true} />
+
+      {/* CARD: Solicitudes de vinculación pendientes (solo para scans con grupos verificados) */}
+      <div className="max-w-4xl mx-auto">
+        <ScanLinkRequestsCard userId={profile.id} />
       </div>
 
       {/* CARD: Favoritos Generales (Anime, Manga, Novelas) */}
@@ -617,19 +539,6 @@ export default function ProfilePage() {
             </p>
           )}
         </CardContent>
-=======
-      <Card>
-          <CardHeader>
-            <CardTitle>Favoritos</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-             <ListPrivacyToggle
-                isPublic={listSettings.favorites === 'public'}
-                onCheckedChange={(isPublic) => handlePrivacyChange('favorites', isPublic)}
-                />
-            <UserMediaList items={user.lists.favorites} />
-          </CardContent>
->>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
       </Card>
 
       {/* CARD: Favoritos de Personas (Personajes, Actores de Voz, Staff) */}

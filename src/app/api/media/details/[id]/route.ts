@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/database';
 
 // ============================================
-// ENDPOINT: GET /api/media/[id]
+// ENDPOINT: GET /api/media/details/[id]
 // Obtener detalles completos de un medio
 // Query params: type (anime, manga, novel)
 // ============================================
@@ -55,7 +55,7 @@ export async function GET(
       ? `m.id = $1` 
       : `m.slug = $1`;
 
-    console.log(`📡 API /media/[id] - ID: ${id}, Es numérico: ${isNumericId}, Type: ${type}`);
+    console.log(`📡 API /media/details/[id] - ID: ${id}, Es numérico: ${isNumericId}, Type: ${type}`);
 
     // 1. OBTENER DATOS DEL MEDIO
     const mediaQuery = `
@@ -90,7 +90,7 @@ export async function GET(
       JOIN app.genres g ON mg.genre_id = g.id
       WHERE mg.titleable_type = $1 AND mg.titleable_id = $2
     `;
-    const genresResult = await db.query(genresQuery, [type, mediaId]); // ← Usar mediaId
+    const genresResult = await db.query(genresQuery, [type, mediaId]);
 
     // 3. OBTENER ENLACES EXTERNOS
     const linksQuery = `
@@ -98,7 +98,7 @@ export async function GET(
       FROM app.external_links
       WHERE linkable_type = $1 AND linkable_id = $2
     `;
-    const linksResult = await db.query(linksQuery, [type, mediaId]); // ← Usar mediaId
+    const linksResult = await db.query(linksQuery, [type, mediaId]);
 
     // 4. OBTENER TÍTULOS ALTERNATIVOS
     const alternativeTitlesQuery = `
@@ -201,13 +201,11 @@ export async function GET(
       FROM app.list_items li
       WHERE li.listable_type = $1 AND li.listable_id = $2
     `;
-    const statsResult = await db.query(statsQuery, [type, mediaId]); // ← Usar mediaId
+    const statsResult = await db.query(statsQuery, [type, mediaId]);
     
     console.log(`📊 Stats para ${type} ${mediaId}:`, statsResult.rows[0]);
 
     // 11. OBTENER RANKING
-    // Primero intenta usar el ranking de la columna (actualizado por triggers)
-    // Si no existe o es 0, calcula dinámicamente
     let currentRanking = media.ranking && media.ranking > 0 ? media.ranking : undefined;
     
     // Si no hay ranking en la columna, calcular dinámicamente
@@ -239,41 +237,59 @@ export async function GET(
     
     console.log(`🏆 Ranking para ${type} ${mediaId}: ${currentRanking} (desde ${media.ranking > 0 ? 'columna' : 'cálculo dinámico'})`);
 
-    // 5. CONSTRUIR RESPUESTA
+    // 12. CONSTRUIR RESPUESTA
+    // Para manhwa/manhua/donghua/fan_comic priorizar título español sobre romaji
+    const getPrimaryTitle = () => {
+      // Para contenido coreano/chino, priorizar español si existe
+      if (['manhwa', 'manhua', 'donghua', 'fan_comic'].includes(type)) {
+        return media.title_spanish || media.title_english || media.title_romaji || media.title_native;
+      }
+      // Para anime/manga/novel japonés, priorizar romaji
+      return media.title_romaji || media.title_english || media.title_spanish || media.title_native;
+    };
+
     const response = {
       id: media.id.toString(),
-      title: media.title_romaji || media.title_english || media.title_native,
+      title: getPrimaryTitle(),
+      titleSpanish: media.title_spanish,
       titleNative: media.title_native,
       titleRomaji: media.title_romaji,
       titleEnglish: media.title_english,
       synopsis: media.synopsis,
       imageUrl: media.cover_image_url,
       bannerUrl: media.banner_image_url,
-      dominantColor: media.dominant_color, // Color dominante para tema dinámico
+      dominantColor: media.dominant_color,
       rating: parseFloat(media.average_score) || 0,
       ratingsCount: media.ratings_count || 0,
-      ranking: currentRanking, // ← Usar el ranking calculado
+      ranking: currentRanking,
       popularity: media.popularity || 0,
-      type: media.type || type, // ← Usar media.type de la BD (Movie, TV, Manhwa, etc.), fallback al parámetro URL
-      mediaCategory: type, // ← Nuevo campo para distinguir: anime, manga, manhwa, etc.
+      type: media.type || type,
+      mediaCategory: type,
       status: media.status_label || 'Desconocido',
       statusCode: media.status_code || 'unknown',
       slug: media.slug,
       countryOfOrigin: media.country_of_origin,
       
-      // Campos específicos de anime
-      ...(type === 'anime' && {
+      // Campos comunes de fechas
+      startDate: media.start_date,
+      endDate: media.end_date,
+      
+      // Campos específicos de anime/donghua
+      ...((type === 'anime' || type === 'donghua') && {
         episodes: media.episode_count,
+        episodeCount: media.episode_count,
+        duration: media.duration,
         season: media.season,
+        seasonYear: media.season_year,
         source: media.source,
-        startDate: media.start_date,
-        endDate: media.end_date,
+        trailerUrl: media.trailer_url,
       }),
       
-      // Campos específicos de manga/novels
-      ...(type !== 'anime' && {
+      // Campos específicos de manga/manhwa/manhua/novel/fan_comic
+      ...((type !== 'anime' && type !== 'donghua') && {
         volumes: media.volumes,
         chapters: media.chapters,
+        source: media.source,
       }),
 
       // Géneros
@@ -364,7 +380,7 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error('❌ Error en GET /api/media/[id]:', error);
+    console.error('❌ Error en GET /api/media/details/[id]:', error);
     
     return NextResponse.json(
       { error: 'Error al obtener detalles del medio' },

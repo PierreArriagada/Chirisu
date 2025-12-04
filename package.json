@@ -47,6 +47,7 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "colorthief": "^2.4.0",
     "commander": "^14.0.2",
     "cookie": "^1.0.2",
@@ -58,22 +59,18 @@
     "genkit": "^1.14.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.475.0",
-    "next": "15.3.3",
+    "next": "16.0.7",
     "next-auth": "^4.24.13",
     "next-themes": "^0.3.0",
     "node-fetch": "^2.7.0",
     "nodemailer": "^7.0.10",
     "otpauth": "^9.4.1",
     "patch-package": "^8.0.0",
-<<<<<<< HEAD
     "pg": "^8.16.3",
     "qrcode": "^1.5.4",
-=======
-    "pg": "^8.12.0",
->>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
-    "react": "^18.3.1",
+    "react": "19.2.1",
     "react-day-picker": "^8.10.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "19.2.1",
     "react-hook-form": "^7.54.2",
     "recharts": "^2.15.1",
     "server-only": "^0.0.1",
@@ -89,19 +86,19 @@
     "@types/cookie": "^0.6.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
-<<<<<<< HEAD
     "@types/node-fetch": "^2.6.11",
     "@types/pg": "^8.15.6",
-=======
-    "@types/pg": "^8.11.6",
->>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "eslint": "9.37.0",
-    "eslint-config-next": "15.5.5",
+    "eslint-config-next": "16.0.7",
     "genkit-cli": "^1.14.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3"
   }
 }

@@ -10,3 +10,4 @@ export { AnimeContributionForm } from './anime-contribution-form';
 export { CharacterSelector } from './character-selector';
 export { StaffSelector } from './staff-selector';
 export { StudioSelector } from './studio-selector';
+export { ScanlationGroupSearch } from './scanlation-group-search';

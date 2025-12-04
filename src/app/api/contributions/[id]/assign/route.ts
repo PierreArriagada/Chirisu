@@ -78,11 +78,12 @@ export async function POST(
       );
     }
 
-    // Asignar la contribución al moderador actual
+    // Asignar la contribución al moderador actual y cambiar estado a in_review
     await db.query(
       `UPDATE app.user_contributions 
        SET assigned_to = $1, 
-           assigned_at = CURRENT_TIMESTAMP
+           assigned_at = CURRENT_TIMESTAMP,
+           status = 'in_review'
        WHERE id = $2`,
       [currentUser.userId, id]
     );
@@ -146,11 +147,12 @@ export async function DELETE(
       );
     }
 
-    // Liberar la asignación
+    // Liberar la asignación y volver a pending
     await db.query(
       `UPDATE app.user_contributions 
        SET assigned_to = NULL, 
-           assigned_at = NULL
+           assigned_at = NULL,
+           status = 'pending'
        WHERE id = $1`,
       [id]
     );

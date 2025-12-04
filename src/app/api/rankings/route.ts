@@ -95,7 +95,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Fan Comics usa 'title' en lugar de 'title_romaji'
-    const titleColumn = type === 'fan_comic' ? 'title' : 'title_romaji';
+    // Para manhwa, manhua y donghua: preferir español > inglés > romaji
+    let titleColumn: string;
+    if (type === 'fan_comic') {
+      titleColumn = 'title';
+    } else if (['manhwa', 'manhua', 'donghua'].includes(type)) {
+      titleColumn = "COALESCE(NULLIF(title_spanish, ''), NULLIF(title_english, ''), title_romaji)";
+    } else {
+      titleColumn = 'title_romaji';
+    }
 
     switch (period) {
       case 'daily':

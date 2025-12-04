@@ -13,7 +13,7 @@ import { db } from './database';
 // TIPOS
 // ============================================
 
-export type RoleName = 'admin' | 'moderator' | 'user';
+export type RoleName = 'admin' | 'moderator' | 'user' | 'scan';
 
 export interface Permission {
   id: number;
@@ -171,6 +171,14 @@ export async function isModerator(userId: number): Promise<boolean> {
 export async function isAdminOrModerator(userId: number): Promise<boolean> {
   const roles = await getUserRoles(userId);
   return roles.includes('admin') || roles.includes('moderator');
+}
+
+// ============================================
+// VERIFICAR SI ES SCANLATOR
+// ============================================
+
+export async function isScanlator(userId: number): Promise<boolean> {
+  return hasRole(userId, 'scan');
 }
 
 // ============================================

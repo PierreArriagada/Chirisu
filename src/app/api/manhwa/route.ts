@@ -85,7 +85,8 @@ export async function GET(request: NextRequest) {
       `SELECT 
         m.id,
         m.slug,
-        m.title_romaji as title,
+        COALESCE(NULLIF(m.title_spanish, ''), NULLIF(m.title_english, ''), m.title_romaji) as title,
+        m.title_romaji as "titleRomaji",
         m.title_english as "titleEnglish",
         m.title_spanish as "titleSpanish",
         m.title_native as "titleNative",

@@ -44,5 +44,10 @@ next-env.d.ts
 firebase-debug.log
 firestore-debug.log
 
+# Windows backup files
+*- copia*
+*- Copy*
+
 docs/IMPLEMENTACION-COMPLETA.md
 docs/SISTEMA-AUTH-MEJORADO.md
+docs

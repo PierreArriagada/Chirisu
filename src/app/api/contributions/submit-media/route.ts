@@ -46,20 +46,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Enriquecer datos con información adicional
+    const enrichedData = {
+      ...contributionData,
+      type: 'new_media',
+      submittedAt: new Date().toISOString(),
+    };
+
     // Insertar contribución en user_contributions
+    // Nota: el campo es user_id, NO contributor_user_id
     const result = await db.query(
       `INSERT INTO app.user_contributions (
         user_id,
         contributable_type,
+        contributable_id,
         contribution_data,
         status,
-        created_at
-      ) VALUES ($1, $2, $3, 'pending', NOW())
-      RETURNING id`,
+        is_visible_in_profile
+      ) VALUES ($1, $2, $3, $4, 'pending', true)
+      RETURNING id, created_at`,
       [
         currentUser.userId,
         mediaType,
-        JSON.stringify(contributionData)
+        null, // contributable_id es null para nuevo contenido
+        JSON.stringify(enrichedData)
       ]
     );
 

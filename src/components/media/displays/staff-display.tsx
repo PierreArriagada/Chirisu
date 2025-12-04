@@ -27,7 +27,7 @@ interface StaffMember {
 
 interface StaffDisplayProps {
   mediaId: number;
-  mediaType: 'anime' | 'manga';
+  mediaType: 'anime' | 'manga' | 'manhwa' | 'manhua' | 'donghua' | 'novel' | 'fan_comic';
 }
 
 export default function StaffDisplay({ mediaId, mediaType }: StaffDisplayProps) {
@@ -39,7 +39,8 @@ export default function StaffDisplay({ mediaId, mediaType }: StaffDisplayProps) 
     async function fetchStaff() {
       try {
         setLoading(true);
-        const response = await fetch(`/api/${mediaType}/${mediaId}/staff`);
+        // Usar la nueva API genérica que soporta todos los tipos
+        const response = await fetch(`/api/media/${mediaType}/${mediaId}/staff`);
         
         if (!response.ok) {
           throw new Error('Error al cargar staff');
@@ -48,7 +49,8 @@ export default function StaffDisplay({ mediaId, mediaType }: StaffDisplayProps) 
         const result = await response.json();
         
         if (result.success) {
-          setStaff(result.data);
+          // La nueva API devuelve { staff: [], byRole: {}, total: N }
+          setStaff(result.data.staff || result.data);
         } else {
           throw new Error(result.error || 'Error desconocido');
         }

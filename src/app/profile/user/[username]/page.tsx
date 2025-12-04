@@ -28,11 +28,13 @@ import {
   Cake,
   Award,
   Copy,
-  Check
+  Check,
+  BookOpen
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ScanlatorProjectsCard } from '@/components/user';
 
 interface UserProfile {
   id: number;
@@ -230,6 +232,9 @@ export default function UserPublicProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Card de Proyectos de Scanlation - primero, prominente para usuarios scan */}
+      <ScanlatorProjectsCard userId={profile.id} isOwnProfile={false} />
 
       {/* Estadísticas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

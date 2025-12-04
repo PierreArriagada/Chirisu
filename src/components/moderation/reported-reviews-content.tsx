@@ -82,7 +82,7 @@ interface ReportedReview {
 }
 
 interface ReportedReviewsContentProps {
-  status: 'pending' | 'reviewing' | 'resolved' | 'rejected';
+  status: 'pending' | 'reviewing' | 'resolved' | 'rejected' | 'dismissed';
 }
 
 export function ReportedReviewsContent({ status }: ReportedReviewsContentProps) {
@@ -289,43 +289,61 @@ export function ReportedReviewsContent({ status }: ReportedReviewsContentProps) 
           <Card key={report.reportId}>
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant={getReasonColor(report.reason)}>
-                      <AlertCircle className="h-3 w-3 mr-1" />
-                      {getReasonLabel(report.reason)}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Reportado {formatDistanceToNow(new Date(report.reportedAt), { addSuffix: true, locale: es })}
-                    </span>
-                  </div>
+                <div className="flex-1 space-y-2">
+                  {/* Título: Review de [Media] */}
                   <CardTitle className="text-base">
                     Review de{' '}
                     <Link 
                       href={`/${report.review.media.type}/${report.review.media.slug}`}
                       className="text-primary hover:underline"
                     >
-                      {report.review.media.title}
+                      {report.review.media.title || 'Sin título'}
                     </Link>
                   </CardTitle>
-                  <CardDescription>
-                    {report.description || 'Sin descripción adicional'}
-                  </CardDescription>
+                  
+                  {/* Información del reporte */}
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant={getReasonColor(report.reason)}>
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        {getReasonLabel(report.reason)}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Reportado {formatDistanceToNow(new Date(report.reportedAt), { addSuffix: true, locale: es })}
+                      </span>
+                    </div>
+                    
+                    {/* Quién reportó */}
+                    <div className="flex items-center gap-2 text-sm">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        Reportado por: <strong className="text-foreground">@{report.reporter.username || report.reporter.displayName}</strong>
+                      </span>
+                    </div>
+                    
+                    {/* Motivo detallado del reporte */}
+                    {report.description && (
+                      <div className="text-sm">
+                        <span className="font-medium">Motivo:</span>
+                        <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{report.description}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* Contenido de la review */}
+              {/* Contenido de la review reportada */}
               <div className="border rounded-lg p-4 bg-muted/50">
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={report.review.author.avatarUrl || undefined} />
-                    <AvatarFallback>{report.review.author.displayName[0]}</AvatarFallback>
+                    <AvatarFallback>{(report.review.author.displayName || report.review.author.username || 'U')[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm">{report.review.author.displayName}</span>
+                      <span className="font-semibold text-sm">{report.review.author.displayName || report.review.author.username || 'Usuario'}</span>
                       <div className="flex items-center gap-1">
                         {[...Array(5)].map((_, i) => (
                           <Star
@@ -345,14 +363,6 @@ export function ReportedReviewsContent({ status }: ReportedReviewsContentProps) 
                 <p className="text-sm whitespace-pre-wrap">{report.review.content}</p>
               </div>
 
-              {/* Información del reporte */}
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  <span>Reportado por: <strong>{report.reporter.displayName}</strong></span>
-                </div>
-              </div>
-
               {/* Información de resolución (si aplica) */}
               {report.moderator && report.resolutionNote && (
                 <div className="border-t pt-4 mt-4">
@@ -362,7 +372,7 @@ export function ReportedReviewsContent({ status }: ReportedReviewsContentProps) 
                       <p className="font-semibold">Resolución:</p>
                       <p className="text-muted-foreground">{report.resolutionNote}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Por {report.moderator.displayName}
+                        Por {report.moderator.displayName || 'Moderador'}
                       </p>
                     </div>
                   </div>

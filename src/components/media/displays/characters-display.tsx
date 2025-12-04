@@ -53,7 +53,7 @@ interface CharactersData {
 
 interface CharactersDisplayProps {
   mediaId: number;
-  mediaType: 'anime' | 'manga';
+  mediaType: 'anime' | 'manga' | 'manhwa' | 'manhua' | 'donghua' | 'novel' | 'fan_comic';
 }
 
 export default function CharactersDisplay({ mediaId, mediaType }: CharactersDisplayProps) {
@@ -65,7 +65,8 @@ export default function CharactersDisplay({ mediaId, mediaType }: CharactersDisp
     async function fetchCharacters() {
       try {
         setLoading(true);
-        const response = await fetch(`/api/${mediaType}/${mediaId}/characters`);
+        // Usar la nueva API genérica que soporta todos los tipos
+        const response = await fetch(`/api/media/${mediaType}/${mediaId}/characters`);
         
         if (!response.ok) {
           throw new Error('Error al cargar personajes');

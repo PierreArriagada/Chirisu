@@ -154,7 +154,7 @@ const useDominantColor = (imageUrl: string) => {
 
     img.onerror = () => {
       clearTimeout(timeout); // Cancelar timeout si hay error inmediato
-      console.error("Error loading image for color extraction.");
+      // Esto es normal cuando la imagen no existe o hay error de red - no es un error crítico
       setColor([128, 128, 128]); // fallback gris neutral
       processingRef.current = false;
     };

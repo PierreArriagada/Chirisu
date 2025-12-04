@@ -160,9 +160,9 @@ export async function PATCH(
       );
     }
 
-    // Obtener contribución
+    // Obtener contribución (puede estar en pending o in_review)
     const contributionResult = await db.query(
-      `SELECT * FROM app.user_contributions WHERE id = $1 AND status = 'pending'`,
+      `SELECT * FROM app.user_contributions WHERE id = $1 AND status IN ('pending', 'in_review')`,
       [contributionId]
     );
 

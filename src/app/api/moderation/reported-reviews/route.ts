@@ -78,12 +78,12 @@ export async function GET(request: NextRequest) {
         u_assigned.display_name as assigned_to_display_name,
         -- Información del medio
         COALESCE(
-          a.title,
-          m.title,
-          n.title,
-          d.title,
-          mh.title,
-          mw.title,
+          a.title_romaji,
+          m.title_romaji,
+          n.title_romaji,
+          d.title_romaji,
+          mh.title_romaji,
+          mw.title_romaji,
           fc.title
         ) as media_title,
         COALESCE(
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
       LEFT JOIN app.donghua d ON r.reviewable_type = 'donghua' AND r.reviewable_id = d.id
       LEFT JOIN app.manhua mh ON r.reviewable_type = 'manhua' AND r.reviewable_id = mh.id
       LEFT JOIN app.manhwa mw ON r.reviewable_type = 'manhwa' AND r.reviewable_id = mw.id
-      LEFT JOIN app.fan_comic fc ON r.reviewable_type = 'fan_comic' AND r.reviewable_id = fc.id
+      LEFT JOIN app.fan_comics fc ON r.reviewable_type = 'fan_comic' AND r.reviewable_id = fc.id
       WHERE rr.status = $1
         AND (
           $4 = true 

@@ -27,9 +27,10 @@ interface StaffMember {
 interface StaffSelectorProps {
   selectedStaff: StaffMember[];
   onChange: (staff: StaffMember[]) => void;
+  roles?: string[];
 }
 
-const STAFF_ROLES = [
+const DEFAULT_STAFF_ROLES = [
   'Director',
   'Original Creator',
   'Script',
@@ -42,13 +43,14 @@ const STAFF_ROLES = [
   'Episode Director',
 ];
 
-export function StaffSelector({ selectedStaff, onChange }: StaffSelectorProps) {
+export function StaffSelector({ selectedStaff, onChange, roles }: StaffSelectorProps) {
+  const staffRoles = roles || DEFAULT_STAFF_ROLES;
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [newStaffName, setNewStaffName] = useState('');
   const [newStaffNameNative, setNewStaffNameNative] = useState('');
-  const [selectedRole, setSelectedRole] = useState('Director');
+  const [selectedRole, setSelectedRole] = useState(staffRoles[0]);
   const { toast } = useToast();
 
   // Buscar staff
@@ -167,12 +169,12 @@ export function StaffSelector({ selectedStaff, onChange }: StaffSelectorProps) {
                   </div>
                 </div>
                 <div className="mt-2 flex gap-2">
-                  <Select onValueChange={(role) => addStaff(staff, role)} defaultValue="Director">
+                  <Select onValueChange={(role) => addStaff(staff, role)} defaultValue={staffRoles[0]}>
                     <SelectTrigger className="w-48">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {STAFF_ROLES.map((role) => (
+                      {staffRoles.map((role) => (
                         <SelectItem key={role} value={role}>
                           {role}
                         </SelectItem>
@@ -181,7 +183,7 @@ export function StaffSelector({ selectedStaff, onChange }: StaffSelectorProps) {
                   </Select>
                   <Button
                     size="sm"
-                    onClick={() => addStaff(staff, 'Director')}
+                    onClick={() => addStaff(staff, staffRoles[0])}
                   >
                     Agregar
                   </Button>
@@ -211,7 +213,7 @@ export function StaffSelector({ selectedStaff, onChange }: StaffSelectorProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {STAFF_ROLES.map((role) => (
+              {staffRoles.map((role) => (
                 <SelectItem key={role} value={role}>
                   {role}
                 </SelectItem>

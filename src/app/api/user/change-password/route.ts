@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { db } from '@/lib/database';
+import { getCurrentUser } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
 /**
@@ -9,30 +9,17 @@ import bcrypt from 'bcryptjs';
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    // Verificar autenticación usando el método centralizado
+    const currentUser = await getCurrentUser();
 
-    if (!token) {
+    if (!currentUser) {
       return NextResponse.json(
         { error: 'No autenticado' },
         { status: 401 }
       );
     }
 
-    // Verificar token y obtener userId
-    const sessionResult = await db.query<{ user_id: number }>(
-      `SELECT user_id FROM app.sessions WHERE token = $1 AND expires_at > NOW()`,
-      [token]
-    );
-
-    if (sessionResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'Sesión inválida o expirada' },
-        { status: 401 }
-      );
-    }
-
-    const userId = sessionResult.rows[0].user_id;
+    const userId = currentUser.userId;
 
     // Obtener datos del body
     const body = await request.json();

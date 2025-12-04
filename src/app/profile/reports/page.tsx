@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, CheckCircle, Clock, XCircle, ExternalLink, MessageSquare } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, XCircle, ExternalLink, MessageSquare, Star } from 'lucide-react';
 
 // Reportes de contenido (anime, manga, etc.)
 interface ContentReport {
@@ -46,7 +46,31 @@ interface CommentReport {
   type: 'comment';
 }
 
-type Report = ContentReport | CommentReport;
+// Reportes de reviews
+interface ReviewReport {
+  id: string;
+  reason: string;
+  description: string;
+  status: string;
+  resolution_notes?: string;
+  action_taken?: string;
+  created_at: string;
+  resolved_at?: string;
+  resolved_by_username?: string;
+  resolved_by_display_name?: string;
+  review_id: number;
+  review_content: string;
+  rating: number;
+  review_deleted: string | null;
+  reviewable_type: string;
+  reviewable_id: number;
+  review_author_username?: string;
+  review_author_display_name?: string;
+  content_title: string;
+  type: 'review';
+}
+
+type Report = ContentReport | CommentReport | ReviewReport;
 
 const STATUS_CONFIG = {
   pending: { label: 'Pendiente', icon: Clock, color: 'bg-yellow-500' },
@@ -98,13 +122,15 @@ export default function UserReportsPage() {
     setLoading(true);
     try {
       // SIEMPRE cargar TODOS los reportes sin filtro
-      const [contentResponse, commentResponse] = await Promise.all([
+      const [contentResponse, commentResponse, reviewResponse] = await Promise.all([
         fetch(`/api/user/reports?limit=100`, { credentials: 'include' }),
         fetch(`/api/user/comment-reports?limit=100`, { credentials: 'include' }),
+        fetch(`/api/user/review-reports?limit=100`, { credentials: 'include' }),
       ]);
 
       const contentData = contentResponse.ok ? await contentResponse.json() : { reports: [] };
       const commentData = commentResponse.ok ? await commentResponse.json() : { reports: [] };
+      const reviewData = reviewResponse.ok ? await reviewResponse.json() : { reports: [] };
 
       // Marcar tipo de reporte
       const contentReports: ContentReport[] = (contentData.reports || []).map((r: any) => ({
@@ -117,8 +143,13 @@ export default function UserReportsPage() {
         type: 'comment' as const,
       }));
 
+      const reviewReports: ReviewReport[] = (reviewData.reports || []).map((r: any) => ({
+        ...r,
+        type: 'review' as const,
+      }));
+
       // Combinar y ordenar por fecha
-      const combined = [...contentReports, ...commentReports].sort(
+      const combined = [...contentReports, ...commentReports, ...reviewReports].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
 
@@ -146,6 +177,18 @@ export default function UserReportsPage() {
         fan_comic: 'fan-comic',
       };
       return `/${typeMap[report.commentable_type] || 'anime'}/${report.commentable_id}`;
+    } else if (report.type === 'review') {
+      const typeMap: Record<string, string> = {
+        anime: 'anime',
+        manga: 'manga',
+        novel: 'novela',
+        novels: 'novela',
+        donghua: 'dougua',
+        manhua: 'manhua',
+        manhwa: 'manwha',
+        fan_comic: 'fan-comic',
+      };
+      return `/${typeMap[report.reviewable_type] || 'anime'}/${report.reviewable_id}`;
     } else {
       const typeMap: Record<string, string> = {
         anime: 'anime',
@@ -190,7 +233,7 @@ export default function UserReportsPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Mis Reportes</h1>
         <p className="text-muted-foreground">
-          Historial de todos los reportes que has enviado (contenido y comentarios)
+          Historial de todos los reportes que has enviado (contenido, comentarios y reviews)
         </p>
       </div>
 
@@ -225,6 +268,7 @@ export default function UserReportsPage() {
               const normalizedStatus = normalizeStatus(report.status);
               const StatusIcon = STATUS_CONFIG[normalizedStatus as keyof typeof STATUS_CONFIG]?.icon || Clock;
               const isCommentReport = report.type === 'comment';
+              const isReviewReport = report.type === 'review';
               
               return (
                 <Card key={`${report.type}-${report.id}`}>
@@ -233,11 +277,12 @@ export default function UserReportsPage() {
                       <div className="flex-1">
                         <CardTitle className="text-lg mb-2 flex items-center gap-2">
                           {isCommentReport && <MessageSquare className="h-4 w-4" />}
+                          {isReviewReport && <Star className="h-4 w-4" />}
                           {report.content_title}
                         </CardTitle>
                         <CardDescription className="flex flex-wrap gap-2 items-center">
                           <Badge variant="outline">
-                            {isCommentReport ? 'Comentario reportado' : TYPE_LABELS[report.type === 'content' ? report.reportable_type : ''] || 'Contenido'}
+                            {isCommentReport ? 'Comentario reportado' : isReviewReport ? 'Review reportada' : TYPE_LABELS[report.type === 'content' ? report.reportable_type : ''] || 'Contenido'}
                           </Badge>
                           <Badge className={STATUS_CONFIG[normalizedStatus as keyof typeof STATUS_CONFIG]?.color}>
                             <StatusIcon className="h-3 w-3 mr-1" />
@@ -268,30 +313,61 @@ export default function UserReportsPage() {
                       </div>
                     )}
 
+                    {/* Mostrar review reportada si es reporte de review */}
+                    {isReviewReport && (
+                      <div className="bg-muted/50 p-3 rounded-md">
+                        <p className="text-xs font-semibold mb-1 text-muted-foreground">
+                          Review reportada de @{report.review_author_username || 'usuario'}:
+                        </p>
+                        <div className="flex items-center gap-1 mb-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3 w-3 ${
+                                i < (report.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-sm italic">
+                          {report.review_deleted 
+                            ? '(Review eliminada por moderación)' 
+                            : report.review_content
+                          }
+                        </p>
+                      </div>
+                    )}
+
                     <div>
                       <p className="text-sm font-medium mb-1">Tu reporte:</p>
                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {report.type === 'comment' ? `${report.reason}\n${report.description}` : report.report_reason}
+                        {report.type === 'comment' || report.type === 'review' 
+                          ? `${report.reason}${report.description ? '\n' + report.description : ''}` 
+                          : report.report_reason}
                       </p>
                     </div>
 
                     {/* Respuesta del moderador */}
                     {((report.type === 'content' && report.moderator_notes) || 
-                      (report.type === 'comment' && report.resolution_notes)) && (
+                      ((report.type === 'comment' || report.type === 'review') && report.resolution_notes)) && (
                       <div className="bg-muted p-4 rounded-lg">
                         <p className="text-sm font-medium mb-1">
                           Respuesta del moderador:
                         </p>
                         <p className="text-sm whitespace-pre-wrap">
-                          {report.type === 'comment' ? report.resolution_notes : report.moderator_notes}
+                          {report.type === 'comment' || report.type === 'review' ? report.resolution_notes : report.moderator_notes}
                         </p>
-                        {report.type === 'comment' && report.action_taken && report.action_taken !== 'no_action' && (
+                        {(report.type === 'comment' || report.type === 'review') && report.action_taken && report.action_taken !== 'no_action' && (
                           <p className="text-xs text-muted-foreground mt-2">
-                            Acción tomada: {report.action_taken === 'comment_deleted' ? 'Comentario eliminado' : report.action_taken}
+                            Acción tomada: {
+                              report.action_taken === 'comment_deleted' ? 'Comentario eliminado' : 
+                              report.action_taken === 'review_deleted' ? 'Review eliminada' : 
+                              report.action_taken
+                            }
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground mt-2">
-                          Por @{report.type === 'comment' ? report.resolved_by_username : report.reviewed_by_username}
+                          Por @{(report.type === 'comment' || report.type === 'review') ? report.resolved_by_username : report.reviewed_by_username}
                           {report.resolved_at && (
                             <> · {new Date(report.resolved_at).toLocaleDateString('es-ES')}</>
                           )}

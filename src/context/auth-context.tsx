@@ -343,7 +343,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
     }
 
-<<<<<<< HEAD
     if (!user.lists) {
       user.lists = {
         pending: [],
@@ -351,25 +350,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         watched: [],
         favorites: [],
       };
-=======
-    const isAlreadyFavorite = user.lists.favorites.some(fav => fav.id === title.id);
-    let updatedFavorites: TitleInfo[];
-
-    if (isAlreadyFavorite) {
-        // PSQL: `DELETE FROM list_items WHERE list_id = (SELECT id FROM lists WHERE user_id = $1 AND slug = 'favoritos') AND listable_id = $2 AND listable_type = $3;`
-        updatedFavorites = user.lists.favorites.filter(fav => fav.id !== title.id);
-         toast({
-            title: "Eliminado de favoritos",
-            description: `${title.title} ha sido eliminado de tu lista de favoritos.`,
-        });
-    } else {
-        // PSQL: `INSERT INTO list_items (list_id, listable_type, listable_id) VALUES ((SELECT id FROM lists WHERE user_id = $1 AND slug = 'favoritos'), $2, $3);`
-        updatedFavorites = [...user.lists.favorites, title];
-        toast({
-            title: "¡Añadido a favoritos!",
-            description: `${title.title} ha sido añadido a tu lista de favoritos.`,
-        });
->>>>>>> d3e59e8a72b3b9ecd4bb64f73b81cc23f36469ab
     }
 
     const isAlreadyFavorite = user.lists.favorites.some(fav => fav.id === title.id);

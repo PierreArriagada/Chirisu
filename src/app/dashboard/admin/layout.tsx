@@ -18,7 +18,8 @@ import {
   FileText,
   Settings,
   Menu,
-  X
+  X,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,12 @@ const navItems: NavItem[] = [
     label: 'Moderación',
     icon: Users,
     description: 'Asignar roles de moderador'
+  },
+  {
+    href: '/dashboard/admin/scan-requests',
+    label: 'Solicitudes Scan',
+    icon: BookOpen,
+    description: 'Aprobar/rechazar scanlators'
   },
   {
     href: '/dashboard/admin/top-contributors',

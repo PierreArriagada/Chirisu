@@ -466,14 +466,14 @@ export default function ContributionDetailPage() {
 
             <Separator />
 
-            {/* Géneros (solo para medios) */}
-            {['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && data.genre_ids && data.genre_ids.length > 0 && (
+            {/* Géneros (solo para medios) - ahora usa array de nombres */}
+            {['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && data.genres && data.genres.length > 0 && (
               <div>
                 <h3 className="text-xl font-semibold mb-3">Géneros</h3>
                 <div className="flex flex-wrap gap-2">
-                  {data.genre_ids.map((id: number) => (
-                    <Badge key={id} variant="secondary">
-                      Género ID: {id}
+                  {data.genres.map((genre: string, index: number) => (
+                    <Badge key={index} variant="secondary">
+                      {genre}
                     </Badge>
                   ))}
                 </div>
@@ -483,19 +483,23 @@ export default function ContributionDetailPage() {
             <Separator />
 
             {/* Estudios (solo para medios) */}
-            {['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && data.studios && data.studios.length > 0 && (
+            {['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && data.studios && (
               <div>
                 <h3 className="text-xl font-semibold mb-3">Estudios</h3>
-                <div className="space-y-2">
-                  {data.studios.map((studio: any, index: number) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Badge variant={studio.isMain ? 'default' : 'secondary'}>
-                        {studio.name}
-                      </Badge>
-                      {studio.isMain && <span className="text-xs text-muted-foreground">(Principal)</span>}
-                    </div>
-                  ))}
-                </div>
+                {typeof data.studios === 'string' ? (
+                  <p className="font-medium">{data.studios}</p>
+                ) : Array.isArray(data.studios) && data.studios.length > 0 ? (
+                  <div className="space-y-2">
+                    {data.studios.map((studio: any, index: number) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Badge variant={studio.isMain ? 'default' : 'secondary'}>
+                          {typeof studio === 'string' ? studio : studio.name}
+                        </Badge>
+                        {studio.isMain && <span className="text-xs text-muted-foreground">(Principal)</span>}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             )}
 
@@ -529,6 +533,12 @@ export default function ContributionDetailPage() {
                   {data.characters.map((character: any, index: number) => (
                     <div key={index} className="p-3 border rounded-md">
                       <p className="font-medium">{character.name}</p>
+                      {character.name_native && (
+                        <p className="text-sm text-muted-foreground">{character.name_native}</p>
+                      )}
+                      {character.description && (
+                        <p className="text-sm text-muted-foreground mt-1">{character.description}</p>
+                      )}
                       <Badge variant={character.role === 'main' ? 'default' : 'secondary'} className="mt-2">
                         {character.role === 'main' ? 'Principal' : 'Secundario'}
                       </Badge>
@@ -536,6 +546,164 @@ export default function ContributionDetailPage() {
                   ))}
                 </div>
               </div>
+            )}
+
+            <Separator />
+
+            {/* Autores y Artistas (manga/manhwa/manhua/novel) */}
+            {['manga', 'novel', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && (data.authors || data.artists) && (
+              <div>
+                <h3 className="text-xl font-semibold mb-3">Creadores</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <InfoField label="Autores" value={data.authors} />
+                  <InfoField label="Artistas" value={data.artists} />
+                  <InfoField label="Serialización" value={data.serialization} />
+                </div>
+              </div>
+            )}
+
+            {(data.authors || data.artists) && <Separator />}
+
+            {/* Productores y Demografía (anime/donghua) */}
+            {['anime', 'donghua'].includes(contribution.contributableType) && data.producers && (
+              <div>
+                <h3 className="text-xl font-semibold mb-3">Producción</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <InfoField label="Productores" value={data.producers} />
+                  <InfoField label="Demografía" value={data.demographics} />
+                </div>
+              </div>
+            )}
+
+            {data.producers && <Separator />}
+
+            {/* Enlaces Externos */}
+            {['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && data.external_links && data.external_links.length > 0 && (
+              <>
+                <div>
+                  <h3 className="text-xl font-semibold mb-3">Enlaces Externos</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {data.external_links.map((link: any, index: number) => (
+                      <div key={index} className="p-3 border rounded-md">
+                        <p className="font-medium">{link.site_name || 'Sin nombre'}</p>
+                        <a 
+                          href={link.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-500 hover:underline break-all"
+                        >
+                          {link.url}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Enlaces de Fan Translation */}
+            {['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && data.fan_translation_links && data.fan_translation_links.length > 0 && (
+              <>
+                <div>
+                  <h3 className="text-xl font-semibold mb-3">Fan Translations</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {data.fan_translation_links.map((link: any, index: number) => (
+                      <div key={index} className="p-3 border rounded-md bg-muted/30">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{link.language || 'Sin idioma'}</Badge>
+                          <span className="font-medium">{link.site_name || 'Sin nombre'}</span>
+                        </div>
+                        <a 
+                          href={link.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-500 hover:underline break-all mt-2 block"
+                        >
+                          {link.url}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Relaciones con otras obras */}
+            {['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && data.relations && data.relations.length > 0 && (
+              <>
+                <div>
+                  <h3 className="text-xl font-semibold mb-3">Obras Relacionadas</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {data.relations.map((relation: any, index: number) => (
+                      <div key={index} className="p-3 border rounded-md">
+                        <p className="font-medium">{relation.title || relation.name}</p>
+                        <Badge variant="secondary" className="mt-1">{relation.relation_type}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* IDs Externos (MAL, AniList) */}
+            {['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && (data.mal_id || data.anilist_id) && (
+              <>
+                <div>
+                  <h3 className="text-xl font-semibold mb-3">IDs Externos</h3>
+                  <div className="flex flex-wrap gap-4">
+                    {data.mal_id > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">MAL ID:</Badge>
+                        <span>{data.mal_id}</span>
+                      </div>
+                    )}
+                    {data.anilist_id > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">AniList ID:</Badge>
+                        <span>{data.anilist_id}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Información Adicional */}
+            {['anime', 'manga', 'novel', 'donghua', 'manhua', 'manhwa', 'fan_comic'].includes(contribution.contributableType) && (data.rating || data.is_adult || data.background || data.tags || data.themes) && (
+              <>
+                <div>
+                  <h3 className="text-xl font-semibold mb-3">Información Adicional</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <InfoField label="Clasificación" value={data.rating} />
+                    <InfoField label="Contenido Adulto" value={data.is_adult ? 'Sí' : 'No'} />
+                    <InfoField label="País de Origen" value={data.country_of_origin} />
+                    <InfoField label="Temas" value={data.themes} />
+                    <InfoField label="Tags" value={data.tags} />
+                  </div>
+                  {data.background && (
+                    <div className="mt-4">
+                      <p className="text-sm text-muted-foreground mb-1">Información de Fondo</p>
+                      <p className="font-medium">{data.background}</p>
+                    </div>
+                  )}
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Notas del Contribuidor */}
+            {data.contributor_notes && (
+              <>
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-md border border-yellow-200 dark:border-yellow-800">
+                  <h3 className="text-xl font-semibold mb-2 text-yellow-800 dark:text-yellow-200">📝 Notas del Contribuidor</h3>
+                  <p className="text-yellow-700 dark:text-yellow-300">{data.contributor_notes}</p>
+                </div>
+                <Separator />
+              </>
             )}
 
             {/* Imágenes y Multimedia (solo para medios) */}
@@ -555,13 +723,13 @@ export default function ContributionDetailPage() {
           </div>
 
           {/* Acciones de moderación */}
-          {contribution.status === 'pending' && (
+          {(contribution.status === 'pending' || contribution.status === 'in_review') && (
             <div className="mt-8 pt-6 border-t">
               <h3 className="text-xl font-semibold mb-4">Acciones de Moderación</h3>
               
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="rejection-reason">Motivo de Rechazo (opcional para aprobación)</Label>
+                  <Label htmlFor="rejection-reason">Motivo de Rechazo (requerido para rechazar)</Label>
                   <Textarea
                     id="rejection-reason"
                     placeholder="Escribe el motivo si vas a rechazar esta contribución..."

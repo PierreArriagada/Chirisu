@@ -23,7 +23,7 @@ interface Review {
 
 interface ReviewsSectionProps {
   mediaId: string;
-  mediaType: 'anime' | 'manga' | 'novel';
+  mediaType: 'anime' | 'manga' | 'novel' | 'donghua' | 'manhua' | 'manhwa' | 'fan_comic';
   mediaTitle: string;
 }
 

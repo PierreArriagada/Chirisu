@@ -108,10 +108,19 @@ export type OfficialLink = {
   url: string;
 };
 
+// Extended type for fan translations with scan status
+export type FanTranslationLink = {
+  name: string;
+  url: string;
+  status?: 'active' | 'hiatus' | 'completed' | 'dropped' | 'licensed';
+  scanUsername?: string;
+  scanUserId?: number;
+};
+
 export type OfficialLinks = {
   officialSites: OfficialLink[];
   streamingPlatforms: OfficialLink[];
-  fanTranslations: OfficialLink[];
+  fanTranslations: (OfficialLink | FanTranslationLink)[];
 };
 
 export type GalleryImage = {

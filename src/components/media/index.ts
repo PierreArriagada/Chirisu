@@ -31,3 +31,4 @@ export { default as CharactersDisplay } from './displays/characters-display';
 export { default as StaffDisplay } from './displays/staff-display';
 export { default as StudiosDisplay } from './displays/studios-display';
 export { default as EpisodesDisplay } from './displays/episodes-display';
+export { default as ChaptersDisplay } from './displays/chapters-display';

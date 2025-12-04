@@ -45,19 +45,19 @@ export async function POST(
       );
     }
 
-    // Asignar el reporte
+    // Asignar el reporte y cambiar estado a 'reviewing'
     await pool.query(
       `UPDATE app.review_reports 
-       SET assigned_to = $1, assigned_at = NOW() 
+       SET assigned_to = $1, assigned_at = NOW(), status = 'reviewing'
        WHERE id = $2`,
       [payload.userId, id]
     );
 
-    // TODO: Registrar en audit_log
+    // Registrar en audit_log
     await pool.query(
       `INSERT INTO app.audit_log (user_id, action, resource_type, resource_id, new_values)
        VALUES ($1, 'assign_review_report', 'review_report', $2, $3)`,
-      [payload.userId, id, JSON.stringify({ assigned_to: payload.userId, assigned_at: new Date() })]
+      [payload.userId, id, JSON.stringify({ assigned_to: payload.userId, assigned_at: new Date(), status: 'reviewing' })]
     );
 
     return NextResponse.json({ success: true });
@@ -110,10 +110,10 @@ export async function DELETE(
       );
     }
 
-    // Liberar el reporte
+    // Liberar el reporte y volver a estado 'pending'
     await pool.query(
       `UPDATE app.review_reports 
-       SET assigned_to = NULL, assigned_at = NULL 
+       SET assigned_to = NULL, assigned_at = NULL, status = 'pending'
        WHERE id = $1`,
       [id]
     );
@@ -122,7 +122,7 @@ export async function DELETE(
     await pool.query(
       `INSERT INTO app.audit_log (user_id, action, resource_type, resource_id, old_values)
        VALUES ($1, 'release_review_report', 'review_report', $2, $3)`,
-      [payload.userId, id, JSON.stringify({ assigned_to: report.assigned_to })]
+      [payload.userId, id, JSON.stringify({ assigned_to: report.assigned_to, status: 'pending' })]
     );
 
     return NextResponse.json({ success: true });

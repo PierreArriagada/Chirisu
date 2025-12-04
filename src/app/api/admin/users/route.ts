@@ -127,13 +127,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Verificar que la acción sea válida
-    const validActions = ['promote', 'demote', 'suspend', 'unsuspend', 'ban'];
+    const validActions = ['promote', 'demote', 'suspend', 'unsuspend', 'ban', 'promote_scan', 'demote_scan'];
     if (!validActions.includes(action)) {
       return NextResponse.json({ error: 'Acción inválida' }, { status: 400 });
     }
 
     // Solo admins pueden promover/degradar/banear
-    if (['promote', 'demote', 'ban'].includes(action) && !payload.isAdmin) {
+    if (['promote', 'demote', 'ban', 'promote_scan', 'demote_scan'].includes(action) && !payload.isAdmin) {
       return NextResponse.json({ 
         error: 'Solo los administradores pueden cambiar roles de usuario' 
       }, { status: 403 });
@@ -236,6 +236,44 @@ export async function PATCH(request: NextRequest) {
           [userId]
         );
         message = `Usuario ${user.username} baneado permanentemente`;
+        break;
+
+      case 'promote_scan':
+        const isScan = userRoles.includes('scan');
+        if (isScan) {
+          return NextResponse.json({ error: 'El usuario ya es scanlator' }, { status: 400 });
+        }
+        // Obtener el role_id de scan
+        const scanRoleResult = await pool.query(
+          "SELECT id FROM app.roles WHERE name = 'scan'"
+        );
+        if (scanRoleResult.rows.length > 0) {
+          await pool.query(
+            'INSERT INTO app.user_roles (user_id, role_id, assigned_by, assigned_at) VALUES ($1, $2, $3, NOW()) ON CONFLICT DO NOTHING',
+            [userId, scanRoleResult.rows[0].id, payload.userId]
+          );
+          message = `Usuario ${user.username} promovido a scanlator exitosamente`;
+        } else {
+          return NextResponse.json({ error: 'Rol scan no encontrado en la base de datos' }, { status: 500 });
+        }
+        break;
+
+      case 'demote_scan':
+        const hasScanRole = userRoles.includes('scan');
+        if (!hasScanRole) {
+          return NextResponse.json({ error: 'El usuario no es scanlator' }, { status: 400 });
+        }
+        // Obtener el role_id de scan
+        const scanRoleResult2 = await pool.query(
+          "SELECT id FROM app.roles WHERE name = 'scan'"
+        );
+        if (scanRoleResult2.rows.length > 0) {
+          await pool.query(
+            'DELETE FROM app.user_roles WHERE user_id = $1 AND role_id = $2',
+            [userId, scanRoleResult2.rows[0].id]
+          );
+          message = `Rol de scanlator removido de ${user.username} exitosamente`;
+        }
         break;
     }
 

@@ -17,7 +17,8 @@ import {
   CharactersDisplay,
   StaffDisplay,
   EpisodesDisplay,
-  StudiosDisplay
+  StudiosDisplay,
+  ChaptersDisplay
 } from '@/components/media';
 import { Recommendations } from '@/components/shared';
 import { DynamicTheme } from '@/components/layout';
@@ -58,7 +59,7 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
       };
 
       const apiType = typeMap[type] || 'anime';
-      const url = `/api/media/${id}?type=${apiType}`;
+      const url = `/api/media/details/${id}?type=${apiType}`;
       
       console.log(`🔍 MediaPageClient - Cargando: ${url}`);
       console.log(`   ID: ${id}, Type: ${type}, API Type: ${apiType}`);
@@ -145,6 +146,12 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
     if (normalized.startsWith('ja')) {
       return { flag: '🇯🇵', label: 'Japonés' };
     }
+    if (normalized.startsWith('ko')) {
+      return { flag: '🇰🇷', label: 'Coreano' };
+    }
+    if (normalized.startsWith('zh') || normalized.startsWith('cn')) {
+      return { flag: '🇨🇳', label: 'Chino' };
+    }
     if (normalized.startsWith('en')) {
       return { flag: '🇺🇸', label: 'Inglés' };
     }
@@ -160,8 +167,23 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
     return { flag: '🌐', label: language ? language.toUpperCase() : 'Otro' };
   };
 
+  // Determinar el idioma nativo basándose en el país de origen o tipo de media
+  const getNativeLanguageInfo = () => {
+    const country = mediaData.countryOfOrigin?.toUpperCase();
+    if (country === 'KR' || type === 'Manhwa') {
+      return { flag: '🇰🇷', label: 'Coreano' };
+    }
+    if (country === 'CN' || type === 'Manhua' || type === 'Donghua') {
+      return { flag: '🇨🇳', label: 'Chino' };
+    }
+    // Por defecto, japonés para anime/manga/novel
+    return { flag: '🇯🇵', label: 'Japonés' };
+  };
+
+  const nativeLanguageInfo = getNativeLanguageInfo();
+
   const baseAlternativeTitles = [
-    mediaData.titleNative && { lang: 'Japonés', flag: '🇯🇵', title: mediaData.titleNative },
+    mediaData.titleNative && { lang: nativeLanguageInfo.label, flag: nativeLanguageInfo.flag, title: mediaData.titleNative },
     mediaData.titleRomaji && { lang: 'Romaji', flag: '🈶', title: mediaData.titleRomaji },
     mediaData.titleEnglish && { lang: 'Inglés', flag: '🇺🇸', title: mediaData.titleEnglish },
   ].filter(Boolean);
@@ -366,7 +388,12 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
           <SocialsCard titleInfo={titleInfo} />
           <SynopsisCard description={titleInfo.description} />
           <DetailsCard details={details} />
-          <OfficialLinksCard links={officialLinks} />
+          <OfficialLinksCard 
+            links={officialLinks} 
+            mediaId={mediaData.id}
+            mediaType={reviewableType}
+            mediaTitle={titleInfo.title}
+          />
 
           {/* Acordeones - SIEMPRE VISIBLES */}
           <Accordion type="multiple" className="w-full space-y-4">
@@ -379,7 +406,7 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
                 <AccordionContent className="px-6">
                   <CharactersDisplay 
                     mediaId={mediaData.id} 
-                    mediaType={reviewableType === 'anime' ? 'anime' : 'manga'} 
+                    mediaType={reviewableType} 
                   />
                 </AccordionContent>
               </AccordionItem>
@@ -394,7 +421,7 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
                 <AccordionContent className="px-6">
                   <StaffDisplay 
                     mediaId={mediaData.id} 
-                    mediaType={reviewableType === 'anime' ? 'anime' : 'manga'} 
+                    mediaType={reviewableType} 
                   />
                 </AccordionContent>
               </AccordionItem>
@@ -414,7 +441,7 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
               </Card>
             )}
 
-            {/* Acordeón de Episodios Reales - DE BASE DE DATOS */}
+            {/* Acordeón de Episodios Reales - DE BASE DE DATOS - SOLO ANIME/DONGHUA */}
             {showEpisodes && (
               <Card>
                 <AccordionItem value="episodes-real" className="border-0">
@@ -422,27 +449,30 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
                     <span className="text-xl font-semibold">Lista de Episodios</span>
                   </AccordionTrigger>
                   <AccordionContent className="px-6">
-                    <EpisodesDisplay animeId={mediaData.id} />
+                    <EpisodesDisplay 
+                      animeId={mediaData.id} 
+                      mediaType={type === 'Donghua' ? 'donghua' : 'anime'}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               </Card>
             )}
 
-            {/* Acordeón de Episodios - SOLO PARA ANIME/DONGHUA, SIEMPRE VISIBLE */}
-            {showEpisodes && (
+            {/* Acordeón de Capítulos - SOLO PARA MANGA/LECTURAS */}
+            {!showEpisodes && (
               <Card>
-                <AccordionItem value="episodes" className="border-0">
+                <AccordionItem value="chapters" className="border-0">
                   <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                    <span className="text-xl font-semibold">Episodios (Placeholder)</span>
+                    <span className="text-xl font-semibold">Capítulos</span>
                   </AccordionTrigger>
                   <AccordionContent className="px-6">
-                    {episodes.length > 0 ? (
-                      <EpisodesCard episodes={episodes} />
-                    ) : (
-                      <div className="py-8 text-center text-muted-foreground">
-                        Sin información de episodios disponible.
-                      </div>
-                    )}
+                    <ChaptersDisplay 
+                      mediaId={parseInt(id)}
+                      chapters={mediaData.chapters}
+                      volumes={mediaData.volumes}
+                      mediaType={reviewableType as 'manga' | 'novel' | 'manhua' | 'manhwa' | 'fan_comic'}
+                      status={mediaData.status}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               </Card>
@@ -469,13 +499,7 @@ export default function MediaPageClient({ id, type }: MediaPageClientProps) {
                 <AccordionContent className="px-6">
                   <ReviewsSection 
                     mediaId={mediaData.id.toString()} 
-                    mediaType={
-                      reviewableType === 'anime' || reviewableType === 'donghua' 
-                        ? 'anime' 
-                        : reviewableType === 'novel' 
-                        ? 'novel' 
-                        : 'manga'
-                    } 
+                    mediaType={reviewableType} 
                     mediaTitle={titleInfo.title}
                   />
                 </AccordionContent>

@@ -9,7 +9,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
@@ -25,9 +25,45 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { StudioSelector } from './studio-selector';
 import { StaffSelector } from './staff-selector';
 import { CharacterSelector } from './character-selector';
-import { Loader2 } from 'lucide-react';
+import { ScanlationGroupSearch } from './scanlation-group-search';
+import { Loader2, Plus, Trash2 } from 'lucide-react';
 
 // Esquema de validación basado en la BD
+const episodeSchema = z.object({
+  episode_number: z.string().min(1, 'Número requerido'),
+  title: z.string().optional(),
+  title_romaji: z.string().optional(),
+  title_japanese: z.string().optional(),
+  synopsis: z.string().optional(),
+  air_date: z.string().optional(),
+  duration: z.string().optional(),
+  thumbnail_url: z.string().url().optional().or(z.literal('')),
+  is_filler: z.boolean().default(false),
+  is_recap: z.boolean().default(false),
+});
+
+const externalLinkSchema = z.object({
+  site_name: z.string().min(1, 'Nombre requerido'),
+  url: z.string().url('URL inválida'),
+});
+
+// Esquema para traducciones de fans con estado y grupo
+const fanTranslationSchema = z.object({
+  site_name: z.string().min(1, 'Nombre requerido'),
+  url: z.string().url('URL inválida'),
+  status: z.enum(['active', 'hiatus', 'completed', 'dropped', 'licensed']).default('active'),
+  group_id: z.number().optional(), // ID del grupo si existe en BD
+});
+
+// Estados disponibles para traducciones de fans
+const FAN_TRANSLATION_STATUS_OPTIONS = [
+  { value: 'active', label: 'Traduciendo' },
+  { value: 'hiatus', label: 'En Pausa' },
+  { value: 'completed', label: 'Completado' },
+  { value: 'dropped', label: 'Abandonado' },
+  { value: 'licensed', label: 'Licenciado' },
+];
+
 const animeContributionSchema = z.object({
   // Títulos
   title_romaji: z.string().min(1, 'El título en romaji es requerido'),
@@ -46,6 +82,9 @@ const animeContributionSchema = z.object({
   // Episodios y duración
   episode_count: z.string().optional(),
   duration: z.string().optional(), // en minutos
+
+  // Episodios individuales
+  episodes: z.array(episodeSchema).optional(),
 
   // Fechas
   start_date: z.string().optional(),
@@ -78,7 +117,12 @@ const animeContributionSchema = z.object({
   // Géneros (IDs)
   genre_ids: z.array(z.number()).min(1, 'Selecciona al menos un género'),
 
-  // Enlaces externos adicionales
+  // Enlaces externos separados por tipo
+  official_sites: z.array(externalLinkSchema).optional(),
+  streaming_platforms: z.array(externalLinkSchema).optional(),
+  fan_translations: z.array(fanTranslationSchema).optional(),
+
+  // Enlaces externos adicionales (legacy)
   external_links: z.array(z.object({
     site_name: z.string(),
     url: z.string().url(),
@@ -105,13 +149,25 @@ const STATUS_OPTIONS = [
   { value: 'discontinued', label: 'Descontinuado' },
 ];
 
-export function AnimeContributionForm() {
+interface AnimeContributionFormProps {
+  mediaType?: 'anime' | 'donghua';
+}
+
+export function AnimeContributionForm({ mediaType = 'anime' }: AnimeContributionFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loadingGenres, setLoadingGenres] = useState(true);
+
+  // Etiquetas según el tipo de media
+  const isAnime = mediaType === 'anime';
+  const mediaLabel = isAnime ? 'Anime' : 'Donghua';
+  const nativeLabel = isAnime ? 'Título en Japonés' : 'Título en Chino';
+  const nativePlaceholder = isAnime ? '日本語タイトル' : '中文标题';
+  const countryDefault = isAnime ? 'JP' : 'CN';
+  const vaLabel = isAnime ? 'japonés' : 'chino';
 
   // Estados para selectores complejos
   const [selectedStudios, setSelectedStudios] = useState<any[]>([]);
@@ -125,7 +181,32 @@ export function AnimeContributionForm() {
       is_nsfw: false,
       genre_ids: [],
       status: 'not_yet_aired',
+      episodes: [],
+      official_sites: [],
+      streaming_platforms: [],
+      fan_translations: [],
     },
+  });
+
+  // Field arrays para episodios y enlaces
+  const { fields: episodeFields, append: appendEpisode, remove: removeEpisode } = useFieldArray({
+    control: form.control,
+    name: 'episodes',
+  });
+
+  const { fields: officialSitesFields, append: appendOfficialSite, remove: removeOfficialSite } = useFieldArray({
+    control: form.control,
+    name: 'official_sites',
+  });
+
+  const { fields: streamingFields, append: appendStreaming, remove: removeStreaming } = useFieldArray({
+    control: form.control,
+    name: 'streaming_platforms',
+  });
+
+  const { fields: fanTransFields, append: appendFanTrans, remove: removeFanTrans } = useFieldArray({
+    control: form.control,
+    name: 'fan_translations',
   });
 
   // Cargar géneros
@@ -185,7 +266,7 @@ export function AnimeContributionForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contributionType: 'full',
-          mediaType: 'anime',
+          mediaType: mediaType,
           mediaId: null, // null porque es una creación nueva
           contributionData,
         }),
@@ -196,7 +277,7 @@ export function AnimeContributionForm() {
       if (result.success) {
         toast({
           title: '¡Contribución enviada!',
-          description: 'Tu anime ha sido enviado para revisión por un moderador.',
+          description: `Tu ${mediaLabel.toLowerCase()} ha sido enviado para revisión por un moderador.`,
         });
         router.push('/contribution-center');
       } else {
@@ -229,9 +310,9 @@ export function AnimeContributionForm() {
     <div className="container mx-auto p-4 max-w-5xl">
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">Añadir Nuevo Anime</CardTitle>
+          <CardTitle className="text-3xl font-bold">Añadir Nuevo {mediaLabel}</CardTitle>
           <CardDescription className="text-base">
-            Completa toda la información del anime. Tu contribución será revisada por un moderador antes de ser publicada.
+            Completa toda la información del {mediaLabel.toLowerCase()}. Tu contribución será revisada por un moderador antes de ser publicada.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -289,9 +370,9 @@ export function AnimeContributionForm() {
                       name="title_native"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Título Nativo</FormLabel>
+                          <FormLabel>{nativeLabel}</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Ej: 進撃の巨人" />
+                            <Input {...field} placeholder={nativePlaceholder} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -381,13 +462,15 @@ export function AnimeContributionForm() {
               {/* SECCIÓN 3: EPISODIOS Y FECHAS */}
               <Card className="p-6 bg-muted/20">
                 <h3 className="text-xl font-semibold mb-4">📅 Episodios y Fechas</h3>
+                
+                {/* Información general */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <FormField
                     control={form.control}
                     name="episode_count"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Episodios</FormLabel>
+                        <FormLabel>Total de Episodios</FormLabel>
                         <FormControl>
                           <Input {...field} type="number" placeholder="12" />
                         </FormControl>
@@ -401,7 +484,7 @@ export function AnimeContributionForm() {
                     name="duration"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Duración (min)</FormLabel>
+                        <FormLabel>Duración por episodio (min)</FormLabel>
                         <FormControl>
                           <Input {...field} type="number" placeholder="24" />
                         </FormControl>
@@ -503,6 +586,210 @@ export function AnimeContributionForm() {
                       </FormItem>
                     )}
                   />
+                </div>
+
+                {/* Episodios Individuales */}
+                <div className="mt-6 border-t pt-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-medium">📺 Episodios Individuales (Opcional)</h4>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => appendEpisode({
+                        episode_number: String(episodeFields.length + 1),
+                        title: '',
+                        title_romaji: '',
+                        title_japanese: '',
+                        synopsis: '',
+                        air_date: '',
+                        duration: '',
+                        thumbnail_url: '',
+                        is_filler: false,
+                        is_recap: false,
+                      })}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar Episodio
+                    </Button>
+                  </div>
+                  
+                  {episodeFields.length === 0 ? (
+                    <p className="text-muted-foreground text-sm text-center py-4">
+                      No has agregado episodios individuales. Puedes agregar cada episodio con su información detallada.
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {episodeFields.map((field, index) => (
+                        <Card key={field.id} className="p-4 bg-background/50">
+                          <div className="flex items-center justify-between mb-3">
+                            <h5 className="font-medium">Episodio {index + 1}</h5>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeEpisode(index)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.episode_number`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Número *</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} type="number" placeholder="1" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.title`}
+                              render={({ field }) => (
+                                <FormItem className="md:col-span-2">
+                                  <FormLabel>Título (Español)</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder="Título del episodio" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.air_date`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Fecha de emisión</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} type="date" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.title_romaji`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Título Romaji</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder="Título en romaji" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.title_japanese`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Título {isAnime ? 'Japonés' : 'Chino'}</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder={nativePlaceholder} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.duration`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Duración (min)</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} type="number" placeholder="24" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.synopsis`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Sinopsis del episodio</FormLabel>
+                                  <FormControl>
+                                    <Textarea {...field} rows={2} placeholder="Breve descripción del episodio..." />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.thumbnail_url`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>URL Thumbnail</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder="https://..." />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div className="flex gap-6 mt-3">
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.is_filler`}
+                              render={({ field }) => (
+                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer">Es Filler</FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name={`episodes.${index}.is_recap`}
+                              render={({ field }) => (
+                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer">Es Recap</FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Card>
 
@@ -697,7 +984,7 @@ export function AnimeContributionForm() {
                       <FormItem>
                         <FormLabel>País de Origen</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="JP" maxLength={10} />
+                          <Input {...field} placeholder={countryDefault} maxLength={10} />
                         </FormControl>
                         <FormDescription>
                           Código de país (ej: JP para Japón, CN para China)
@@ -727,6 +1014,242 @@ export function AnimeContributionForm() {
                       </FormItem>
                     )}
                   />
+                </div>
+              </Card>
+
+              {/* SECCIÓN 11: ENLACES EXTERNOS */}
+              <Card className="p-6 bg-muted/20">
+                <h3 className="text-xl font-semibold mb-4">🌐 Enlaces Externos</h3>
+                
+                {/* Sitios Oficiales */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-md font-medium">🏠 Sitios Oficiales</h4>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => appendOfficialSite({ site_name: '', url: '' })}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar Sitio
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Página oficial del anime, sitio del estudio, etc.
+                  </p>
+                  
+                  {officialSitesFields.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-2">No hay sitios oficiales agregados</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {officialSitesFields.map((field, index) => (
+                        <div key={field.id} className="flex gap-2 items-start">
+                          <FormField
+                            control={form.control}
+                            name={`official_sites.${index}.site_name`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input {...field} placeholder="Nombre (ej: Sitio Oficial)" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`official_sites.${index}.url`}
+                            render={({ field }) => (
+                              <FormItem className="flex-[2]">
+                                <FormControl>
+                                  <Input {...field} placeholder="https://..." />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeOfficialSite(index)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Plataformas de Streaming */}
+                <div className="mb-6 border-t pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-md font-medium">📺 Plataformas de Streaming</h4>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => appendStreaming({ site_name: '', url: '' })}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar Plataforma
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Crunchyroll, Netflix, Funimation, etc.
+                  </p>
+                  
+                  {streamingFields.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-2">No hay plataformas agregadas</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {streamingFields.map((field, index) => (
+                        <div key={field.id} className="flex gap-2 items-start">
+                          <FormField
+                            control={form.control}
+                            name={`streaming_platforms.${index}.site_name`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input {...field} placeholder="Nombre (ej: Crunchyroll)" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`streaming_platforms.${index}.url`}
+                            render={({ field }) => (
+                              <FormItem className="flex-[2]">
+                                <FormControl>
+                                  <Input {...field} placeholder="https://..." />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeStreaming(index)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Fan Translations */}
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-md font-medium">📖 Fan Translations / Fansubs</h4>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => appendFanTrans({ site_name: '', url: '', status: 'active' })}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar Sitio
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Sitios de fansubs o traducciones no oficiales. Busca grupos existentes o agrega nuevos.
+                  </p>
+                  
+                  {fanTransFields.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-2">No hay fan translations agregadas</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {fanTransFields.map((field, index) => (
+                        <div key={field.id} className="p-3 bg-muted/30 rounded-lg space-y-3">
+                          <div className="flex gap-2 items-start">
+                            {/* Campo de búsqueda de grupo */}
+                            <FormField
+                              control={form.control}
+                              name={`fan_translations.${index}.site_name`}
+                              render={({ field: nameField }) => (
+                                <FormItem className="flex-1 min-w-[200px]">
+                                  <FormLabel className="text-xs">Grupo de Fansub</FormLabel>
+                                  <FormControl>
+                                    <ScanlationGroupSearch
+                                      value={nameField.value}
+                                      onChange={(name, groupId) => {
+                                        nameField.onChange(name);
+                                        // Actualizar el group_id si existe
+                                        if (groupId) {
+                                          form.setValue(`fan_translations.${index}.group_id`, groupId);
+                                        }
+                                      }}
+                                      placeholder="Buscar grupo..."
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeFanTrans(index)}
+                              className="text-destructive mt-6"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          
+                          <div className="flex gap-2 items-start flex-wrap sm:flex-nowrap">
+                            <FormField
+                              control={form.control}
+                              name={`fan_translations.${index}.url`}
+                              render={({ field }) => (
+                                <FormItem className="flex-[2] min-w-[200px]">
+                                  <FormLabel className="text-xs">URL del fansub</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder="https://..." />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`fan_translations.${index}.status`}
+                              render={({ field }) => (
+                                <FormItem className="w-[140px]">
+                                  <FormLabel className="text-xs">Estado</FormLabel>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value || 'active'}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Estado" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {FAN_TRANSLATION_STATUS_OPTIONS.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                          {option.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Card>
 

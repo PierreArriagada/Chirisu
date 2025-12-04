@@ -1,6 +1,6 @@
 /**
  * User Components
- * Perfil, listas, favoritos, contribuciones, notificaciones
+ * Perfil, listas, favoritos, contribuciones, notificaciones, scanlation
  */
 
 export { UserAvatar } from './user-avatar';
@@ -13,3 +13,5 @@ export { default as CustomListAccordion } from './custom-list-accordion';
 export { default as ContributionsCard } from './contributions-card';
 export { default as NotificationsButton } from './notifications-button';
 export { default as NotificationsHistory } from './notifications-history';
+export { default as ScanlatorProjectsCard } from './scanlator-projects-card';
+export { default as ScanLinkRequestsCard } from './scan-link-requests-card';

@@ -41,7 +41,7 @@ export default function SearchBar() {
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  const debounceTimerRef = useRef<NodeJS.Timeout>();
+  const debounceTimerRef = useRef<NodeJS.Timeout>(undefined);
 
   // Cerrar resultados al hacer click fuera
   useEffect(() => {

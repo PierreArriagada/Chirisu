@@ -28,6 +28,11 @@ interface UserProfileData {
   displayName: string;
   avatarUrl: string | null;
   bio: string | null;
+  dateOfBirth: string | null;
+  nationalityCode: string | null;
+  nationalityName: string | null;
+  nationalityFlagUrl: string | null;
+  locale: string | null;
   isAdmin: boolean;
   isModerator: boolean;
   createdAt: string;
@@ -113,10 +118,17 @@ export async function GET() {
       display_name: string | null;
       avatar_url: string | null;
       bio: string | null;
+      date_of_birth: string | null;
+      nationality_code: string | null;
+      nationality_name: string | null;
+      nationality_flag_url: string | null;
+      locale: string | null;
       created_at: Date;
     }>(
       `SELECT 
-        id, email, username, display_name, avatar_url, bio, created_at
+        id, email, username, display_name, avatar_url, bio, 
+        date_of_birth, nationality_code, nationality_name, nationality_flag_url, locale,
+        created_at
        FROM app.users 
        WHERE id = $1 AND deleted_at IS NULL`,
       [userId]
@@ -466,7 +478,7 @@ export async function GET() {
        LEFT JOIN app.donghua d ON (cc.contributable_type = 'donghua' AND cc.contributable_id = d.id)
        LEFT JOIN app.manhua mh ON (cc.contributable_type = 'manhua' AND cc.contributable_id = mh.id)
        LEFT JOIN app.manhwa mw ON (cc.contributable_type = 'manhwa' AND cc.contributable_id = mw.id)
-       LEFT JOIN app.fan_comic fc ON (cc.contributable_type = 'fan_comic' AND cc.contributable_id = fc.id)
+       LEFT JOIN app.fan_comics fc ON (cc.contributable_type = 'fan_comic' AND cc.contributable_id = fc.id)
        WHERE cc.contributor_user_id = $1 AND cc.deleted_at IS NULL
        
        ORDER BY created_at DESC
@@ -522,6 +534,11 @@ export async function GET() {
       displayName: user.display_name || user.username,
       avatarUrl: user.avatar_url,
       bio: user.bio,
+      dateOfBirth: user.date_of_birth,
+      nationalityCode: user.nationality_code,
+      nationalityName: user.nationality_name,
+      nationalityFlagUrl: user.nationality_flag_url,
+      locale: user.locale,
       isAdmin: isAdmin,
       isModerator: isModerator,
       createdAt: user.created_at.toISOString(),

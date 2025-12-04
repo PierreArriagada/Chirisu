@@ -1,6 +1,6 @@
 'use client';
-import { ContributionForm } from "@/components/contributions";
+import { AnimeContributionForm } from "@/components/contributions";
 
 export default function AddDouguaPage() {
-    return <ContributionForm mediaType="Donghua" />;
+    return <AnimeContributionForm mediaType="donghua" />;
 }
